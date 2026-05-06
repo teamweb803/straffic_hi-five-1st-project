@@ -18,7 +18,7 @@ import { RouterLink } from 'vue-router'
         <aside class="footer-card" aria-label="HiFive footer information">
           <div class="footer-card-row"><span>회사</span><strong>HiFive Mobility Lab</strong></div>
           <div class="footer-card-row"><span>시스템</span><strong>Smart Tolling 시스템 v1.0</strong></div>
-          <div class="footer-card-row"><span>구성</span><strong>AI LPR · GPS Fare · gRPC Stream</strong></div>
+          <div class="footer-card-row"><span>구성</span><strong>AI LPR · GPS Fare · WebTransport Ingress</strong></div>
           <div class="footer-card-row"><span>문의</span><a href="mailto:contact@hifive.ai">contact@hifive.ai</a></div>
         </aside>
       </div>

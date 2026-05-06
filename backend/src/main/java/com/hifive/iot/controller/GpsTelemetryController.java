@@ -7,7 +7,6 @@ import com.hifive.iot.dto.GpsTelemetryResponse;
 import com.hifive.iot.service.GpsTelemetryService;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,11 +33,5 @@ public class GpsTelemetryController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public GpsTelemetryResponse create(@RequestBody GpsTelemetryRequest request) {
 		return gpsTelemetryService.save(request);
-	}
-
-	@ExceptionHandler(IllegalArgumentException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public String badRequest(IllegalArgumentException exception) {
-		return exception.getMessage();
 	}
 }

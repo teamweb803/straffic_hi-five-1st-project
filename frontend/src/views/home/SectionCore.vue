@@ -47,19 +47,19 @@
         <article class="engine-card reveal">
           <div class="engine-index"><span>03</span><span class="engine-tag">Transport</span></div>
           <div class="engine-visual">
-            <svg class="mini-svg" viewBox="0 0 160 50" fill="none" role="img" aria-label="gRPC transfer">
+            <svg class="mini-svg" viewBox="0 0 160 50" fill="none" role="img" aria-label="WebTransport transfer">
               <rect x="20" y="10" width="90" height="10" rx="1.5" fill="#172240" stroke="#3A496F" stroke-width=".8"/>
               <text x="14" y="18" text-anchor="end" fill="#AEB9D6" font-family="Fira Mono" font-size="7">JSON</text>
               <text x="116" y="18" fill="#AEB9D6" font-family="Fira Mono" font-size="7">100%</text>
               <rect x="20" y="30" width="27" height="10" rx="1.5" fill="#263A74" stroke="#6D85FF" stroke-width=".8"/>
-              <text x="14" y="38" text-anchor="end" fill="#8EA0FF" font-family="Fira Mono" font-size="7">gRPC</text>
+              <text x="14" y="38" text-anchor="end" fill="#8EA0FF" font-family="Fira Mono" font-size="7">WT</text>
               <text x="52" y="38" fill="#8EA0FF" font-family="Fira Mono" font-size="7">30%</text>
               <rect x="126" y="16" width="30" height="14" rx="2" fill="#172240" stroke="#5D79FF" stroke-width=".8"/>
               <text x="141" y="26" text-anchor="middle" fill="#DCE5FF" font-family="Fira Mono" font-size="8" font-weight="700">-70%</text>
               <line x1="20" y1="6" x2="20" y2="46" stroke="#3A496F" stroke-width=".8"/>
             </svg>
           </div>
-          <h3>gRPC 기반 고속 통신</h3>
+          <h3>WebTransport 기반 고속 통신</h3>
           <p>Protobuf 스트림으로 엣지 장비와 중앙 서버 간 이벤트 전송량과 응답 지연을 줄입니다.</p>
           <div class="engine-foot"><strong>70%↓</strong>Transfer Reduction</div>
         </article>

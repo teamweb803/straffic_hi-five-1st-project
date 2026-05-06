@@ -2,7 +2,7 @@
 const milestones = [
   { year: '2024', title: '창립', desc: '엣지 기반 스마트톨링 R&D 시작' },
   { year: '2025', title: '시범 사업', desc: '도시고속도로 1개 노선에서 PoC 진행' },
-  { year: '2026', title: '확장', desc: 'gRPC 기반 차세대 톨링 시스템 정식 출시' }
+  { year: '2026', title: '확장', desc: 'WebTransport 기반 차세대 톨링 시스템 정식 출시' }
 ]
 </script>
 
@@ -15,7 +15,7 @@ const milestones = [
       </h1>
       <p class="mt-8 max-w-2xl text-white/70 leading-relaxed">
         HiFive 는 게이트 없이 흐르는 도로를 만드는 차세대 스마트톨링 기업입니다.
-        엣지 컴퓨팅 + AI 비전 + gRPC 기반 분산 처리로,
+        엣지 컴퓨팅 + AI 비전 + WebTransport 기반 분산 처리로,
         하이패스의 한계를 넘는 다음 세대 통행 인프라를 설계합니다.
       </p>
     </div>

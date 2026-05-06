@@ -25,16 +25,16 @@ export function createDecisionFlow(canvas) {
     { id: 'edge3', label: 'EDGE-03', rx: 0.12, ry: 0.80, type: 'edge' },
     { id: 'yolo3', label: 'YOLO',    rx: 0.29, ry: 0.78, type: 'yolo' },
     { id: 'ocr3',  label: 'OCR',     rx: 0.43, ry: 0.70, type: 'ocr' },
-    { id: 'fastapi',  label: 'FastAPI',    rx: 0.60, ry: 0.50, type: 'fastapi' },
+    { id: 'ingress',  label: 'Ingress',    rx: 0.60, ry: 0.50, type: 'ingress' },
     { id: 'spring',   label: 'SpringBoot', rx: 0.74, ry: 0.50, type: 'spring' },
     { id: 'postgres', label: 'PostgreSQL', rx: 0.87, ry: 0.34, type: 'postgres' },
     { id: 'vue',      label: 'Vue',        rx: 0.87, ry: 0.66, type: 'vue' }
   ]
   const edges = [
-    { a: 'edge1', b: 'yolo1' }, { a: 'yolo1', b: 'ocr1' }, { a: 'ocr1', b: 'fastapi' },
-    { a: 'edge2', b: 'yolo2' }, { a: 'yolo2', b: 'ocr2' }, { a: 'ocr2', b: 'fastapi' },
-    { a: 'edge3', b: 'yolo3' }, { a: 'yolo3', b: 'ocr3' }, { a: 'ocr3', b: 'fastapi' },
-    { a: 'fastapi', b: 'spring' },
+    { a: 'edge1', b: 'yolo1' }, { a: 'yolo1', b: 'ocr1' }, { a: 'ocr1', b: 'ingress' },
+    { a: 'edge2', b: 'yolo2' }, { a: 'yolo2', b: 'ocr2' }, { a: 'ocr2', b: 'ingress' },
+    { a: 'edge3', b: 'yolo3' }, { a: 'yolo3', b: 'ocr3' }, { a: 'ocr3', b: 'ingress' },
+    { a: 'ingress', b: 'spring' },
     { a: 'spring',  b: 'postgres' },
     { a: 'spring',  b: 'vue' }
   ]
@@ -42,12 +42,12 @@ export function createDecisionFlow(canvas) {
     edge: 'rgba(255,92,92,.96)',
     yolo: 'rgba(255,202,58,.96)',
     ocr: 'rgba(75,214,255,.96)',
-    fastapi: 'rgba(70,255,180,.94)',
+    ingress: 'rgba(70,255,180,.94)',
     spring: 'rgba(122,116,255,.96)',
     postgres: 'rgba(66,153,225,.96)',
     vue: 'rgba(52,211,153,.96)'
   }
-  const sizes = { edge: 9, yolo: 10, ocr: 10, fastapi: 14, spring: 14, postgres: 11, vue: 11 }
+  const sizes = { edge: 9, yolo: 10, ocr: 10, ingress: 14, spring: 14, postgres: 11, vue: 11 }
   const packets = edges.map((e, i) => ({ ...e, t: (i % 3) * 0.22, speed: 0.0044 + (i % 4) * 0.00028 }))
   const getNode = (id) => nodes.find((n) => n.id === id)
   const pos = (n) => ({ x: n.rx * width, y: n.ry * height })
@@ -82,7 +82,7 @@ export function createDecisionFlow(canvas) {
       const to = getNode(edge.b)
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y)
       ctx.strokeStyle = colors[to.type].replace(/[\d.]+\)$/, '0.32)')
-      ctx.lineWidth = (to.type === 'fastapi' || to.type === 'spring') ? 1.8 : 1.2
+      ctx.lineWidth = (to.type === 'ingress' || to.type === 'spring') ? 1.8 : 1.2
       ctx.stroke()
     })
 
@@ -117,7 +117,7 @@ export function createDecisionFlow(canvas) {
       ctx.textAlign = 'center'; ctx.fillText(node.label, p.x, p.y + size + 15)
     })
 
-    const fast = pos(getNode('fastapi'))
+    const fast = pos(getNode('ingress'))
     ctx.beginPath(); ctx.arc(fast.x, fast.y, 54 + Math.sin(tick * 1.8) * 5, 0, Math.PI * 2)
     ctx.strokeStyle = 'rgba(70,255,180,.12)'; ctx.lineWidth = 1; ctx.stroke()
 

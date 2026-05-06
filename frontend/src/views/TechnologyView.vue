@@ -1,7 +1,7 @@
 <script setup>
 const stacks = [
   { layer: 'AI / Vision', items: ['YOLOv8', 'OpenCV', 'EasyOCR', 'PaddleOCR'] },
-  { layer: 'Edge / Streaming', items: ['FastAPI', 'gRPC', 'Protobuf', 'asyncio'] },
+  { layer: 'Edge / Ingress', items: ['WebTransport', 'aioquic', 'FastAPI', 'Protobuf'] },
   { layer: 'Backend', items: ['Spring Boot 3', 'Spring Security', 'JPA', 'PostgreSQL'] },
   { layer: 'Frontend', items: ['Vue.js 3', 'Pinia', 'Vue Router', 'Tailwind CSS'] },
   { layer: 'Infrastructure', items: ['GPS 연동', '가상 통과선 알고리즘', 'Docker', 'CI/CD'] }

@@ -9,9 +9,11 @@ import java.util.List;
 import com.hifive.iot.dto.GpsTelemetryRequest;
 import com.hifive.iot.dto.GpsTelemetryResponse;
 import com.hifive.iot.entity.GpsTelemetryRecord;
+import com.hifive.iot.mapper.GpsTelemetryMapper;
 import com.hifive.iot.repository.GpsTelemetryRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -25,6 +27,7 @@ public class GpsTelemetryService {
 		this.gpsTelemetryRepository = gpsTelemetryRepository;
 	}
 
+	@Transactional
 	public GpsTelemetryResponse save(GpsTelemetryRequest request) {
 		validate(request);
 		GpsTelemetryRecord saved = gpsTelemetryRepository.save(new GpsTelemetryRecord(
@@ -43,13 +46,14 @@ public class GpsTelemetryService {
 			resolveCapturedAt(request),
 			LocalDateTime.now()
 		));
-		return GpsTelemetryResponse.from(saved);
+		return GpsTelemetryMapper.toResponse(saved);
 	}
 
+	@Transactional(readOnly = true)
 	public List<GpsTelemetryResponse> latest() {
 		return gpsTelemetryRepository.findTop50ByOrderByCapturedAtDesc()
 			.stream()
-			.map(GpsTelemetryResponse::from)
+			.map(GpsTelemetryMapper::toResponse)
 			.toList();
 	}
 

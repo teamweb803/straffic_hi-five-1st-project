@@ -10,7 +10,7 @@ const year = new Date().getFullYear()
         <p class="font-mono text-xs mt-2 text-white/50">NEXT-GEN SMART TOLLING SYSTEM</p>
         <p class="text-sm mt-4 text-white/60 leading-relaxed">
           엣지에서 인식, 클라우드에서 정산.<br />
-          gRPC 기반 차세대 스마트톨링 플랫폼.
+          WebTransport 기반 차세대 스마트톨링 플랫폼.
         </p>
       </div>
       <div>

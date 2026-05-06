@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
 // HiFive 프론트엔드 빌드 설정
-// 백엔드(Spring Boot) 는 8080, FastAPI 엣지는 8000 으로 가정.
+// Vue는 Spring Boot REST API만 호출한다. Python Ingress는 브라우저에서 직접 호출하지 않는다.
 export default defineConfig({
   plugins: [vue()],
   resolve: {

@@ -12,8 +12,8 @@ const solutions = [
   },
   {
     code: '03',
-    title: 'gRPC Stream',
-    desc: '엣지 → 백엔드 사이를 Protobuf 바이너리로 압축 송신. JSON 대비 70% 페이로드 감소.'
+    title: 'WebTransport Ingress',
+    desc: 'Jetson Edge 이벤트를 Protobuf 바이너리로 Python Ingress에 송신하고 Spring REST ingest로 전달.'
   },
   {
     code: '04',
@@ -65,15 +65,15 @@ const solutions = [
         </li>
         <li class="card flex gap-4 items-start">
           <span class="font-mono text-brand">02</span>
-          <p><strong class="text-deep">엣지 FastAPI</strong> — OCR + 가상 통과선 판정 + GPS 결합.</p>
+          <p><strong class="text-deep">Jetson Edge</strong> — YOLO/OCR 병렬 처리와 PassageEvent Protobuf 생성.</p>
         </li>
         <li class="card flex gap-4 items-start">
           <span class="font-mono text-brand">03</span>
-          <p><strong class="text-deep">gRPC 스트리밍</strong> — Protobuf 바이너리로 백엔드까지 송신.</p>
+          <p><strong class="text-deep">Python Ingress</strong> — WebTransport 수신 후 Spring REST ingest로 전달.</p>
         </li>
         <li class="card flex gap-4 items-start">
           <span class="font-mono text-brand">04</span>
-          <p><strong class="text-deep">Spring Boot 백엔드</strong> — 정산 / 검수 / 회원 / 게시판 처리.</p>
+          <p><strong class="text-deep">Spring Boot 백엔드</strong> — 이벤트 저장, 중복 처리, GPS telemetry, 정산 / 검수 처리.</p>
         </li>
         <li class="card flex gap-4 items-start">
           <span class="font-mono text-brand">05</span>

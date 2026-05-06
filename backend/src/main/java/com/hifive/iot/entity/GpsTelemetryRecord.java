@@ -14,28 +14,30 @@ import jakarta.persistence.Table;
 @Table(
 	name = "gps_telemetry",
 	indexes = {
-		@Index(name = "idx_gps_telemetry_device_captured", columnList = "gpsDeviceId,capturedAt"),
-		@Index(name = "idx_gps_telemetry_plate_captured", columnList = "plateNumber,capturedAt")
+		@Index(name = "idx_gps_telemetry_device_captured", columnList = "gps_device_id,captured_at"),
+		@Index(name = "idx_gps_telemetry_plate_captured", columnList = "plate_number,captured_at")
 	}
 )
 public class GpsTelemetryRecord {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@Column(name = "gps_telemetry_id")
+	private Long gpsTelemetryId;
 
-	@Column(nullable = false, length = 80)
+	@Column(name = "gps_device_id", nullable = false, length = 80)
 	private String gpsDeviceId;
 
-	@Column(length = 20)
+	@Column(name = "plate_number", length = 20)
 	private String plateNumber;
 
-	@Column(length = 40)
+	@Column(name = "edge_node_id", length = 40)
 	private String edgeNodeId;
 
-	@Column(length = 40)
+	@Column(name = "lane_id", length = 40)
 	private String laneId;
 
+	@Column(name = "track_id")
 	private Integer trackId;
 
 	@Column(nullable = false)
@@ -44,21 +46,24 @@ public class GpsTelemetryRecord {
 	@Column(nullable = false)
 	private Double longitude;
 
+	@Column(name = "speed_kmh")
 	private Double speedKmh;
 
 	private Double heading;
 
+	@Column(name = "altitude_m")
 	private Double altitudeM;
 
+	@Column(name = "accuracy_m")
 	private Double accuracyM;
 
 	@Column(length = 40)
 	private String provider;
 
-	@Column(nullable = false)
+	@Column(name = "captured_at", nullable = false)
 	private LocalDateTime capturedAt;
 
-	@Column(nullable = false)
+	@Column(name = "received_at", nullable = false)
 	private LocalDateTime receivedAt;
 
 	protected GpsTelemetryRecord() {
@@ -96,8 +101,8 @@ public class GpsTelemetryRecord {
 		this.receivedAt = receivedAt;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getGpsTelemetryId() {
+		return gpsTelemetryId;
 	}
 
 	public String getGpsDeviceId() {

@@ -21,7 +21,7 @@ onBeforeUnmount(() => { stop?.dispose() })
           <canvas ref="networkCanvasEl" id="networkCanvas" aria-hidden="true"></canvas>
           <div class="network-legend">
             <span>Edge</span><span>YOLO</span><span>OCR</span>
-            <span>FastAPI</span><span>SpringBoot</span>
+            <span>Ingress</span><span>SpringBoot</span>
             <span>PostgreSQL</span><span>Vue</span>
           </div>
         </div>

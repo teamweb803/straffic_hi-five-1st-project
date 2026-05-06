@@ -2,8 +2,6 @@ package com.hifive.iot.dto;
 
 import java.time.LocalDateTime;
 
-import com.hifive.iot.entity.GpsTelemetryRecord;
-
 public record GpsTelemetryResponse(
 	Long id,
 	String gpsDeviceId,
@@ -21,23 +19,4 @@ public record GpsTelemetryResponse(
 	LocalDateTime capturedAt,
 	LocalDateTime receivedAt
 ) {
-	public static GpsTelemetryResponse from(GpsTelemetryRecord telemetry) {
-		return new GpsTelemetryResponse(
-			telemetry.getId(),
-			telemetry.getGpsDeviceId(),
-			telemetry.getPlateNumber(),
-			telemetry.getEdgeNodeId(),
-			telemetry.getLaneId(),
-			telemetry.getTrackId(),
-			telemetry.getLatitude(),
-			telemetry.getLongitude(),
-			telemetry.getSpeedKmh(),
-			telemetry.getHeading(),
-			telemetry.getAltitudeM(),
-			telemetry.getAccuracyM(),
-			telemetry.getProvider(),
-			telemetry.getCapturedAt(),
-			telemetry.getReceivedAt()
-		);
-	}
 }
