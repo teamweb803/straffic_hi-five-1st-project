@@ -32,7 +32,7 @@ public class AuthController {
 		boolean created = memberService.signUp(signUpRequest);
 		if (!created) {
 			return ResponseEntity.status(HttpStatus.CONFLICT)
-				.body(new AuthResponse(false, "\uc774\ubbf8 \uc0ac\uc6a9 \uc911\uc778 \uc544\uc774\ub514\uc785\ub2c8\ub2e4.", null));
+				.body(new AuthResponse(false, "\uc774\ubbf8 \uc0ac\uc6a9 \uc911\uc778 \uc774\uba54\uc77c\uc785\ub2c8\ub2e4.", null));
 		}
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new AuthResponse(true, "\ud68c\uc6d0\uac00\uc785\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.", null));
@@ -40,13 +40,13 @@ public class AuthController {
 
 	@PostMapping("/login")
 	public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
-		return memberService.login(loginRequest.memberId(), loginRequest.password())
+		return memberService.login(loginRequest.email(), loginRequest.password())
 			.map(member -> {
 				session.setAttribute(LOGIN_MEMBER, member);
 				return ResponseEntity.ok(new AuthResponse(true, "\ub85c\uadf8\uc778\ub418\uc5c8\uc2b5\ub2c8\ub2e4.", MemberResponse.from(member)));
 			})
 			.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new AuthResponse(false, "\uc544\uc774\ub514 \ub610\ub294 \ube44\ubc00\ubc88\ud638\ub97c \ud655\uc778\ud574 \uc8fc\uc138\uc694.", null)));
+				.body(new AuthResponse(false, "\uc774\uba54\uc77c \ub610\ub294 \ube44\ubc00\ubc88\ud638\ub97c \ud655\uc778\ud574 \uc8fc\uc138\uc694.", null)));
 	}
 
 	@PostMapping("/logout")

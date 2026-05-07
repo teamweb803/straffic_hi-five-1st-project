@@ -8,9 +8,8 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 const route = useRoute()
 
-// home route uses its own site-header / cta-section.
-// Other routes show the global AppHeader / AppFooter.
-const useGlobalChrome = computed(() => route.name !== 'home')
+const chromeHiddenRoutes = ['home', 'dashboard', 'master-admin']
+const useGlobalChrome = computed(() => !chromeHiddenRoutes.includes(route.name))
 
 onMounted(() => {
   auth.hydrate()

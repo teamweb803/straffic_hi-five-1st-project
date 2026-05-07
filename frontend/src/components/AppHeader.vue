@@ -15,6 +15,7 @@ const navLinks = [
 ]
 
 const memberName = computed(() => auth.member?.memberName ?? '')
+const dashboardRoute = computed(() => auth.isMasterAdmin ? '/master-admin' : '/dashboard')
 
 async function handleLogout() {
   await auth.logout()
@@ -42,10 +43,10 @@ async function handleLogout() {
         </RouterLink>
         <RouterLink
           v-if="auth.isLoggedIn"
-          to="/dashboard"
+          :to="dashboardRoute"
           class="hover:text-brand transition-colors"
           active-class="text-brand"
-        >관제 대시보드</RouterLink>
+        >대시보드</RouterLink>
       </nav>
 
       <div class="flex items-center gap-2">
@@ -54,9 +55,9 @@ async function handleLogout() {
           <RouterLink to="/signup" class="btn-primary text-sm py-2 px-4">회원가입</RouterLink>
         </template>
         <template v-else>
-          <span class="hidden sm:inline text-sm text-navy/70">
+          <RouterLink :to="dashboardRoute" class="hidden sm:inline text-sm text-navy/70 hover:text-brand">
             <strong class="text-navy">{{ memberName }}</strong>님
-          </span>
+          </RouterLink>
           <button class="btn-ghost text-sm py-2 px-4" @click="handleLogout">로그아웃</button>
         </template>
       </div>

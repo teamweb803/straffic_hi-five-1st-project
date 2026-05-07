@@ -1,7 +1,7 @@
 package com.hifive.iot.dto;
 
 public record LoginRequest(
-	String memberId,
+	String email,
 	String password
 ) {
 }

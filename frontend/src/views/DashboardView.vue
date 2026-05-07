@@ -1,129 +1,76 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useBoardStore } from '@/stores/board'
 import { gpsApi } from '@/api/gps'
+import { tollApi } from '@/api/toll'
 
+const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
-const board = useBoardStore()
-
-const clock = ref('')
-let clockTimer = null
-function tick() {
-  const d = new Date()
-  const pad = (n) => String(n).padStart(2, '0')
-  clock.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
-}
-
-const kpi = reactive({
-  total: 128430,
-  accuracy: 97.3,
-  speed: 42,
-  uptime: 99.9
-})
-let kpiTimer = null
-function bumpKpi() {
-  kpi.total += Math.floor(Math.random() * 20)
-  kpi.accuracy = Math.min(99.9, +(kpi.accuracy + (Math.random() - 0.5) * 0.05).toFixed(1))
-  kpi.speed = Math.max(28, Math.min(80, kpi.speed + Math.floor((Math.random() - 0.5) * 6)))
-}
-
-const liveLogs = ref([
-  mockLog('12가3456', 'A-17', 'PASSENGER', 0.94),
-  mockLog('33나9029', 'A-18', 'TRUCK', 0.91),
-  mockLog('48다7720', 'A-15', 'BUS', 0.88),
-  mockLog('77가0033', 'A-17', 'PASSENGER', 0.62),
-  mockLog('25마4499', 'A-19', 'VAN', 0.96)
-])
-let logTimer = null
-function pushLog() {
-  const types = ['PASSENGER', 'TRUCK', 'BUS', 'VAN', 'SPECIAL']
-  const lanes = ['A-15', 'A-17', 'A-18', 'A-19']
-  const conf = +(0.5 + Math.random() * 0.49).toFixed(2)
-  liveLogs.value.unshift(mockLog(randomPlate(), lanes[Math.floor(Math.random() * lanes.length)], types[Math.floor(Math.random() * types.length)], conf))
-  if (liveLogs.value.length > 20) liveLogs.value.pop()
-}
-function mockLog(plate, lane, vehicleType, confidence) {
-  return { plate, lane, vehicleType, confidence, time: new Date().toISOString() }
-}
-function randomPlate() {
-  const ko = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차']
-  return `${Math.floor(10 + Math.random() * 90)}${ko[Math.floor(Math.random() * ko.length)]}${Math.floor(1000 + Math.random() * 9000)}`
-}
-
+const nowText = ref('')
+const activeFilter = ref('전체')
+const selectedId = ref(2)
+const showGpsPanel = ref(false)
 const gpsTelemetry = ref([])
-const gpsLoading = ref(false)
-const gpsError = ref(null)
+const tollHistory = ref([])
+const tollDecision = ref(null)
+let timer = null
 let gpsTimer = null
 
-async function fetchGpsTelemetry() {
-  gpsLoading.value = true
-  gpsError.value = null
-  try {
-    const { data } = await gpsApi.latest()
-    gpsTelemetry.value = data.map((telemetry) => ({
-      ...telemetry,
-      capturedAt: normalizeDate(telemetry.capturedAt),
-      receivedAt: normalizeDate(telemetry.receivedAt)
-    }))
-  } catch (err) {
-    gpsError.value = err?.response?.data?.message ?? 'GPS telemetry를 불러오지 못했습니다.'
-  } finally {
-    gpsLoading.value = false
-  }
-}
+const events = ref([
+  { id: 1, time: '10:21:03', lane: '1', plate: '12가3456', conf: 97, status: '저장완료', gps: { lat: '37.401224', lng: '127.104582', speed: '7.8' } },
+  { id: 2, time: '10:22:15', lane: '2', plate: '33나9029', conf: 62, status: '검수필요', gps: { lat: '37.401319', lng: '127.104691', speed: '5.4' } },
+  { id: 3, time: '10:23:07', lane: '1', plate: '48다7720', conf: 91, status: '정산대기', gps: { lat: '37.401428', lng: '127.104803', speed: '6.1' } },
+  { id: 4, time: '10:23:42', lane: '3', plate: '77가0033', conf: 58, status: '검수필요', gps: { lat: '37.401512', lng: '127.104956', speed: '4.6' } }
+])
 
+const selectedEvent = computed(() => events.value.find((event) => event.id === selectedId.value) ?? events.value[0])
+const dashboardLabel = computed(() => route.query.center ?? auth.assignedDashboardId ?? 'RC-DEMO-CENTER')
+const filteredEvents = computed(() => {
+  if (activeFilter.value === '전체') return events.value
+  if (activeFilter.value === '정산완료') return events.value.filter((event) => event.status === '저장완료')
+  return events.value.filter((event) => event.status === activeFilter.value)
+})
 const latestGps = computed(() => gpsTelemetry.value[0] ?? null)
-const activeGpsCount = computed(() => new Set(gpsTelemetry.value.map((telemetry) => telemetry.gpsDeviceId)).size)
-const avgGpsSpeed = computed(() => {
-  if (gpsTelemetry.value.length === 0) return 0
-  const total = gpsTelemetry.value.reduce((sum, telemetry) => sum + Number(telemetry.speedKmh ?? 0), 0)
-  return total / gpsTelemetry.value.length
-})
 
-const newPost = reactive({
-  title: '',
-  content: '',
-  plateNumber: '',
-  vehicleCount: 1,
-  recognitionConfidence: 0.9
-})
-const postSubmitting = ref(false)
+const kpiCards = [
+  { icon: 'IN', title: '오늘 통행 수', value: '1,248', caption: '전일 대비 증가', delta: '+8.4%', tone: 'blue' },
+  { icon: '₩', title: '미정산 건수', value: '36', caption: '정산 대기 이벤트', delta: '-3건', tone: 'red' },
+  { icon: 'RV', title: '검수 대기', value: '12', caption: 'OCR 저신뢰 케이스', delta: '+2건', tone: 'yellow' },
+  { icon: 'GPS', title: 'GPS 수신 단말', value: '3', caption: '최근 30초 활성', delta: '정상', tone: 'green' },
+  { icon: 'OK', title: '시스템 상태', value: '정상', caption: 'Spring/DB 연결 양호', delta: '99.9%', tone: 'green' }
+]
 
-async function submitPost() {
-  if (!newPost.title || !newPost.content) return
-  postSubmitting.value = true
-  await board.create({ ...newPost })
-  postSubmitting.value = false
-  newPost.title = ''
-  newPost.content = ''
-  newPost.plateNumber = ''
-  newPost.vehicleCount = 1
-  newPost.recognitionConfidence = 0.9
+const reviewRows = [
+  { plate: '33나9029', reason: 'OCR 저신뢰', conf: 62, time: '00:01:12' },
+  { plate: '77가0033', reason: '번호판 흐림', conf: 58, time: '00:03:48' },
+  { plate: '25마4499', reason: 'GPS 매칭 대기', conf: 66, time: '00:05:21' }
+]
+
+const laneStats = [
+  { name: 'LANE 1', count: 486, rate: 92 },
+  { name: 'LANE 2', count: 392, rate: 74 },
+  { name: 'LANE 3', count: 255, rate: 48 },
+  { name: 'LANE 4', count: 115, rate: 22 }
+]
+
+function updateTime() {
+  const now = new Date()
+  const pad = (value) => String(value).padStart(2, '0')
+  nowText.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
 }
 
-onMounted(() => {
-  tick()
-  clockTimer = setInterval(tick, 1000)
-  kpiTimer = setInterval(bumpKpi, 2200)
-  logTimer = setInterval(pushLog, 4000)
-  gpsTimer = setInterval(fetchGpsTelemetry, 5000)
-  board.fetchAll().catch(() => {})
-  fetchGpsTelemetry()
-})
+function statusClass(status) {
+  if (['저장완료', '정상', '통과'].includes(status)) return 'success'
+  if (status === '검수필요') return 'warning'
+  if (status === '정산대기') return 'pending'
+  return 'danger'
+}
 
-onBeforeUnmount(() => {
-  clearInterval(clockTimer)
-  clearInterval(kpiTimer)
-  clearInterval(logTimer)
-  clearInterval(gpsTimer)
-})
-
-const lowConfCount = computed(() => liveLogs.value.filter((log) => log.confidence < 0.7).length)
-const reviewQueueCount = computed(() => board.lowConfidencePosts.length + lowConfCount.value)
-
-function fmtPct(value) {
-  return `${(Number(value ?? 0) * 100).toFixed(0)}%`
+function selectEvent(event) {
+  selectedId.value = event.id
+  showGpsPanel.value = event.status === '검수필요'
 }
 
 function fmtTime(value) {
@@ -135,6 +82,36 @@ function fmtCoord(value) {
   return Number(value ?? 0).toFixed(6)
 }
 
+async function fetchGpsTelemetry() {
+  const { data } = await gpsApi.latest()
+  gpsTelemetry.value = data.map((telemetry) => ({
+    ...telemetry,
+    capturedAt: normalizeDate(telemetry.capturedAt)
+  }))
+}
+
+async function fetchTollHistory() {
+  const { data } = await tollApi.latestHistory()
+  tollHistory.value = data
+}
+
+async function simulatePlateRecognition() {
+  const latest = latestGps.value
+  if (!latest) {
+    tollDecision.value = { charged: false, reason: '먼저 GPS 로그가 수신되어야 합니다.' }
+    return
+  }
+  const { data } = await tollApi.recognizePlate({
+    plateNumber: selectedEvent.value.plate,
+    gpsDeviceId: latest.gpsDeviceId,
+    laneId: latest.laneId ?? 'RC-DEMO-LANE',
+    edgeNodeId: latest.edgeNodeId ?? 'EDGE-RC-01',
+    plateConfidence: selectedEvent.value.conf / 100
+  })
+  tollDecision.value = data
+  await fetchTollHistory()
+}
+
 function normalizeDate(raw) {
   if (!raw) return null
   if (typeof raw === 'string') return raw
@@ -144,170 +121,171 @@ function normalizeDate(raw) {
   }
   return raw
 }
+
+onMounted(() => {
+  updateTime()
+  timer = setInterval(updateTime, 1000)
+  fetchGpsTelemetry().catch(() => {})
+  fetchTollHistory().catch(() => {})
+  gpsTimer = setInterval(() => {
+    fetchGpsTelemetry().catch(() => {})
+    fetchTollHistory().catch(() => {})
+  }, 5000)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timer)
+  clearInterval(gpsTimer)
+})
 </script>
 
 <template>
-  <div class="bg-cloud min-h-screen">
-    <header class="bg-white border-b border-line">
-      <div class="max-w-7xl mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-4">
+  <div class="ops-dashboard">
+    <header class="ops-top glass">
+      <div class="brand-block">
+        <div class="brand-mark">H5</div>
         <div>
-          <p class="font-mono text-xs tracking-[0.3em] text-brand">REALTIME OPS</p>
-          <h1 class="font-headline text-3xl md:text-4xl text-deep mt-1">실시간 운영 관제</h1>
-          <p class="text-sm text-navy/60 mt-1">
-            <strong class="text-navy">{{ auth.member?.memberName ?? '관리자' }}</strong>님이 운영 중입니다.
-          </p>
+          <p class="eyebrow">HI-FIVE</p>
+          <h1>Admin Dashboard</h1>
+          <span>{{ dashboardLabel }} 관제센터</span>
         </div>
-        <div class="flex items-center gap-3 text-sm">
-          <span class="font-mono text-navy/60">{{ clock }}</span>
-          <span class="inline-flex items-center gap-2 px-3 py-1 bg-sky/10 rounded-full text-brand font-semibold">
-            <span class="live-dot" />LIVE
-          </span>
-        </div>
+      </div>
+      <div class="header-actions">
+        <span class="pill">{{ nowText }}</span>
+        <span class="pill ok"><i></i>서버 상태: 정상</span>
+        <span class="pill">관리자: <strong>{{ auth.member?.memberName }}</strong></span>
+        <button class="home-btn" @click="router.push('/')">홈으로</button>
       </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-6 py-10 space-y-10">
-      <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <article class="kpi-card">
-          <p class="font-mono text-[11px] text-brand">TOTAL</p>
-          <p class="font-headline text-3xl text-deep mt-2">{{ kpi.total.toLocaleString() }}</p>
-          <p class="text-xs text-navy/60 mt-1">총 처리 이벤트</p>
-        </article>
-        <article class="kpi-card">
-          <p class="font-mono text-[11px] text-brand">ACCURACY</p>
-          <p class="font-headline text-3xl text-deep mt-2">{{ kpi.accuracy }}%</p>
-          <p class="text-xs text-navy/60 mt-1">번호판 인식 신뢰도</p>
-        </article>
-        <article class="kpi-card">
-          <p class="font-mono text-[11px] text-brand">P95 LATENCY</p>
-          <p class="font-headline text-3xl text-deep mt-2">{{ kpi.speed }}ms</p>
-          <p class="text-xs text-navy/60 mt-1">엣지 처리 지연</p>
-        </article>
-        <article class="kpi-card">
-          <p class="font-mono text-[11px] text-brand">REVIEW</p>
-          <p class="font-headline text-3xl text-deep mt-2">{{ reviewQueueCount }}</p>
-          <p class="text-xs text-navy/60 mt-1">검수 대기 차량</p>
-        </article>
-        <article class="kpi-card">
-          <p class="font-mono text-[11px] text-brand">GPS</p>
-          <p class="font-headline text-3xl text-deep mt-2">{{ activeGpsCount }}</p>
-          <p class="text-xs text-navy/60 mt-1">연동 단말</p>
+    <main class="ops-main">
+      <section class="kpi-grid">
+        <article v-for="card in kpiCards" :key="card.title" class="kpi glass">
+          <div class="kpi-icon" :class="card.tone">{{ card.icon }}</div>
+          <p>{{ card.title }}</p>
+          <strong>{{ card.value }}</strong>
+          <span>{{ card.caption }}</span>
+          <em>{{ card.delta }}</em>
         </article>
       </section>
 
-      <section class="grid lg:grid-cols-3 gap-5">
-        <article class="card lg:col-span-2">
-          <header class="flex items-center justify-between mb-4">
-            <h2 class="font-bold text-navy">실시간 통과 로그</h2>
-            <span class="font-mono text-xs text-navy/50">최근 {{ liveLogs.length }}</span>
-          </header>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-left text-navy/50 font-mono text-[11px] border-b border-line">
-                  <th class="py-2">TIME</th>
-                  <th>LANE</th>
-                  <th>PLATE</th>
-                  <th>VEHICLE</th>
-                  <th>CONF</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="log in liveLogs" :key="log.time + log.plate" class="border-b border-line/60" :class="log.confidence < 0.7 ? 'bg-amber-50/60' : ''">
-                  <td class="py-2 font-mono text-xs text-navy/70">{{ fmtTime(log.time) }}</td>
-                  <td class="font-mono text-xs">{{ log.lane }}</td>
-                  <td class="font-bold text-deep">{{ log.plate }}</td>
-                  <td class="text-xs">{{ log.vehicleType }}</td>
-                  <td>
-                    <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="log.confidence < 0.7 ? 'bg-amber-200 text-amber-900' : 'bg-emerald-100 text-emerald-700'">
-                      {{ fmtPct(log.confidence) }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <section class="main-grid">
+        <article class="glass panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">LIVE EVENTS</p>
+              <h2>실시간 통행 이벤트</h2>
+            </div>
+            <span class="live"><i></i>LIVE</span>
+          </div>
+          <table>
+            <thead>
+              <tr><th>TIME</th><th>LANE</th><th>PLATE</th><th>CONF</th><th>STATUS</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in filteredEvents" :key="event.id" :class="{ selected: selectedEvent.id === event.id }" @click="selectEvent(event)">
+                <td>{{ event.time }}</td>
+                <td>{{ event.lane }}</td>
+                <td class="plate">{{ event.plate }}</td>
+                <td>{{ event.conf }}%</td>
+                <td><span class="badge" :class="statusClass(event.status)">{{ event.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="filter-row">
+            <button v-for="filter in ['전체', '검수필요', '정산완료']" :key="filter" :class="{ active: activeFilter === filter }" @click="activeFilter = filter">{{ filter }}</button>
           </div>
         </article>
 
-        <article class="card">
-          <header class="flex items-center justify-between mb-4">
-            <h2 class="font-bold text-navy">GPS/LTE 단말 현황</h2>
-            <button class="btn-ghost text-xs py-1 px-3" @click="fetchGpsTelemetry">새로고침</button>
-          </header>
-          <div class="relative h-56 rounded-xl bg-gradient-to-br from-deep to-navy overflow-hidden">
-            <svg viewBox="0 0 420 270" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
-              <path d="M20,210 C100,180 160,140 220,120 S360,80 400,40" stroke="#38BEF5" stroke-width="3" fill="none" stroke-linecap="round" />
-            </svg>
-            <span class="live-dot absolute" style="left: 18%; top: 66%" />
-            <span class="live-dot absolute" style="left: 50%; top: 44%; animation-delay: .35s" />
-            <span class="live-dot absolute" style="left: 78%; top: 27%; animation-delay: .7s; background:#facc15" />
-            <div class="absolute left-4 right-4 bottom-4 rounded-lg bg-white/90 p-3 text-xs text-navy">
-              <p class="font-bold text-deep">{{ latestGps?.gpsDeviceId ?? 'PHONE-DEMO-01' }}</p>
-              <p v-if="latestGps" class="mt-1 font-mono">{{ fmtCoord(latestGps.latitude) }}, {{ fmtCoord(latestGps.longitude) }}</p>
-              <p v-else class="mt-1">아직 수신된 GPS telemetry가 없습니다.</p>
+        <article class="glass panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">OCR DETAIL</p>
+              <h2>OCR 차량 검출 상세</h2>
+            </div>
+            <div class="panel-actions">
+              <button :class="{ active: !showGpsPanel }" @click="showGpsPanel = false">OCR 원본 보기</button>
+              <button :class="{ active: showGpsPanel }" @click="showGpsPanel = true">GPS 경로 분석</button>
             </div>
           </div>
-          <ul class="mt-4 space-y-2 text-xs text-navy/70">
-            <li class="flex justify-between"><span>활성 단말</span><strong class="text-deep">{{ activeGpsCount }}</strong></li>
-            <li class="flex justify-between"><span>평균 속도</span><strong class="text-deep">{{ avgGpsSpeed.toFixed(1) }} km/h</strong></li>
-            <li class="flex justify-between"><span>최근 수신</span><strong class="text-deep">{{ fmtTime(latestGps?.capturedAt) }}</strong></li>
-          </ul>
-          <p v-if="gpsLoading" class="mt-3 text-xs text-navy/50">GPS telemetry를 불러오는 중...</p>
-          <p v-else-if="gpsError" class="mt-3 text-xs text-red-500">{{ gpsError }}</p>
+          <div class="vehicle-stage">
+            <div class="vehicle-art"><span>{{ selectedEvent.plate }}</span></div>
+            <div class="bbox"><span>{{ selectedEvent.plate }}</span><em>{{ selectedEvent.conf }}%</em></div>
+          </div>
+          <div class="detail-grid">
+            <div><span>차량 번호</span><strong>{{ selectedEvent.plate }}</strong></div>
+            <div><span>차로</span><strong>{{ selectedEvent.lane }}</strong></div>
+            <div><span>검출 시간</span><strong>{{ selectedEvent.time }}</strong></div>
+            <div><span>신뢰도</span><strong>{{ selectedEvent.conf }}%</strong></div>
+            <div><span>상태</span><strong :class="statusClass(selectedEvent.status)">{{ selectedEvent.status }}</strong></div>
+          </div>
+          <section v-if="showGpsPanel" class="gps-panel">
+            <div class="gps-map">
+              <div class="zone"></div>
+              <span v-for="point in [18, 32, 48, 64, 78]" :key="point" class="gps-point" :style="{ left: point + '%', top: 74 - point / 2 + '%' }"></span>
+              <div class="gps-car">RC</div>
+            </div>
+            <div class="gps-summary">
+              <p><span>GPS 영역 통과 여부</span><strong class="success">통과</strong></p>
+              <p><span>단말 ID</span><strong>{{ latestGps?.gpsDeviceId ?? 'PICO2W-NEO7M-RC-01' }}</strong></p>
+              <p><span>위도/경도</span><strong>{{ latestGps ? `${fmtCoord(latestGps.latitude)}, ${fmtCoord(latestGps.longitude)}` : `${selectedEvent.gps.lat}, ${selectedEvent.gps.lng}` }}</strong></p>
+              <p><span>속도</span><strong>{{ latestGps?.speedKmh ?? selectedEvent.gps.speed }} km/h</strong></p>
+              <p><span>통과 시간</span><strong>{{ selectedEvent.time }}</strong></p>
+            </div>
+          </section>
+          <button class="primary wide" @click="simulatePlateRecognition">번호판+GPS 결제 판정</button>
+          <p v-if="tollDecision" class="decision">{{ tollDecision.charged ? '결제 인식됨' : '결제 미생성' }} - {{ tollDecision.reason }}</p>
         </article>
       </section>
 
-      <section class="grid lg:grid-cols-3 gap-5">
-        <article class="card lg:col-span-2">
-          <header class="flex items-center justify-between mb-4">
-            <h2 class="font-bold text-navy">GPS telemetry 로그</h2>
-            <span class="font-mono text-xs text-navy/50">PostgreSQL 저장 기준</span>
-          </header>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-left text-navy/50 font-mono text-[11px] border-b border-line">
-                  <th class="py-2">TIME</th>
-                  <th>DEVICE</th>
-                  <th>LANE</th>
-                  <th>PLATE</th>
-                  <th>SPEED</th>
-                  <th>COORD</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="telemetry in gpsTelemetry.slice(0, 8)" :key="telemetry.id" class="border-b border-line/60">
-                  <td class="py-2 font-mono text-xs text-navy/70">{{ fmtTime(telemetry.capturedAt) }}</td>
-                  <td class="font-mono text-xs">{{ telemetry.gpsDeviceId }}</td>
-                  <td class="font-mono text-xs">{{ telemetry.laneId ?? '-' }}</td>
-                  <td class="font-bold text-deep">{{ telemetry.plateNumber ?? '-' }}</td>
-                  <td>{{ Number(telemetry.speedKmh ?? 0).toFixed(1) }} km/h</td>
-                  <td class="font-mono text-xs">{{ fmtCoord(telemetry.latitude) }}, {{ fmtCoord(telemetry.longitude) }}</td>
-                </tr>
-                <tr v-if="gpsTelemetry.length === 0">
-                  <td colspan="6" class="py-6 text-center text-sm text-navy/50">휴대폰 공기계 GPS/LTE telemetry가 들어오면 여기에 표시됩니다.</td>
-                </tr>
-              </tbody>
-            </table>
+      <section class="lower-grid">
+        <article class="glass panel">
+          <div class="panel-head"><h2>검수 대기 목록</h2><span class="pill">12건 대기</span></div>
+          <table>
+            <thead><tr><th>PLATE</th><th>사유</th><th>신뢰도</th><th>처리 시간</th><th>액션</th></tr></thead>
+            <tbody>
+              <tr v-for="item in reviewRows" :key="item.plate">
+                <td class="plate">{{ item.plate }}</td><td>{{ item.reason }}</td><td class="warning">{{ item.conf }}%</td><td>{{ item.time }}</td><td><button class="mini">수정</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+        <article class="glass panel">
+          <div class="panel-head"><h2>요금/정산 요약</h2><strong class="money">₩2,450,800</strong></div>
+          <div class="settlement"><div><span>미납</span><strong class="danger">₩84,500</strong></div><div><span>결제완료</span><strong class="success">₩2,180,300</strong></div><div><span>보류</span><strong class="warning">₩186,000</strong></div></div>
+          <div class="bars">
+            <div v-for="lane in laneStats" :key="lane.name"><span>{{ lane.name }}</span><i><b :style="{ width: lane.rate + '%' }"></b></i><strong>{{ lane.count }}</strong></div>
           </div>
         </article>
-
-        <article class="card">
-          <h2 class="font-bold text-navy mb-4">검수 게시글 등록</h2>
-          <form class="space-y-3" @submit.prevent="submitPost">
-            <input v-model="newPost.title" placeholder="제목" class="input-field" />
-            <textarea v-model="newPost.content" placeholder="내용" class="input-field" rows="3" />
-            <input v-model="newPost.plateNumber" placeholder="차량번호 (선택)" class="input-field" />
-            <div class="grid grid-cols-2 gap-2">
-              <input v-model.number="newPost.vehicleCount" type="number" min="1" placeholder="차량 수" class="input-field" />
-              <input v-model.number="newPost.recognitionConfidence" type="number" min="0" max="1" step="0.01" placeholder="신뢰도" class="input-field" />
-            </div>
-            <button type="submit" class="btn-primary w-full" :disabled="postSubmitting">
-              {{ postSubmitting ? '등록 중...' : '등록' }}
-            </button>
-          </form>
-        </article>
       </section>
-    </div>
+
+      <section class="glass panel">
+        <div class="panel-head"><h2>GPS Telemetry 로그</h2><span class="pill ok"><i></i>실시간 저장 중</span></div>
+        <table>
+          <thead><tr><th>TIME</th><th>DEVICE</th><th>LAT/LNG</th><th>SPEED</th><th>HEADING</th><th>ALT</th><th>FIX</th><th>SAT</th><th>PROVIDER</th><th>SIGNAL</th></tr></thead>
+          <tbody>
+            <tr v-for="log in gpsTelemetry.slice(0, 8)" :key="log.id">
+              <td>{{ fmtTime(log.capturedAt) }}</td>
+              <td>{{ log.gpsDeviceId }}</td>
+              <td>{{ fmtCoord(log.latitude) }}, {{ fmtCoord(log.longitude) }}</td>
+              <td>{{ Number(log.speedKmh ?? 0).toFixed(1) }} km/h</td>
+              <td>{{ log.heading ?? '-' }}</td>
+              <td>{{ log.altitudeM ?? '-' }}</td>
+              <td><span class="badge success">{{ log.fixType ?? '3D' }}</span></td>
+              <td>{{ log.satelliteCount ?? '-' }}</td>
+              <td>{{ log.provider ?? 'pico2w-neo-7m' }}</td>
+              <td><span class="signal"><i></i><i></i><i></i><i></i></span></td>
+            </tr>
+            <tr v-if="gpsTelemetry.length === 0"><td colspan="10">수신된 GPS 로그가 없습니다.</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
   </div>
 </template>
+
+<style scoped>
+.ops-dashboard{min-height:100vh;min-width:1180px;padding:24px;color:#e8f3ff;background:radial-gradient(circle at 18% 12%,rgba(58,190,245,.16),transparent 28%),linear-gradient(135deg,#030711,#07142a 46%,#030711)}
+.glass{border:1px solid rgba(79,171,255,.22);border-radius:18px;background:linear-gradient(145deg,rgba(13,24,49,.78),rgba(8,16,35,.55));box-shadow:0 18px 60px rgba(0,0,0,.32);backdrop-filter:blur(18px)}
+.ops-top{height:86px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}.brand-block,.header-actions{display:flex;align-items:center;gap:16px}.brand-mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#38bef5;color:#06111f;font-weight:900}.eyebrow{margin:0 0 5px;color:#38bef5;font-size:11px;font-weight:800;letter-spacing:.22em}h1,h2{margin:0}.brand-block span{font-size:12px;color:#8ca5c8}.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(115,179,255,.2);border-radius:999px;background:rgba(7,15,31,.72);font-size:13px}.pill i,.live i{width:8px;height:8px;border-radius:50%;background:#33e6a1;box-shadow:0 0 16px #33e6a1}.ops-main{max-width:1540px;margin:22px auto 0}.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.kpi{padding:20px}.kpi-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:rgba(56,190,245,.14);color:#38bef5;font-weight:900}.kpi-icon.green{color:#33e6a1}.kpi-icon.yellow{color:#ffd166}.kpi-icon.red{color:#ff5d6c}.kpi p,.kpi span{color:#8ca5c8;font-size:12px}.kpi strong{display:block;color:#fff;font-size:30px}.kpi em{font-size:12px;color:#33e6a1}.main-grid,.lower-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:18px;margin-top:18px}.panel{padding:20px;overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.live{display:inline-flex;align-items:center;gap:8px;color:#33e6a1;font-size:12px;font-weight:800}table{width:100%;border-collapse:collapse;background:rgba(2,9,22,.22);border-radius:14px;overflow:hidden}th,td{padding:13px 14px;border-bottom:1px solid rgba(137,181,230,.08);text-align:left;font-size:13px}th{color:#7294bd;font-size:11px;letter-spacing:.12em}tbody tr{cursor:pointer}tbody tr:hover,tbody tr.selected{background:rgba(56,190,245,.14)}.plate{color:#fff;font-weight:900}.badge{display:inline-flex;min-width:68px;justify-content:center;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900}.success{color:#33e6a1!important}.warning{color:#ffd166!important}.pending{color:#38bef5!important}.danger{color:#ff5d6c!important}.badge.success{background:rgba(51,230,161,.1)}.badge.warning{background:rgba(255,209,102,.12)}.badge.pending{background:rgba(56,190,245,.12)}button{border:0;color:inherit;font:inherit;cursor:pointer}.filter-row,.panel-actions{display:flex;gap:10px;margin-top:16px}.filter-row button,.panel-actions button,.mini,.home-btn{height:34px;padding:0 13px;border:1px solid rgba(79,171,255,.24);border-radius:10px;background:rgba(18,42,76,.78);font-size:12px}.filter-row button.active,.panel-actions button.active,.mini:hover,.home-btn:hover{background:rgba(56,190,245,.18);box-shadow:0 0 18px rgba(56,190,245,.22)}.vehicle-stage{position:relative;height:264px;border:1px solid rgba(79,171,255,.16);border-radius:16px;background:radial-gradient(circle at 50% 42%,rgba(56,190,245,.16),transparent 34%),#07101f}.vehicle-art{position:absolute;left:50%;bottom:42px;width:310px;height:150px;transform:translateX(-50%);border-radius:52px 52px 28px 28px;background:linear-gradient(180deg,#1d3764,#09162b);border:1px solid rgba(109,194,255,.4)}.vehicle-art span{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);padding:4px 12px;border-radius:4px;background:#e8f0f7;color:#09111e;font-size:12px;font-weight:900}.bbox{position:absolute;left:50%;bottom:54px;width:128px;height:44px;transform:translateX(-50%);border:2px solid #33e6a1;box-shadow:0 0 24px rgba(51,230,161,.4)}.bbox span,.bbox em{position:absolute;left:-2px;padding:2px 6px;background:#33e6a1;color:#03100b;font-size:11px;font-style:normal;font-weight:900}.bbox span{top:-24px}.bbox em{right:-2px;left:auto;bottom:-23px}.detail-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}.detail-grid div,.settlement div,.gps-summary p{padding:12px;border:1px solid rgba(79,171,255,.12);border-radius:12px;background:rgba(3,10,24,.42)}.detail-grid span,.settlement span{display:block;margin-bottom:6px;color:#8ca5c8;font-size:11px}.gps-panel{display:grid;grid-template-columns:1fr .9fr;gap:14px;margin-top:14px}.gps-map{position:relative;min-height:180px;border:1px solid rgba(56,190,245,.2);border-radius:14px;background:linear-gradient(rgba(70,125,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(70,125,255,.1) 1px,transparent 1px),#061326;background-size:24px 24px}.zone{position:absolute;left:18%;top:18%;width:64%;height:58%;border:2px dashed rgba(51,230,161,.68);border-radius:50%}.gps-point{position:absolute;width:8px;height:8px;border-radius:50%;background:#38bef5;box-shadow:0 0 16px #38bef5}.gps-car{position:absolute;left:62%;top:42%;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#33e6a1;color:#02100b;font-size:11px;font-weight:900}.gps-summary{display:grid;gap:8px}.gps-summary p{display:flex;justify-content:space-between;margin:0;font-size:12px}.primary{height:40px;margin-top:14px;border-radius:10px;background:#1b3be8;font-weight:800}.wide{width:100%}.decision{font-size:13px;color:#c6dcf7}.money{font-size:24px}.settlement{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.bars{display:grid;gap:12px;margin-top:18px}.bars div{display:grid;grid-template-columns:72px 1fr 54px;align-items:center;gap:12px;font-size:12px}.bars i{height:12px;border-radius:999px;background:rgba(114,148,189,.14);overflow:hidden}.bars b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4f7dff,#38bef5)}.signal{display:inline-flex;align-items:end;gap:3px;height:16px}.signal i{width:4px;border-radius:999px;background:#33e6a1}.signal i:nth-child(1){height:5px}.signal i:nth-child(2){height:8px}.signal i:nth-child(3){height:12px}.signal i:nth-child(4){height:16px}
+</style>

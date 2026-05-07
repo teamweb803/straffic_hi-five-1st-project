@@ -3,12 +3,20 @@ package com.hifive.iot.dto;
 import com.hifive.iot.entity.Member;
 
 public record MemberResponse(
-	String memberId,
+	String email,
 	String memberName,
-	String plateNumber
+	String plateNumber,
+	String role,
+	String assignedDashboardId
 ) {
 
 	public static MemberResponse from(Member member) {
-		return new MemberResponse(member.memberId(), member.memberName(), member.plateNumber());
+		return new MemberResponse(
+			member.email(),
+			member.memberName(),
+			member.plateNumber(),
+			member.role(),
+			member.assignedDashboardId()
+		);
 	}
 }

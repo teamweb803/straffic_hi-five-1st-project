@@ -66,3 +66,23 @@ async def forward_passage_event(
 
     req.app.state.forwarded_events += 1
     return result
+
+
+@router.post("/internal/plate-recognitions", status_code=status.HTTP_202_ACCEPTED)
+async def forward_plate_recognition(req: Request, payload: dict[str, object]):
+    """Forward OCR plate events to Spring toll decision API.
+
+    GPS telemetry is already persisted by Spring. The ingress only passes the
+    recognized plate and GPS device identity so Spring can match the latest
+    position against the configured toll zone.
+    """
+    if not payload.get("plateNumber") or not payload.get("gpsDeviceId"):
+        raise HTTPException(status_code=400, detail="plateNumber and gpsDeviceId are required")
+
+    try:
+        result = await get_spring_client(req).forward_plate_recognition(payload)
+    except SpringForwardError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+
+    req.app.state.forwarded_events += 1
+    return result

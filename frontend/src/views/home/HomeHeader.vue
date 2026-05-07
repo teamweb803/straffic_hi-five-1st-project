@@ -8,6 +8,7 @@ const router = useRouter()
 const headerEl = ref(null)
 const isLoggedIn = computed(() => auth.isLoggedIn)
 const memberName = computed(() => auth.member?.memberName ?? '')
+const dashboardRoute = computed(() => auth.isMasterAdmin ? '/master-admin' : '/dashboard')
 
 let onScroll = null
 onMounted(() => {
@@ -28,7 +29,7 @@ async function handleLogout() {
 <template>
   <header ref="headerEl" class="site-header" id="siteHeader">
     <div class="header-inner">
-      <RouterLink class="logo" to="/" aria-label="HiFive 홈">HiFive</RouterLink>
+      <RouterLink class="logo" to="/" aria-label="HiFive">HiFive</RouterLink>
       <nav class="nav" aria-label="주요 메뉴">
         <RouterLink to="/company">회사소개</RouterLink>
         <RouterLink to="/solution">솔루션</RouterLink>
@@ -42,7 +43,7 @@ async function handleLogout() {
           <RouterLink class="btn primary" to="/signup">회원가입</RouterLink>
         </template>
         <template v-else>
-          <RouterLink class="btn primary" to="/dashboard">{{ memberName || '대시보드' }}</RouterLink>
+          <RouterLink class="btn primary" :to="dashboardRoute">{{ memberName || '대시보드' }}</RouterLink>
           <button class="btn" type="button" @click="handleLogout">로그아웃</button>
         </template>
       </div>

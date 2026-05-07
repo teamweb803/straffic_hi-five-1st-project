@@ -5,12 +5,14 @@ import { authApi } from '@/api/auth'
 const STORAGE_KEY = 'hifive.member'
 
 export const useAuthStore = defineStore('auth', () => {
-  // member: { memberId, memberName, plateNumber } | null
+  // member: { email, memberName, plateNumber, role, assignedDashboardId } | null
   const member = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
   const isLoggedIn = computed(() => member.value !== null)
+  const isMasterAdmin = computed(() => member.value?.role === 'MASTER_ADMIN')
+  const assignedDashboardId = computed(() => member.value?.assignedDashboardId ?? null)
 
   // 새로고침 후 멤버 정보 복구
   function hydrate() {
@@ -71,5 +73,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { member, loading, error, isLoggedIn, hydrate, signUp, login, logout }
+  return { member, loading, error, isLoggedIn, isMasterAdmin, assignedDashboardId, hydrate, signUp, login, logout }
 })

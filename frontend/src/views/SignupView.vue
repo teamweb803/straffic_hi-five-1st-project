@@ -7,7 +7,7 @@ const auth = useAuthStore()
 const router = useRouter()
 
 const form = reactive({
-  memberId: '',
+  email: '',
   password: '',
   passwordConfirm: '',
   memberName: '',
@@ -18,8 +18,8 @@ const messageType = ref('error')
 
 async function handleSubmit() {
   message.value = null
-  if (!form.memberId || !form.password || !form.memberName) {
-    message.value = '필수 항목을 모두 입력해 주세요.'
+  if (!form.email || !form.password || !form.memberName) {
+    message.value = '이메일, 비밀번호, 이름을 모두 입력해 주세요.'
     messageType.value = 'error'
     return
   }
@@ -51,13 +51,13 @@ async function handleSubmit() {
   <section class="min-h-[80vh] flex items-center justify-center bg-cloud px-6 py-16">
     <div class="w-full max-w-lg card shadow-sm">
       <p class="font-mono text-xs tracking-[0.3em] text-brand">CREATE ACCOUNT</p>
-      <h1 class="font-headline text-3xl mt-2 text-deep">JOIN HIFIVE.</h1>
-      <p class="text-sm text-navy/70 mt-2">차량 정보를 등록하면 통과 이력과 정산 내역을 확인할 수 있습니다.</p>
+      <h1 class="font-headline text-3xl mt-2 text-deep">JOIN HI-FIVE.</h1>
+      <p class="text-sm text-navy/70 mt-2">이메일 계정으로 회원가입 후 허용된 관제 대시보드에 접속합니다.</p>
 
       <form class="mt-8 grid sm:grid-cols-2 gap-4" @submit.prevent="handleSubmit">
         <div class="sm:col-span-2">
-          <label class="block text-xs font-semibold text-navy/70 mb-1">아이디 *</label>
-          <input v-model="form.memberId" type="text" class="input-field" placeholder="member_id" />
+          <label class="block text-xs font-semibold text-navy/70 mb-1">이메일 *</label>
+          <input v-model.trim="form.email" type="email" class="input-field" placeholder="user@company.com" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-navy/70 mb-1">비밀번호 *</label>
@@ -69,11 +69,11 @@ async function handleSubmit() {
         </div>
         <div>
           <label class="block text-xs font-semibold text-navy/70 mb-1">이름 *</label>
-          <input v-model="form.memberName" type="text" class="input-field" placeholder="홍길동" />
+          <input v-model.trim="form.memberName" type="text" class="input-field" placeholder="홍길동" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-navy/70 mb-1">차량번호</label>
-          <input v-model="form.plateNumber" type="text" class="input-field" placeholder="12가3456" />
+          <input v-model.trim="form.plateNumber" type="text" class="input-field" placeholder="12가3456" />
         </div>
 
         <p
@@ -88,7 +88,7 @@ async function handleSubmit() {
       </form>
 
       <div class="mt-6 text-sm text-navy/70 flex justify-between">
-        <RouterLink to="/" class="hover:text-brand">← 메인으로</RouterLink>
+        <RouterLink to="/" class="hover:text-brand">메인으로</RouterLink>
         <RouterLink to="/login" class="hover:text-brand">이미 계정이 있나요?</RouterLink>
       </div>
     </div>

@@ -22,9 +22,11 @@ public class GpsTelemetryService {
 	private static final DateTimeFormatter TERMUX_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	private final GpsTelemetryRepository gpsTelemetryRepository;
+	private final TollChargeService tollChargeService;
 
-	public GpsTelemetryService(GpsTelemetryRepository gpsTelemetryRepository) {
+	public GpsTelemetryService(GpsTelemetryRepository gpsTelemetryRepository, TollChargeService tollChargeService) {
 		this.gpsTelemetryRepository = gpsTelemetryRepository;
+		this.tollChargeService = tollChargeService;
 	}
 
 	@Transactional
@@ -46,6 +48,7 @@ public class GpsTelemetryService {
 			resolveCapturedAt(request),
 			LocalDateTime.now()
 		));
+		tollChargeService.evaluateGpsTelemetry(saved);
 		return GpsTelemetryMapper.toResponse(saved);
 	}
 
