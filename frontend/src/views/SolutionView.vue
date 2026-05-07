@@ -1,85 +1,61 @@
 <script setup>
-const solutions = [
-  {
-    code: '01',
-    title: 'Edge OCR',
-    desc: 'YOLOv8 + EasyOCR/PaddleOCR 기반 엣지 인식. 카메라 단에서 즉시 차량/번호판 추출.'
-  },
-  {
-    code: '02',
-    title: 'Crossing Engine',
-    desc: '가상 통과선 알고리즘이 ENTRY / EXIT 을 결정. GPS 와 결합해 구간 요금 계산.'
-  },
-  {
-    code: '03',
-    title: 'WebTransport Ingress',
-    desc: 'Jetson Edge 이벤트를 Protobuf 바이너리로 Python Ingress에 송신하고 Spring REST ingest로 전달.'
-  },
-  {
-    code: '04',
-    title: 'Review Queue',
-    desc: 'OCR 저신뢰도 케이스를 검수 큐로 자동 분리. 관리자 보정 후 정산 반영.'
-  },
-  {
-    code: '05',
-    title: 'Operator Dashboard',
-    desc: '실시간 KPI, 통과 로그, GPS 구간 현황을 한 화면에서 모니터링.'
-  },
-  {
-    code: '06',
-    title: 'Open API',
-    desc: '회원/요금/검수 API 와 통과 이벤트 webhook. 외부 정산 시스템과 즉시 연동.'
-  }
+const flow = [
+  { step: '01', title: '차량 감지', text: '차로 카메라가 차량과 번호판 ROI를 검출합니다.' },
+  { step: '02', title: '번호판 인식', text: 'OCR 결과와 신뢰도를 생성하고 저신뢰 이벤트는 검수 대상으로 분리합니다.' },
+  { step: '03', title: 'GPS 구간 매칭', text: '단말의 최신 GPS가 등록된 과금 구간 안에 있는지 판정합니다.' },
+  { step: '04', title: '정산 이벤트 생성', text: '번호판과 GPS가 모두 통과 조건을 만족할 때만 결제 이력을 생성합니다.' }
 ]
+
+const modules = ['실시간 통행 이벤트', 'OCR 검수 큐', 'GPS Telemetry 로그', '요금/정산 요약', '지점별 관제 대시보드']
 </script>
 
 <template>
-  <section class="py-24 bg-white">
+  <section class="solution-hero">
     <div class="max-w-7xl mx-auto px-6">
-      <p class="font-mono text-xs tracking-[0.3em] text-brand">SOLUTION</p>
-      <h1 class="font-headline text-5xl mt-2 text-deep">FROM CAMERA TO BILL.</h1>
-      <p class="mt-6 max-w-2xl text-navy/70 leading-relaxed">
-        HiFive 는 도로의 카메라부터 정산 시스템까지를 하나의 흐름으로 연결합니다.
+      <div>
+        <p class="eyebrow">SOLUTION</p>
+        <h1>번호판과 GPS가 함께 증명하는 통행 정산.</h1>
+      </div>
+      <p>
+        카메라 기반 OCR만으로 끝내지 않고 GPS 구간 통과 여부를 결합해 시연 환경에서도 명확한 결제 기준을 만듭니다.
       </p>
     </div>
   </section>
 
-  <section class="py-16 bg-cloud">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <article v-for="s in solutions" :key="s.code" class="card hover:border-brand transition">
-        <span class="font-mono text-xs text-brand">{{ s.code }}</span>
-        <h3 class="text-lg font-bold mt-3 text-navy">{{ s.title }}</h3>
-        <p class="mt-3 text-sm text-navy/70 leading-relaxed">{{ s.desc }}</p>
-      </article>
+  <section class="flow-section">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flow-board">
+        <article v-for="item in flow" :key="item.step">
+          <span>{{ item.step }}</span>
+          <h2>{{ item.title }}</h2>
+          <p>{{ item.text }}</p>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="py-24 bg-white">
+  <section class="module-section">
     <div class="max-w-7xl mx-auto px-6">
-      <p class="font-mono text-xs tracking-[0.3em] text-brand">PIPELINE</p>
-      <h2 class="font-headline text-4xl mt-2 text-deep">END-TO-END FLOW.</h2>
-      <ol class="mt-10 space-y-3 text-sm">
-        <li class="card flex gap-4 items-start">
-          <span class="font-mono text-brand">01</span>
-          <p><strong class="text-deep">차로 카메라</strong> — 차량/번호판 ROI 추출 (YOLOv8 + OpenCV).</p>
-        </li>
-        <li class="card flex gap-4 items-start">
-          <span class="font-mono text-brand">02</span>
-          <p><strong class="text-deep">Jetson Edge</strong> — YOLO/OCR 병렬 처리와 PassageEvent Protobuf 생성.</p>
-        </li>
-        <li class="card flex gap-4 items-start">
-          <span class="font-mono text-brand">03</span>
-          <p><strong class="text-deep">Python Ingress</strong> — WebTransport 수신 후 Spring REST ingest로 전달.</p>
-        </li>
-        <li class="card flex gap-4 items-start">
-          <span class="font-mono text-brand">04</span>
-          <p><strong class="text-deep">Spring Boot 백엔드</strong> — 이벤트 저장, 중복 처리, GPS telemetry, 정산 / 검수 처리.</p>
-        </li>
-        <li class="card flex gap-4 items-start">
-          <span class="font-mono text-brand">05</span>
-          <p><strong class="text-deep">Vue 관제 대시보드</strong> — 실시간 모니터링 + 저신뢰 차량 보정.</p>
-        </li>
-      </ol>
+      <p class="eyebrow">OPERATION MODULES</p>
+      <h2>운영자가 실제로 보는 기능</h2>
+      <div>
+        <button v-for="item in modules" :key="item">{{ item }}</button>
+      </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.solution-hero{padding:96px 0;background:linear-gradient(135deg,#f8fbff,#e8effe)}
+.solution-hero>div{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:end}
+.eyebrow{font-family:monospace;font-size:12px;letter-spacing:.28em;color:#1b3be8;font-weight:800}
+h1{margin-top:14px;color:#080c18;font-size:54px;line-height:1.05;font-weight:900}
+.solution-hero p{color:rgba(11,24,64,.7);line-height:1.8}
+.flow-section{padding:72px 0;background:#07101f}
+.flow-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.flow-board article{padding:26px;border:1px solid rgba(56,190,245,.24);background:rgba(255,255,255,.04);color:white}
+.flow-board span{color:#38bef5;font-family:monospace;font-weight:900}.flow-board h2{margin-top:26px;font-size:22px;font-weight:900}.flow-board p{color:rgba(255,255,255,.68);line-height:1.7}
+.module-section{padding:90px 0;background:white}.module-section h2{margin-top:8px;color:#080c18;font-size:42px;font-weight:900}
+.module-section div div{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.module-section button{padding:14px 18px;border:1px solid rgba(11,24,64,.12);border-radius:999px;background:#f7f9ff;color:#0b1840;font-weight:800}
+</style>

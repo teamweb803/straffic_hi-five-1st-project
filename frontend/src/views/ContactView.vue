@@ -3,94 +3,62 @@ import { reactive, ref } from 'vue'
 import { useBoardStore } from '@/stores/board'
 
 const board = useBoardStore()
-
-// 1:1 문의는 백엔드 게시판 API 를 그대로 사용 (제목/내용 + 차량 정보)
 const form = reactive({
   title: '',
   content: '',
   plateNumber: '',
   vehicleCount: 1,
-  recognitionConfidence: 1.0
+  recognitionConfidence: 1
 })
 const submitting = ref(false)
-const message = ref(null)
-const messageType = ref('error')
+const message = ref('')
 
 async function submit() {
-  message.value = null
   if (!form.title.trim() || !form.content.trim()) {
     message.value = '제목과 내용을 입력해 주세요.'
-    messageType.value = 'error'
     return
   }
   submitting.value = true
   const result = await board.create({ ...form })
   submitting.value = false
-  if (result.ok) {
-    message.value = '문의가 접수되었습니다. 빠르게 회신드리겠습니다.'
-    messageType.value = 'success'
-    form.title = ''
-    form.content = ''
-    form.plateNumber = ''
-    form.vehicleCount = 1
-  } else {
-    message.value = result.message
-    messageType.value = 'error'
-  }
+  message.value = result.ok ? '문의가 접수되었습니다.' : result.message
 }
 </script>
 
 <template>
-  <section class="py-24 bg-deep text-white">
-    <div class="max-w-7xl mx-auto px-6">
-      <p class="font-mono text-xs tracking-[0.3em] text-sky">CONTACT</p>
-      <h1 class="font-headline text-5xl mt-2">1:1 도입 문의</h1>
-      <p class="mt-6 max-w-2xl text-white/70 leading-relaxed">
-        도입 일정, 견적, PoC 신청 등 무엇이든 편하게 남겨주세요.
-      </p>
-    </div>
-  </section>
-
-  <section class="py-16 bg-cloud">
-    <div class="max-w-3xl mx-auto px-6">
-      <form class="card space-y-4" @submit.prevent="submit">
-        <div>
-          <label class="block text-xs font-semibold text-navy/70 mb-1">제목 *</label>
-          <input v-model="form.title" class="input-field" placeholder="예) 지방도 OO노선 PoC 문의" />
+  <section class="contact-page">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-[0.9fr_1.1fr] gap-10">
+      <aside>
+        <p class="eyebrow">CONTACT</p>
+        <h1>도입 문의와 시연 요청을 남겨주세요.</h1>
+        <div class="contact-cards">
+          <div><span>메일</span><strong>contact@hifive.io</strong></div>
+          <div><span>운영 시간</span><strong>평일 09:00-18:00</strong></div>
+          <div><span>시연 범위</span><strong>GPS, OCR, 관제, 정산</strong></div>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-navy/70 mb-1">내용 *</label>
-          <textarea v-model="form.content" rows="6" class="input-field" placeholder="회사 / 부서 / 전화번호 / 검토 중인 노선 정보를 알려주세요." />
+      </aside>
+      <form @submit.prevent="submit">
+        <label>제목<input v-model="form.title" placeholder="OO 지점 PoC 문의" /></label>
+        <label>내용<textarea v-model="form.content" rows="7" placeholder="회사명, 담당자, 연락처, 검토 중인 차로 정보를 적어주세요." /></label>
+        <div class="form-grid">
+          <label>차량번호<input v-model="form.plateNumber" placeholder="12가3456" /></label>
+          <label>차량 수<input v-model.number="form.vehicleCount" type="number" min="1" /></label>
+          <label>신뢰도<input v-model.number="form.recognitionConfidence" type="number" min="0" max="1" step="0.01" /></label>
         </div>
-        <div class="grid sm:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-navy/70 mb-1">차량번호 (선택)</label>
-            <input v-model="form.plateNumber" class="input-field" placeholder="12가3456" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-navy/70 mb-1">차량 수</label>
-            <input v-model.number="form.vehicleCount" type="number" min="1" class="input-field" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-navy/70 mb-1">신뢰도</label>
-            <input v-model.number="form.recognitionConfidence" type="number" min="0" max="1" step="0.01" class="input-field" />
-          </div>
-        </div>
-
-        <p
-          v-if="message"
-          class="text-sm"
-          :class="messageType === 'error' ? 'text-red-500' : 'text-emerald-600'"
-        >{{ message }}</p>
-
-        <button type="submit" class="btn-primary w-full" :disabled="submitting">
-          {{ submitting ? '전송 중...' : '문의 보내기' }}
-        </button>
+        <p v-if="message">{{ message }}</p>
+        <button :disabled="submitting">{{ submitting ? '전송 중...' : '문의 보내기' }}</button>
       </form>
-
-      <p class="mt-6 text-xs text-navy/60 text-center">
-        contact@hifive.io · 02-000-0000 · 평일 09:00 ~ 18:00
-      </p>
     </div>
   </section>
 </template>
+
+<style scoped>
+.contact-page{padding:100px 0;background:linear-gradient(135deg,#07101f,#0b1840);color:white}
+.eyebrow{font-family:monospace;font-size:12px;letter-spacing:.28em;color:#38bef5;font-weight:800}
+h1{margin-top:14px;font-size:52px;line-height:1.08;font-weight:900}
+.contact-cards{display:grid;gap:12px;margin-top:36px}.contact-cards div{padding:18px;border:1px solid rgba(56,190,245,.22);border-radius:14px;background:rgba(255,255,255,.05)}
+.contact-cards span{display:block;color:#8ca5c8;font-size:12px}.contact-cards strong{display:block;margin-top:6px}
+form{padding:28px;border-radius:20px;background:white;color:#0b1840;display:grid;gap:16px}
+label{display:grid;gap:7px;font-size:13px;font-weight:800}input,textarea{width:100%;padding:13px 14px;border:1px solid rgba(11,24,64,.14);border-radius:12px;font:inherit}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}button{height:48px;border:0;border-radius:999px;background:#1b3be8;color:white;font-weight:900;cursor:pointer}p{color:#1b3be8;font-weight:800}
+</style>

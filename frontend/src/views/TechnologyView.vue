@@ -1,57 +1,45 @@
 <script setup>
 const stacks = [
-  { layer: 'AI / Vision', items: ['YOLOv8', 'OpenCV', 'EasyOCR', 'PaddleOCR'] },
-  { layer: 'Edge / Ingress', items: ['WebTransport', 'aioquic', 'FastAPI', 'Protobuf'] },
-  { layer: 'Backend', items: ['Spring Boot 3', 'Spring Security', 'JPA', 'PostgreSQL'] },
-  { layer: 'Frontend', items: ['Vue.js 3', 'Pinia', 'Vue Router', 'Tailwind CSS'] },
-  { layer: 'Infrastructure', items: ['GPS 연동', '가상 통과선 알고리즘', 'Docker', 'CI/CD'] }
+  { layer: 'Edge AI', items: ['YOLOv8', 'OpenCV', 'OCR', 'Jetson Nano'] },
+  { layer: 'Telemetry', items: ['Pico 2 W', 'NEO-7M GPS', 'HTTP POST', 'GPS Geofence'] },
+  { layer: 'Backend', items: ['Spring Boot', 'JPA', 'PostgreSQL', 'BCrypt'] },
+  { layer: 'Frontend', items: ['Vue 3', 'Pinia', 'Vue Router', 'Vite'] }
 ]
 </script>
 
 <template>
-  <section class="py-24 bg-deep text-white">
+  <section class="tech-page">
     <div class="max-w-7xl mx-auto px-6">
-      <p class="font-mono text-xs tracking-[0.3em] text-sky">TECH STACK</p>
-      <h1 class="font-headline text-5xl mt-2">BUILT ON OPEN STACKS.</h1>
-      <p class="mt-6 max-w-2xl text-white/70 leading-relaxed">
-        HiFive 는 검증된 오픈소스 위에서 동작합니다. 엣지부터 프론트까지 모두 모던하게.
-      </p>
+      <p class="eyebrow">TECHNOLOGY</p>
+      <h1>Edge에서 판단하고 Spring에서 확정합니다.</h1>
+      <div class="architecture">
+        <article v-for="stack in stacks" :key="stack.layer">
+          <h2>{{ stack.layer }}</h2>
+          <ul>
+            <li v-for="item in stack.items" :key="item">{{ item }}</li>
+          </ul>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="py-16 bg-cloud">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-5">
-      <article v-for="stack in stacks" :key="stack.layer" class="card">
-        <p class="font-mono text-xs text-brand">{{ stack.layer.toUpperCase() }}</p>
-        <h3 class="font-headline text-2xl text-deep mt-2">{{ stack.layer }}</h3>
-        <div class="mt-4 flex flex-wrap gap-2">
-          <span
-            v-for="item in stack.items"
-            :key="item"
-            class="text-xs font-semibold px-3 py-1 rounded-full bg-white border border-line text-navy"
-          >{{ item }}</span>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="py-24">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-5">
-      <div class="card">
-        <p class="font-mono text-xs text-brand">PERFORMANCE</p>
-        <h3 class="font-headline text-3xl mt-2 text-deep">42ms</h3>
-        <p class="text-sm text-navy/70 mt-3">P95 처리 지연. 엣지에서 백엔드까지 round-trip.</p>
-      </div>
-      <div class="card">
-        <p class="font-mono text-xs text-brand">PAYLOAD</p>
-        <h3 class="font-headline text-3xl mt-2 text-deep">-70%</h3>
-        <p class="text-sm text-navy/70 mt-3">Protobuf 직렬화로 JSON 대비 페이로드 감소.</p>
-      </div>
-      <div class="card">
-        <p class="font-mono text-xs text-brand">ACCURACY</p>
-        <h3 class="font-headline text-3xl mt-2 text-deep">97.3%</h3>
-        <p class="text-sm text-navy/70 mt-3">번호판 OCR 평균 신뢰도 (노이즈 환경 포함).</p>
-      </div>
+  <section class="metric-strip">
+    <div class="max-w-7xl mx-auto px-6">
+      <div><strong>실시간</strong><span>GPS/OCR 이벤트 수집</span></div>
+      <div><strong>BCrypt</strong><span>계정 비밀번호 해시 보호</span></div>
+      <div><strong>Geofence</strong><span>4개 꼭지점 과금 구간 판정</span></div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.tech-page{padding:104px 0;background:#050914;color:white}
+.eyebrow{font-family:monospace;font-size:12px;letter-spacing:.28em;color:#38bef5;font-weight:800}
+h1{max-width:850px;margin-top:14px;font-size:56px;line-height:1.05;font-weight:900}
+.architecture{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:54px}
+.architecture article{padding:24px;border:1px solid rgba(56,190,245,.22);background:linear-gradient(180deg,rgba(56,190,245,.12),rgba(255,255,255,.03))}
+.architecture h2{font-size:20px;font-weight:900}.architecture ul{margin:20px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.architecture li{padding:9px 10px;border-radius:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.78);font-size:13px}
+.metric-strip{padding:42px 0;background:#38bef5;color:#06111f}.metric-strip>div{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.metric-strip strong{display:block;font-size:30px;font-weight:900}.metric-strip span{font-weight:700}
+</style>

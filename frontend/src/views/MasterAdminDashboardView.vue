@@ -209,4 +209,15 @@ onBeforeUnmount(() => clearInterval(timer))
 .status.ok{background:rgba(51,230,161,.1);color:#33e6a1!important}
 .status.caution{background:rgba(255,209,102,.12);color:#ffd166!important}
 .status.danger{background:rgba(255,93,108,.12);color:#ff5d6c!important}
+.korea-map{
+  background:
+    linear-gradient(rgba(6,19,38,.16),rgba(6,19,38,.72)),
+    url('/korea_road_backmap.png'),
+    linear-gradient(rgba(70,125,255,.1) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(70,125,255,.1) 1px,transparent 1px),
+    #061326 !important;
+  background-position:center !important;
+  background-size:cover,contain,30px 30px,30px 30px,auto !important;
+  background-repeat:no-repeat,no-repeat,repeat,repeat,no-repeat !important;
+}
 </style>
