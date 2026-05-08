@@ -159,7 +159,6 @@ onBeforeUnmount(() => clearInterval(timer))
             <div class="map-body">
               <div class="state-summary"><div><span class="dot ok"></span><strong>28</strong><p>정상</p></div><div><span class="dot caution"></span><strong>7</strong><p>주의</p></div><div><span class="dot danger"></span><strong>3</strong><p>점검중</p></div></div>
               <div class="korea-map">
-                <div class="map-shape main"></div><div class="map-shape jeju"></div>
                 <button v-for="center in centers" :key="center.name" class="marker" :class="[statusClass(center.status), { selected: selectedCenter === center.name }]" :style="{ left: center.x + '%', top: center.y + '%' }" @click="selectedCenter = center.name"><span>{{ center.name }}</span></button>
               </div>
             </div>
@@ -213,11 +212,9 @@ onBeforeUnmount(() => clearInterval(timer))
   background:
     linear-gradient(rgba(6,19,38,.16),rgba(6,19,38,.72)),
     url('/korea_road_backmap.png'),
-    linear-gradient(rgba(70,125,255,.1) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(70,125,255,.1) 1px,transparent 1px),
     #061326 !important;
   background-position:center !important;
-  background-size:cover,contain,30px 30px,30px 30px,auto !important;
-  background-repeat:no-repeat,no-repeat,repeat,repeat,no-repeat !important;
+  background-size:cover,contain,auto !important;
+  background-repeat:no-repeat,no-repeat,no-repeat !important;
 }
 </style>

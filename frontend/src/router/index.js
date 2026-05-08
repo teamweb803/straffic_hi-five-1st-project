@@ -12,6 +12,7 @@ const routes = [
   { path: '/technology', name: 'technology', component: () => import('@/views/TechnologyView.vue') },
   { path: '/guide', name: 'guide', component: () => import('@/views/GuideView.vue') },
   { path: '/contact', name: 'contact', component: () => import('@/views/ContactView.vue') },
+  { path: '/preview', name: 'preview', component: () => import('@/views/SubpagePreviewView.vue') },
   { path: '/:pathMatch(.*)*', redirect: { name: 'home' } }
 ]
 
