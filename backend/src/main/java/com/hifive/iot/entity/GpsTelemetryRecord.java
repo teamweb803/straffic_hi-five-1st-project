@@ -40,10 +40,10 @@ public class GpsTelemetryRecord {
 	@Column(name = "track_id")
 	private Integer trackId;
 
-	@Column(nullable = false)
+	@Column
 	private Double latitude;
 
-	@Column(nullable = false)
+	@Column
 	private Double longitude;
 
 	@Column(name = "speed_kmh")
@@ -59,6 +59,15 @@ public class GpsTelemetryRecord {
 
 	@Column(length = 40)
 	private String provider;
+
+	@Column(name = "fix_status", nullable = false, length = 20)
+	private String fixStatus;
+
+	@Column(name = "status_message", length = 120)
+	private String statusMessage;
+
+	@Column(name = "raw_sentence", length = 180)
+	private String rawSentence;
 
 	@Column(name = "captured_at", nullable = false)
 	private LocalDateTime capturedAt;
@@ -82,6 +91,9 @@ public class GpsTelemetryRecord {
 		Double altitudeM,
 		Double accuracyM,
 		String provider,
+		String fixStatus,
+		String statusMessage,
+		String rawSentence,
 		LocalDateTime capturedAt,
 		LocalDateTime receivedAt
 	) {
@@ -97,6 +109,9 @@ public class GpsTelemetryRecord {
 		this.altitudeM = altitudeM;
 		this.accuracyM = accuracyM;
 		this.provider = provider;
+		this.fixStatus = fixStatus;
+		this.statusMessage = statusMessage;
+		this.rawSentence = rawSentence;
 		this.capturedAt = capturedAt;
 		this.receivedAt = receivedAt;
 	}
@@ -151,6 +166,18 @@ public class GpsTelemetryRecord {
 
 	public String getProvider() {
 		return provider;
+	}
+
+	public String getFixStatus() {
+		return fixStatus;
+	}
+
+	public String getStatusMessage() {
+		return statusMessage;
+	}
+
+	public String getRawSentence() {
+		return rawSentence;
 	}
 
 	public LocalDateTime getCapturedAt() {

@@ -86,6 +86,10 @@ public class TollChargeService {
 		String sourceType,
 		Double plateConfidence
 	) {
+		if (telemetry.getLatitude() == null || telemetry.getLongitude() == null) {
+			return new TollDecisionResponse(false, "Latest GPS telemetry has no fix", null);
+		}
+
 		Optional<TollZoneRecord> matchedZone = tollZoneService.activeZoneRecords()
 			.stream()
 			.filter(zone -> zone.contains(telemetry.getLatitude(), telemetry.getLongitude()))

@@ -25,6 +25,9 @@ public record GpsTelemetryRequest(
 	OffsetDateTime capturedAt,
 	@JsonAlias("timestamp")
 	String time,
-	String provider
+	String provider,
+	String fixStatus,
+	String statusMessage,
+	String rawSentence
 ) {
 }

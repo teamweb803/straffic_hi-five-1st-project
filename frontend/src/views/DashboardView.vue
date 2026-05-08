@@ -79,6 +79,7 @@ function fmtTime(value) {
 }
 
 function fmtCoord(value) {
+  if (value === null || value === undefined) return 'NO_FIX'
   return Number(value ?? 0).toFixed(6)
 }
 
@@ -271,7 +272,7 @@ onBeforeUnmount(() => {
               <td>{{ Number(log.speedKmh ?? 0).toFixed(1) }} km/h</td>
               <td>{{ log.heading ?? '-' }}</td>
               <td>{{ log.altitudeM ?? '-' }}</td>
-              <td><span class="badge success">{{ log.fixType ?? '3D' }}</span></td>
+              <td><span class="badge" :class="log.fixStatus === 'NO_FIX' ? 'warning' : 'success'">{{ log.fixStatus ?? log.fixType ?? 'FIXED' }}</span></td>
               <td>{{ log.satelliteCount ?? '-' }}</td>
               <td>{{ log.provider ?? 'pico2w-neo-7m' }}</td>
               <td><span class="signal"><i></i><i></i><i></i><i></i></span></td>

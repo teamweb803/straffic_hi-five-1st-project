@@ -16,6 +16,9 @@ public record GpsTelemetryResponse(
 	Double altitudeM,
 	Double accuracyM,
 	String provider,
+	String fixStatus,
+	String statusMessage,
+	String rawSentence,
 	LocalDateTime capturedAt,
 	LocalDateTime receivedAt
 ) {

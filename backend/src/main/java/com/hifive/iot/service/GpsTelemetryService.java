@@ -45,6 +45,9 @@ public class GpsTelemetryService {
 			request.altitudeM(),
 			request.accuracyM(),
 			blankToNull(request.provider()),
+			resolveFixStatus(request),
+			blankToNull(request.statusMessage()),
+			blankToNull(request.rawSentence()),
 			resolveCapturedAt(request),
 			LocalDateTime.now()
 		));
@@ -62,7 +65,10 @@ public class GpsTelemetryService {
 
 	private void validate(GpsTelemetryRequest request) {
 		if (request.latitude() == null || request.longitude() == null) {
-			throw new IllegalArgumentException("latitude and longitude are required");
+			if (isNoFix(request)) {
+				return;
+			}
+			throw new IllegalArgumentException("latitude and longitude are required unless fixStatus is NO_FIX");
 		}
 		if (request.latitude() < -90 || request.latitude() > 90) {
 			throw new IllegalArgumentException("latitude must be between -90 and 90");
@@ -92,6 +98,18 @@ public class GpsTelemetryService {
 			return request.speed() * 3.6;
 		}
 		return 0.0;
+	}
+
+	private String resolveFixStatus(GpsTelemetryRequest request) {
+		if (StringUtils.hasText(request.fixStatus())) {
+			return request.fixStatus().trim().toUpperCase();
+		}
+		return request.latitude() == null || request.longitude() == null ? "NO_FIX" : "FIXED";
+	}
+
+	private boolean isNoFix(GpsTelemetryRequest request) {
+		return StringUtils.hasText(request.fixStatus())
+			&& "NO_FIX".equalsIgnoreCase(request.fixStatus().trim());
 	}
 
 	private LocalDateTime resolveCapturedAt(GpsTelemetryRequest request) {

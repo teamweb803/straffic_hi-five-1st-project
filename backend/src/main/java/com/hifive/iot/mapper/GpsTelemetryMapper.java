@@ -23,6 +23,9 @@ public final class GpsTelemetryMapper {
 			telemetry.getAltitudeM(),
 			telemetry.getAccuracyM(),
 			telemetry.getProvider(),
+			telemetry.getFixStatus(),
+			telemetry.getStatusMessage(),
+			telemetry.getRawSentence(),
 			telemetry.getCapturedAt(),
 			telemetry.getReceivedAt()
 		);
