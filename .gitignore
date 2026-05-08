@@ -1,3 +1,42 @@
-
 frontend/dist/
 frontend/src/videos/*.mp4
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+.venv_*/
+venv/
+hifive/
+
+# Local runtime output
+logs/
+spool/
+.local/
+*.log
+
+# Model, engine, and media artifacts
+*.pt
+*.pth
+*.onnx
+*.engine
+*.mp4
+*.avi
+*.mov
+*.png
+*.jpg
+*.jpeg
+
+# Local secrets / certs
+*.pem
+*.key
+.env
+.env.*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
