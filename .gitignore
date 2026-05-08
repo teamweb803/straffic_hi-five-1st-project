@@ -1,3 +1,6 @@
+frontend/dist/
+frontend/src/videos/*.mp4
+
 # Python cache
 __pycache__/
 *.py[cod]
