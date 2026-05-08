@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Any
 
 from .ack import ACK, REJECT, RETRY, encode_ack
 from .framing import FrameError, unpack_ready_event_frame
@@ -12,6 +14,22 @@ from .spring_forwarder import SpringForwarder
 
 
 logger = logging.getLogger("hifive.ingress")
+
+NETWORK_TRANSITION_EVENT_PREFIX = "network-transition-"
+
+
+def _decode_network_transition_payload(payload: bytes) -> dict[str, Any]:
+    try:
+        decoded = json.loads(payload.decode("utf-8"))
+    except Exception as exc:
+        return {
+            "type": "network_transition",
+            "parse_error": str(exc),
+            "raw": payload[:200].decode("utf-8", errors="replace"),
+        }
+    if isinstance(decoded, dict):
+        return decoded
+    return {"type": "network_transition", "value": decoded}
 
 
 @dataclass
@@ -46,6 +64,23 @@ class IngressSession:
             self.session_id,
             stream_id,
         )
+        if frame.event_id.startswith(NETWORK_TRANSITION_EVENT_PREFIX):
+            detail = _decode_network_transition_payload(frame.payload)
+            self.stats.mark_network_transition(
+                frame.event_id,
+                detail,
+                payload_bytes=len(frame.payload),
+            )
+            logger.info(
+                "Network transition event_id=%s outage_ms=%s route_before=%s route_after=%s recovered_event_id=%s",
+                frame.event_id,
+                detail.get("outage_ms", ""),
+                detail.get("route_before_failure", ""),
+                detail.get("route_after_recovery", ""),
+                detail.get("recovered_event_id", ""),
+            )
+            return encode_ack(ACK, frame.event_id, "network transition logged")
+
         result = await self.forwarder.forward(frame.payload, frame.event_id)
         if result.accepted:
             self.stats.mark_ack(frame.event_id)

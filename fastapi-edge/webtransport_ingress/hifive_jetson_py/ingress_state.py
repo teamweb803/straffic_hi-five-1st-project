@@ -14,9 +14,11 @@ class IngressStats:
     retry_events: int = 0
     rejected_events: int = 0
     malformed_frames: int = 0
+    network_transition_events: int = 0
     last_event_id: str = ""
     last_error: str = ""
     last_payload_bytes: int = 0
+    last_network_transition: dict[str, Any] = field(default_factory=dict)
     max_recent_events: int = 20
     recent_events: list[dict[str, Any]] = field(default_factory=list)
 
@@ -58,6 +60,26 @@ class IngressStats:
             self.last_error = detail
             self._append_recent_locked("unknown", "malformed", detail, 0)
 
+    def mark_network_transition(
+        self,
+        event_id: str,
+        detail: dict[str, Any],
+        payload_bytes: int = 0,
+    ) -> None:
+        with self._lock:
+            self.network_transition_events += 1
+            self.acked_events += 1
+            self.last_event_id = event_id
+            self.last_error = ""
+            self.last_payload_bytes = int(payload_bytes)
+            self.last_network_transition = dict(detail)
+            self._append_recent_locked(
+                event_id,
+                "network_transition",
+                self._network_transition_detail(detail),
+                self.last_payload_bytes,
+            )
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             uptime_sec = max(0.0, (time.time_ns() - self.started_at_ns) / 1_000_000_000)
@@ -68,9 +90,11 @@ class IngressStats:
                 "retry_events": self.retry_events,
                 "rejected_events": self.rejected_events,
                 "malformed_frames": self.malformed_frames,
+                "network_transition_events": self.network_transition_events,
                 "last_event_id": self.last_event_id,
                 "last_error": self.last_error,
                 "last_payload_bytes": self.last_payload_bytes,
+                "last_network_transition": dict(self.last_network_transition),
                 "recent_events": list(self.recent_events),
             }
 
@@ -86,3 +110,16 @@ class IngressStats:
         )
         if len(self.recent_events) > self.max_recent_events:
             del self.recent_events[: len(self.recent_events) - self.max_recent_events]
+
+    @staticmethod
+    def _network_transition_detail(detail: dict[str, Any]) -> str:
+        outage_ms = detail.get("outage_ms", "")
+        route_before = detail.get("route_before_failure", "")
+        route_after = detail.get("route_after_recovery", "")
+        recovered_event_id = detail.get("recovered_event_id", "")
+        return (
+            f"outage_ms={outage_ms} "
+            f"recovered_event_id={recovered_event_id} "
+            f"route_before={route_before} "
+            f"route_after={route_after}"
+        )[:600]

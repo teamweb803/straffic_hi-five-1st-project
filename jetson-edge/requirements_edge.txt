@@ -1,5 +1,7 @@
 aioquic>=1.2.0
+fastapi>=0.115
 numpy>=1.26
 protobuf>=4.25
+uvicorn>=0.30
 # On Jetson, prefer the system OpenCV build if it is installed with GStreamer/CUDA support.
 # For PC-only structure tests, opencv-python can be installed separately.

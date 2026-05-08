@@ -2,27 +2,23 @@ from __future__ import annotations
 
 import argparse
 
-from hifive_jetson_py.config import RuntimeConfig
-from hifive_jetson_py.edge_service.runtime import EdgeServiceRuntime, EdgeServiceRuntimeOptions
+from hifive_jetson_py.edge_service.runtime import EdgeServiceRuntimeOptions
+from hifive_jetson_py.edge_service.server import EdgeServiceManager, build_edge_service_app
 
 
 DEFAULT_YOLO_ENGINE = "/home/jetson/hifive/models/yolo11s_fp16.engine"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="HI-FIVE Jetson realtime YOLO/OCR edge runtime")
+    parser = argparse.ArgumentParser(description="HI-FIVE Jetson always-on edge service")
     parser.add_argument("--config", default="example_runtime_config.py")
-    parser.add_argument("--check-config", action="store_true")
-    parser.add_argument("--camera-index", type=int, default=0)
-    parser.add_argument("--video", default="", help="Optional MP4 path for demo instead of configured camera source")
-    parser.add_argument("--yolo-engine", default=DEFAULT_YOLO_ENGINE, help="Override YOLO TensorRT engine path")
-    parser.add_argument("--ocr-engine", default="", help="Override OCR TensorRT engine path")
-    parser.add_argument("--host", default="", help="Override WebTransport ingress host")
-    parser.add_argument("--port", type=int, default=0, help="Override WebTransport ingress port")
-    parser.add_argument("--display", action="store_true")
+    parser.add_argument("--control-host", default="0.0.0.0")
+    parser.add_argument("--control-port", type=int, default=8010)
+    parser.add_argument("--ingress-host", default="")
+    parser.add_argument("--ingress-port", type=int, default=0)
+    parser.add_argument("--yolo-engine", default=DEFAULT_YOLO_ENGINE)
+    parser.add_argument("--ocr-engine", default="")
     parser.add_argument("--display-scale", type=float, default=0.75)
-    parser.add_argument("--start-sec", type=float, default=0.0)
-    parser.add_argument("--limit", type=int, default=0, help="0 means run until source ends")
     parser.add_argument("--height-threshold", type=int, default=20)
     parser.add_argument("--ocr-stable-sec", type=float, default=0.30)
     parser.add_argument("--track-memory-sec", type=float, default=1.0)
@@ -39,27 +35,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    config = RuntimeConfig.from_python_file(args.config)
-    if args.check_config:
-        print(f"device_id={config.device_id}")
-        print(f"cameras={len(config.cameras)}")
-        for camera in config.cameras:
-            print(
-                f"{camera.camera_id}: role={camera.camera_role} "
-                f"source_id={camera.source_id} yolo_slots={len(camera.yolo_input_slots)}"
-            )
-        return
-
-    runtime_options = EdgeServiceRuntimeOptions(
+    options = EdgeServiceRuntimeOptions(
         config_path=args.config,
-        camera_index=args.camera_index,
-        video_override=args.video,
-        host_override=args.host,
-        port_override=args.port,
-        display=args.display,
+        host_override=args.ingress_host,
+        port_override=args.ingress_port,
+        display=False,
         display_scale=args.display_scale,
-        start_sec=args.start_sec,
-        frame_limit=args.limit,
         height_threshold=args.height_threshold,
         ocr_stable_sec=args.ocr_stable_sec,
         track_memory_sec=args.track_memory_sec,
@@ -74,7 +55,17 @@ def main() -> None:
         output_dir=args.output_dir,
         save_event_images=not args.no_save_event_images,
     )
-    EdgeServiceRuntime(runtime_options).run()
+    manager = EdgeServiceManager(options)
+
+    import uvicorn
+
+    print(f"edge_service_control=http://{args.control_host}:{args.control_port}")
+    uvicorn.run(
+        build_edge_service_app(manager),
+        host=args.control_host,
+        port=args.control_port,
+        log_level="info",
+    )
 
 
 if __name__ == "__main__":
