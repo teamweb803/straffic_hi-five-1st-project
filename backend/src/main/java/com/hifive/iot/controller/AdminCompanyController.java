@@ -2,50 +2,44 @@ package com.hifive.iot.controller;
 
 import java.util.List;
 
-import com.hifive.iot.dto.MemberDashboardAssignmentRequest;
-import com.hifive.iot.dto.MemberResponse;
+import com.hifive.iot.dto.CompanyRequest;
+import com.hifive.iot.dto.CompanyResponse;
 import com.hifive.iot.entity.Member;
+import com.hifive.iot.service.CompanyService;
 import com.hifive.iot.service.MemberService;
 
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/members")
-public class AdminMemberController {
+@RequestMapping("/api/admin/companies")
+public class AdminCompanyController {
 
 	private static final String LOGIN_MEMBER = "loginMember";
 
-	private final MemberService memberService;
+	private final CompanyService companyService;
 
-	public AdminMemberController(MemberService memberService) {
-		this.memberService = memberService;
+	public AdminCompanyController(CompanyService companyService) {
+		this.companyService = companyService;
 	}
 
 	@GetMapping
-	public List<MemberResponse> members(HttpSession session) {
+	public List<CompanyResponse> companies(HttpSession session) {
 		requireMasterAdmin(session);
-		return memberService.findMembers().stream()
-			.map(MemberResponse::from)
-			.toList();
+		return companyService.findCompanies();
 	}
 
-	@PatchMapping("/{email}/dashboard")
-	public MemberResponse assignDashboard(
-		@PathVariable String email,
-		@RequestBody MemberDashboardAssignmentRequest request,
-		HttpSession session
-	) {
+	@PostMapping
+	public CompanyResponse create(@RequestBody CompanyRequest request, HttpSession session) {
 		requireMasterAdmin(session);
-		return MemberResponse.from(memberService.assignDashboard(email, request.dashboardId()));
+		return companyService.create(request);
 	}
 
 	private void requireMasterAdmin(HttpSession session) {

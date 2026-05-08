@@ -35,7 +35,12 @@ public class MemberService {
 	@Transactional
 	public void ensureMasterAdmin() {
 		String email = normalizeEmail(MASTER_ADMIN_EMAIL);
-		if (memberRepository.existsById(email)) {
+		Optional<Member> existing = memberRepository.findById(email);
+		if (existing.isPresent()) {
+			Member admin = existing.get();
+			if (!admin.isMasterAdmin()) {
+				admin.promoteToMasterAdmin(passwordEncoder.encode(MASTER_ADMIN_PASSWORD));
+			}
 			return;
 		}
 		memberRepository.save(new Member(

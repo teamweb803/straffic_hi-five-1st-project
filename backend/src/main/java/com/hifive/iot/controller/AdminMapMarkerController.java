@@ -2,50 +2,44 @@ package com.hifive.iot.controller;
 
 import java.util.List;
 
-import com.hifive.iot.dto.MemberDashboardAssignmentRequest;
-import com.hifive.iot.dto.MemberResponse;
+import com.hifive.iot.dto.MapMarkerRequest;
+import com.hifive.iot.dto.MapMarkerResponse;
 import com.hifive.iot.entity.Member;
+import com.hifive.iot.service.MapMarkerService;
 import com.hifive.iot.service.MemberService;
 
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/members")
-public class AdminMemberController {
+@RequestMapping("/api/admin/map-markers")
+public class AdminMapMarkerController {
 
 	private static final String LOGIN_MEMBER = "loginMember";
 
-	private final MemberService memberService;
+	private final MapMarkerService mapMarkerService;
 
-	public AdminMemberController(MemberService memberService) {
-		this.memberService = memberService;
+	public AdminMapMarkerController(MapMarkerService mapMarkerService) {
+		this.mapMarkerService = mapMarkerService;
 	}
 
 	@GetMapping
-	public List<MemberResponse> members(HttpSession session) {
+	public List<MapMarkerResponse> markers(HttpSession session) {
 		requireMasterAdmin(session);
-		return memberService.findMembers().stream()
-			.map(MemberResponse::from)
-			.toList();
+		return mapMarkerService.findMarkers();
 	}
 
-	@PatchMapping("/{email}/dashboard")
-	public MemberResponse assignDashboard(
-		@PathVariable String email,
-		@RequestBody MemberDashboardAssignmentRequest request,
-		HttpSession session
-	) {
+	@PutMapping
+	public List<MapMarkerResponse> saveMarkers(@RequestBody List<MapMarkerRequest> requests, HttpSession session) {
 		requireMasterAdmin(session);
-		return MemberResponse.from(memberService.assignDashboard(email, request.dashboardId()));
+		return mapMarkerService.saveMarkers(requests);
 	}
 
 	private void requireMasterAdmin(HttpSession session) {
