@@ -5,7 +5,7 @@ server:
 spring:
   datasource:
     url: ${HIFIVE_DB_URL:jdbc:postgresql://localhost:5433/hifive}
-    username: ${HIFIVE_DB_USERNAME:pgadmin}
+    username: ${HIFIVE_DB_USERNAME:postgres}
     password: ${HIFIVE_DB_PASSWORD:1004}
     driver-class-name: org.postgresql.Driver
   jpa:
