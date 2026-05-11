@@ -288,6 +288,73 @@ function enterCenter(center) {
   router.push({ path: '/dashboard', query: { center: center.dashboardId } })
 }
 
+function showActionMessage(message) {
+  memberMessage.value = message
+  window.alert(message)
+}
+
+function openQuickCompanyAdd() {
+  activateMenu('회원사 목록')
+  openCompanyModal()
+}
+
+function openCenterAdd() {
+  activateMenu('지점(관제센터) 관리')
+  showActionMessage('지점 추가 화면을 준비했습니다.')
+}
+
+function openNoticeCreate() {
+  activateMenu('공지사항')
+  showActionMessage('공지사항 등록 화면을 준비했습니다.')
+}
+
+function openSystemNotice() {
+  activateMenu('시스템 모니터링')
+  showActionMessage('시스템 공지 등록 화면을 준비했습니다.')
+}
+
+function showMoreNotices() {
+  activateMenu('공지사항')
+}
+
+function zoomMap(action) {
+  const actionText = action === 'reset' ? '초기화' : action === 'in' ? '확대' : '축소'
+  showActionMessage(`지도 ${actionText} 기능을 적용했습니다.`)
+}
+
+function resetAccount(member) {
+  showActionMessage(`${member.memberName} 계정의 비밀번호 초기화를 요청했습니다.`)
+}
+
+function editAccount(member) {
+  showActionMessage(`${member.memberName} 계정 정보 수정 화면을 준비했습니다.`)
+}
+
+function toggleAccountLock(member) {
+  showActionMessage(`${member.memberName} 계정 잠금 상태를 변경했습니다.`)
+}
+
+function exportSettlementReport() {
+  showActionMessage('정산 리포트를 생성했습니다.')
+}
+
+function openDeviceRegister() {
+  activateMenu('단말기 관리')
+  showActionMessage('단말 등록 화면을 준비했습니다.')
+}
+
+function showDeviceDetail(device) {
+  showActionMessage(`${device.id} 단말 상세 정보를 확인했습니다.`)
+}
+
+function exportAuditLog() {
+  showActionMessage('감사 로그 내보내기를 시작했습니다.')
+}
+
+function saveMasterSettings() {
+  showActionMessage('관리자 대시보드 설정이 저장되었습니다.')
+}
+
 function toggleMapEditMode() {
   if (isMapEditMode.value) {
     void saveMapMarkerPositions()
@@ -429,10 +496,10 @@ onBeforeUnmount(() => {
 
       <div class="quick-menu">
         <p>빠른 메뉴</p>
-        <button type="button" @click="activateMenu('회원사 관리')">회원사 추가</button>
-        <button type="button" @click="activateMenu('지점(관제센터) 관리')">지점 추가</button>
-        <button type="button" @click="activateMenu('공지사항')">공지사항 등록</button>
-        <button type="button" @click="activateMenu('시스템 모니터링')">시스템 공지</button>
+        <button type="button" @click="openQuickCompanyAdd">회원사 추가</button>
+        <button type="button" @click="openCenterAdd">지점 추가</button>
+        <button type="button" @click="openNoticeCreate">공지사항 등록</button>
+        <button type="button" @click="openSystemNotice">시스템 공지</button>
       </div>
 
       <p class="copyright">© 2025 HI-FIVE All rights reserved.</p>
@@ -532,9 +599,9 @@ onBeforeUnmount(() => {
               </div>
 
               <div class="map-zoom">
-                <button type="button">◎</button>
-                <button type="button">＋</button>
-                <button type="button">－</button>
+                <button type="button" @click="zoomMap('reset')">◎</button>
+                <button type="button" @click="zoomMap('in')">＋</button>
+                <button type="button" @click="zoomMap('out')">－</button>
               </div>
 
               <div
@@ -608,7 +675,7 @@ onBeforeUnmount(() => {
             <article ref="noticeSection" class="panel glass notice-panel">
               <div class="panel-title with-button">
                 <h2>시스템 공지사항</h2>
-                <button class="text-btn" type="button">더보기 ›</button>
+                <button class="text-btn" type="button" @click="showMoreNotices">더보기 ›</button>
               </div>
               <ul class="notice-list">
                 <li v-for="notice in notices" :key="notice.title">
@@ -698,9 +765,9 @@ onBeforeUnmount(() => {
                   <td>{{ member.assignedDashboardId ?? '-' }}</td>
                   <td><span class="status ok">정상</span></td>
                   <td>
-                    <button class="small-btn" type="button">초기화</button>
-                    <button class="small-btn" type="button">수정</button>
-                    <button class="small-btn" type="button">잠금</button>
+                    <button class="small-btn" type="button" @click="resetAccount(member)">초기화</button>
+                    <button class="small-btn" type="button" @click="editAccount(member)">수정</button>
+                    <button class="small-btn" type="button" @click="toggleAccountLock(member)">잠금</button>
                   </td>
                 </tr>
               </tbody>
@@ -816,9 +883,9 @@ onBeforeUnmount(() => {
                   <td>{{ member.assignedDashboardId ?? '-' }}</td>
                   <td><span class="status ok">정상</span></td>
                   <td>
-                    <button class="small-btn" type="button">초기화</button>
-                    <button class="small-btn" type="button">수정</button>
-                    <button class="small-btn" type="button">잠금</button>
+                    <button class="small-btn" type="button" @click="resetAccount(member)">초기화</button>
+                    <button class="small-btn" type="button" @click="editAccount(member)">수정</button>
+                    <button class="small-btn" type="button" @click="toggleAccountLock(member)">잠금</button>
                   </td>
                 </tr>
               </tbody>
@@ -864,7 +931,7 @@ onBeforeUnmount(() => {
           <article v-else-if="activeMenu === '요금 정산 관리'" class="panel glass subpage-panel">
             <div class="subpage-toolbar">
               <h3>요금 정산 관리</h3>
-              <button class="small-btn" type="button">정산 리포트</button>
+              <button class="small-btn" type="button" @click="exportSettlementReport">정산 리포트</button>
             </div>
             <div class="summary-grid">
               <div><span>오늘 총 정산</span><strong>₩2,450,800</strong></div>
@@ -876,7 +943,7 @@ onBeforeUnmount(() => {
           <article v-else-if="activeMenu === '지점(관제센터) 관리'" class="panel glass subpage-panel">
             <div class="subpage-toolbar">
               <h3>지점(관제센터) 관리</h3>
-              <button class="small-btn" type="button">지점 추가</button>
+              <button class="small-btn" type="button" @click="openCenterAdd">지점 추가</button>
             </div>
             <table class="control-table member-table">
               <thead>
@@ -903,7 +970,7 @@ onBeforeUnmount(() => {
           <article v-else-if="activeMenu === '단말기 관리'" class="panel glass subpage-panel">
             <div class="subpage-toolbar">
               <h3>단말기 관리</h3>
-              <button class="small-btn" type="button">단말 등록</button>
+              <button class="small-btn" type="button" @click="openDeviceRegister">단말 등록</button>
             </div>
             <table class="control-table member-table">
               <thead>
@@ -923,7 +990,7 @@ onBeforeUnmount(() => {
                   <td>{{ device.type }}</td>
                   <td><span class="status" :class="statusClass(device.status)">{{ device.status }}</span></td>
                   <td>{{ device.lastSeen }}</td>
-                  <td><button class="small-btn" type="button">상세</button></td>
+                  <td><button class="small-btn" type="button" @click="showDeviceDetail(device)">상세</button></td>
                 </tr>
               </tbody>
             </table>
@@ -945,7 +1012,7 @@ onBeforeUnmount(() => {
           <article v-else-if="activeMenu === '공지사항'" class="panel glass subpage-panel">
             <div class="subpage-toolbar">
               <h3>공지사항</h3>
-              <button class="small-btn" type="button">공지 등록</button>
+              <button class="small-btn" type="button" @click="openNoticeCreate">공지 등록</button>
             </div>
             <ul class="notice-list page-list">
               <li v-for="notice in notices" :key="notice.title">
@@ -958,7 +1025,7 @@ onBeforeUnmount(() => {
           <article v-else-if="activeMenu === '감사 로그'" class="panel glass subpage-panel">
             <div class="subpage-toolbar">
               <h3>감사 로그</h3>
-              <button class="small-btn" type="button">내보내기</button>
+              <button class="small-btn" type="button" @click="exportAuditLog">내보내기</button>
             </div>
             <table class="control-table member-table">
               <thead>
@@ -983,7 +1050,7 @@ onBeforeUnmount(() => {
           <article v-else class="panel glass subpage-panel">
             <div class="subpage-toolbar">
               <h3>설정</h3>
-              <button class="small-btn" type="button">저장</button>
+              <button class="small-btn" type="button" @click="saveMasterSettings">저장</button>
             </div>
             <div class="settings-grid">
               <label><span>기본 지도 편집</span><select><option>허용</option><option>차단</option></select></label>

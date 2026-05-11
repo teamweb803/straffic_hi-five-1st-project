@@ -22,6 +22,22 @@ const tollDecision = ref(null)
 const activeMenu = ref('실시간 관제')
 const opsSubOpen = ref(true)
 const detailTab = ref('plate') // 'plate' | 'gps'
+const selectedSubLane = ref(1)
+const showReviewModal = ref(false)
+const reviewTarget = ref(null)
+const reviewAction = ref('확인완료')
+const reviewMemo = ref('')
+const showEventModal = ref(false)
+const eventModalTarget = ref(null)
+const isSettingsEditing = ref(false)
+const operatorSettings = reactive({
+  dashboardId: 'RC-DEMO-CENTER',
+  laneCount: 2,
+  gpsDeviceId: 'PICO2W-NEO7M-RC-01',
+  ocrConfidence: 70,
+  reviewThreshold: 65,
+  storagePolicy: 'PostgreSQL 저장'
+})
 const isLightMode = computed(() => themeMode.value === 'light')
 
 function toggleThemeMode() {
@@ -38,7 +54,7 @@ const widgets = ref([
   { id: 'gps',          title: 'GPS Telemetry 실시간 로그',  span: 5 },
   { id: 'stats-traffic',title: '금일 통행량 (시간대별)',     span: 6 },
   { id: 'stats-settle', title: '누적 정산 금액',            span: 3 },
-  { id: 'stats-vclass', title: '차종별 통과 분포',          span: 3 },
+  { id: 'stats-esg',    title: 'ESG 탄소 저감량',          span: 3 },
   { id: 'events',       title: '실시간 통행 이벤트',         span: 7 },
   { id: 'detail',       title: '차량 상세 (번호판 / GPS)',   span: 5 },
   { id: 'lanes',        title: '차로별 실시간 상태',         span: 12 },
@@ -156,6 +172,32 @@ const selectedGpsScatter = computed(() => {
   ]
   return { inside, points: points.map((p) => ({ ...p, ...projectGpsPoint(p.lat, p.lng) })) }
 })
+const laneDetections = computed(() => [1, 2].map((lane) => {
+  const laneEvents = events.value.filter((event) => event.lane === lane)
+  const latest = laneEvents[0] ?? selectedEvent.value
+  return {
+    lane,
+    title: lane === 1 ? 'LANE 1 상단 차선' : 'LANE 2 하단 차선',
+    latest,
+    count: laneEvents.length,
+    reviewCount: laneEvents.filter((event) => event.status === '검수필요').length,
+    avgConf: Math.round(laneEvents.reduce((sum, event) => sum + event.conf, 0) / Math.max(1, laneEvents.length))
+  }
+}))
+const activeLaneDetection = computed(() => laneDetections.value.find((lane) => lane.lane === selectedSubLane.value) ?? laneDetections.value[0])
+const eventModalGpsScatter = computed(() => {
+  const event = eventModalTarget.value ?? selectedEvent.value
+  const pt = { lat: Number(event.gps.lat), lng: Number(event.gps.lng) }
+  const bounds = zoneBounds.value
+  const inside = pt.lat >= bounds.minLat && pt.lat <= bounds.maxLat && pt.lng >= bounds.minLng && pt.lng <= bounds.maxLng
+  const points = [
+    { id: 'center', type: 'center', lat: bounds.centerLat, lng: bounds.centerLng, label: 'CENTER' },
+    { id: 'event', type: inside ? 'actual inside' : 'actual outside', lat: pt.lat, lng: pt.lng, label: event.plate },
+    { id: 'trail-1', type: 'trail', lat: pt.lat - 0.00008, lng: pt.lng - 0.0001, label: '' },
+    { id: 'trail-2', type: 'trail', lat: pt.lat - 0.00004, lng: pt.lng - 0.00005, label: '' }
+  ]
+  return { inside, points: points.map((p) => ({ ...p, ...projectGpsPoint(p.lat, p.lng) })) }
+})
 
 const kpiCards = [
   { title: '당일 통행량',       value: '1,248',        delta: '전일 대비 ▲ 8.4%',  tone: 'purple', icon: 'flow',    deltaTone: 'up' },
@@ -181,37 +223,19 @@ const periodData = {
     series: [12,18,24,30,38,42,72,108,138,156,164,178,168,144,138,142,156,168,172,148,124,98,72,46],
     axisFull: Array.from({length:24}, (_, i) => `${i}시`),
     axisLabels: ['00','04','08','12','16','20','24'],
-    settlement: { paid: 1827, pending: 36, hold: 14, totalAmount: 2450800, paidAmount: 2180300, pendingAmount: 84500, holdAmount: 186000 },
-    vehicleClass: [
-      { label: '승용', count: 312, ratio: 50.0, color: '#38bef5' },
-      { label: 'SUV', count: 198, ratio: 31.7, color: '#9264e0' },
-      { label: '트럭', count: 78, ratio: 12.5, color: '#33e6a1' },
-      { label: '버스', count: 36, ratio: 5.8, color: '#ffd166' }
-    ]
+    settlement: { paid: 1827, pending: 36, hold: 14, totalAmount: 2450800, paidAmount: 2180300, pendingAmount: 84500, holdAmount: 186000 }
   },
   week: {
     series: [820, 1102, 1340, 1208, 1456, 980, 624],
     axisFull: ['월요일','화요일','수요일','목요일','금요일','토요일','일요일'],
     axisLabels: ['월','화','수','목','금','토','일'],
-    settlement: { paid: 12480, pending: 220, hold: 110, totalAmount: 16842500, paidAmount: 15080300, pendingAmount: 920400, holdAmount: 841800 },
-    vehicleClass: [
-      { label: '승용', count: 3812, ratio: 49.7, color: '#38bef5' },
-      { label: 'SUV', count: 2456, ratio: 32.0, color: '#9264e0' },
-      { label: '트럭', count: 982, ratio: 12.8, color: '#33e6a1' },
-      { label: '버스', count: 420, ratio: 5.5, color: '#ffd166' }
-    ]
+    settlement: { paid: 12480, pending: 220, hold: 110, totalAmount: 16842500, paidAmount: 15080300, pendingAmount: 920400, holdAmount: 841800 }
   },
   month: {
     series: [820,945,1102,1208,1340,1456,1180,920,1340,1102,980,1208,1456,1340,1208,1102,980,1340,1456,1208,980,820,1208,1340,1456,1102,980,1208,1340,1248],
     axisFull: Array.from({length:30}, (_, i) => `${i+1}일`),
     axisLabels: ['1','5','10','15','20','25','30'],
-    settlement: { paid: 53420, pending: 980, hold: 480, totalAmount: 72485600, paidAmount: 64830200, pendingAmount: 4250400, holdAmount: 3405000 },
-    vehicleClass: [
-      { label: '승용', count: 16240, ratio: 50.2, color: '#38bef5' },
-      { label: 'SUV', count: 10180, ratio: 31.5, color: '#9264e0' },
-      { label: '트럭', count: 4120, ratio: 12.7, color: '#33e6a1' },
-      { label: '버스', count: 1820, ratio: 5.6, color: '#ffd166' }
-    ]
+    settlement: { paid: 53420, pending: 980, hold: 480, totalAmount: 72485600, paidAmount: 64830200, pendingAmount: 4250400, holdAmount: 3405000 }
   }
 }
 const currentPeriod = computed(() => periodData[period.value])
@@ -219,7 +243,16 @@ const currentSeries = computed(() => currentPeriod.value.series)
 const currentMax = computed(() => Math.max(...currentSeries.value))
 const currentTotal = computed(() => currentSeries.value.reduce((a, b) => a + b, 0))
 const currentSettlement = computed(() => currentPeriod.value.settlement)
-const currentVehicleClass = computed(() => currentPeriod.value.vehicleClass)
+const esgSummary = computed(() => {
+  const total = currentTotal.value
+  return {
+    co2Kg: Math.round(total * 0.12),
+    idleMinutes: Math.round(total * 0.8),
+    paperSheets: Math.round(total * 0.62),
+    treeEquivalent: Math.max(1, Math.round((total * 0.12) / 22)),
+    score: period.value === 'today' ? 87 : period.value === 'week' ? 91 : 94
+  }
+})
 
 const anomalyAlerts = [
   { id: 1, severity: 'critical', title: '정차 의심 차량', desc: 'LANE 2 · 33나9029 · 12초 정지', time: '10:22:27' },
@@ -255,6 +288,34 @@ function confClass(c) {
 function selectEvent(e) {
   selectedEventId.value = e.id
   selectedLane.value = e.lane
+}
+function openReviewModal(event) {
+  reviewTarget.value = event
+  reviewAction.value = '확인완료'
+  reviewMemo.value = ''
+  showReviewModal.value = true
+}
+function saveReviewAction() {
+  if (!reviewTarget.value) return
+  reviewTarget.value.status = reviewAction.value === '예외처리' ? '예외처리' : '저장완료'
+  showReviewModal.value = false
+  alert(`검수 결과가 ${reviewAction.value} 처리되었습니다.`)
+}
+function openEventModal(event) {
+  selectEvent(event)
+  eventModalTarget.value = event
+  showEventModal.value = true
+}
+function openAlertEventModal(alert) {
+  const plateMatch = alert.desc.match(/[0-9]{2}[가-힣][0-9]{4}/)
+  const event = events.value.find((item) => item.plate === plateMatch?.[0])
+    ?? events.value.find((item) => item.lane === 2)
+    ?? selectedEvent.value
+  openEventModal(event)
+}
+function saveOperatorSettings() {
+  isSettingsEditing.value = false
+  alert('관제 설정이 저장되었습니다.')
 }
 function fmtGpsDate(v) {
   if (!v) return '-'
@@ -466,7 +527,7 @@ onBeforeUnmount(() => { clearInterval(timer); clearInterval(gpsTimer) })
       <main>
         <p v-if="editMode" class="edit-hint">편집 모드 — 위젯 헤더를 드래그해 순서를 바꾸거나 −/＋ 로 크기를 조절하세요. 위젯 너비는 12-그리드 기준입니다.</p>
 
-        <section class="widget-grid">
+        <section v-if="activeMenu === '실시간 관제'" class="widget-grid">
           <article v-for="(w, idx) in widgets" :key="w.id"
             class="widget panel"
             :class="[`widget-${w.id}`, { dragging: draggedIdx === idx, editing: editMode }]"
@@ -592,13 +653,28 @@ onBeforeUnmount(() => { clearInterval(timer); clearInterval(gpsTimer) })
               </ul>
             </template>
 
-            <!-- ▼ 차종 -->
-            <template v-else-if="w.id === 'stats-vclass'">
-              <div class="panel-head"><h2><span class="bar"></span>{{ periodLabels[period] }} 차종 분포</h2><strong class="big-num">{{ currentVehicleClass.reduce((a,b)=>a+b.count,0).toLocaleString() }}<span class="muted ml-sm">대</span></strong></div>
-              <ul class="vclass-list">
-                <li v-for="v in currentVehicleClass" :key="v.label">
-                  <div class="vclass-head"><span class="vclass-dot" :style="{ background: v.color }"></span><strong>{{ v.label }}</strong><em class="mono">{{ v.count.toLocaleString() }}대</em><em class="muted ml-sm">{{ v.ratio }}%</em></div>
-                  <div class="vclass-bar"><b :style="{ width: v.ratio + '%', background: v.color }"></b></div>
+            <!-- ▼ ESG 탄소 저감량 -->
+            <template v-else-if="w.id === 'stats-esg'">
+              <div class="panel-head">
+                <h2><span class="bar"></span>{{ periodLabels[period] }} ESG 탄소 저감량</h2>
+                <strong class="big-num">{{ esgSummary.co2Kg.toLocaleString() }}<span class="muted ml-sm">kgCO₂</span></strong>
+              </div>
+              <div class="esg-score">
+                <span>ESG Impact</span>
+                <strong>{{ esgSummary.score }}</strong>
+              </div>
+              <ul class="esg-list">
+                <li>
+                  <span class="esg-dot green"></span>
+                  <div><strong>{{ esgSummary.idleMinutes.toLocaleString() }}분</strong><em>무정차 통과 기반 공회전 절감</em></div>
+                </li>
+                <li>
+                  <span class="esg-dot blue"></span>
+                  <div><strong>{{ esgSummary.paperSheets.toLocaleString() }}장</strong><em>전자 정산 기반 종이 영수증 절감</em></div>
+                </li>
+                <li>
+                  <span class="esg-dot yellow"></span>
+                  <div><strong>{{ esgSummary.treeEquivalent.toLocaleString() }}그루</strong><em>연간 흡수량 환산 기준</em></div>
                 </li>
               </ul>
             </template>
@@ -737,7 +813,228 @@ onBeforeUnmount(() => { clearInterval(timer); clearInterval(gpsTimer) })
             </template>
           </article>
         </section>
+
+        <section v-else class="ops-subpage">
+          <article class="panel subpage-hero">
+            <div>
+              <p class="subpage-kicker">OPERATOR CONSOLE</p>
+              <h2>{{ activeMenu }}</h2>
+              <span>{{ dashboardLabel }} 관제센터 운영 데이터를 메뉴별로 집중 확인합니다.</span>
+            </div>
+            <button class="primary-btn small" type="button" @click="activeMenu = '실시간 관제'">실시간 관제로 이동</button>
+          </article>
+
+          <article v-if="activeMenu === 'OCR / 검수' || activeMenu === 'OCR 분석'" class="panel subpage-panel">
+            <div class="panel-head">
+              <h2><span class="bar"></span>OCR 차량 인식 상세</h2>
+              <span class="chip">선택 차량 {{ selectedEvent.plate }}</span>
+            </div>
+            <div class="lane-ocr-layout">
+              <div class="lane-detect-list">
+                <button v-for="lane in laneDetections" :key="lane.lane" class="lane-detect-card" :class="{ active: selectedSubLane === lane.lane }" type="button" @click="selectedSubLane = lane.lane; selectEvent(lane.latest)">
+                  <span class="lane-detect-title">{{ lane.title }}</span>
+                  <strong class="mono">{{ lane.latest.plate }}</strong>
+                  <em :class="confClass(lane.avgConf)">평균 {{ lane.avgConf }}%</em>
+                  <small>검출 {{ lane.count }}건 · 검수 {{ lane.reviewCount }}건</small>
+                </button>
+              </div>
+              <div class="lane-detect-detail">
+                <div class="frame-stage subpage-frame">
+                  <video class="frame-video" :src="ocrVideoUrl" autoplay loop muted controls playsinline preload="metadata">stream</video>
+                  <div class="bbox" :style="{ top: activeLaneDetection.latest.bbox.top+'%', left: activeLaneDetection.latest.bbox.left+'%', width: activeLaneDetection.latest.bbox.width+'%', height: activeLaneDetection.latest.bbox.height+'%', borderColor: activeLaneDetection.latest.final.conf > 85 ? '#33e6a1' : activeLaneDetection.latest.final.conf > 65 ? '#ffd166' : '#ff5d6c' }">
+                    <span class="bbox-label">L{{ activeLaneDetection.lane }} · {{ activeLaneDetection.latest.final.plate }} · {{ activeLaneDetection.latest.final.conf }}%</span>
+                  </div>
+                </div>
+                <div class="subpage-info-grid">
+                  <p><span>차량 번호</span><strong>{{ activeLaneDetection.latest.plate }}</strong></p>
+                  <p><span>차로</span><strong>LANE {{ activeLaneDetection.lane }}</strong></p>
+                  <p><span>검출 시간</span><strong>{{ activeLaneDetection.latest.time }}</strong></p>
+                  <p><span>신뢰도</span><strong :class="confClass(activeLaneDetection.latest.conf)">{{ activeLaneDetection.latest.conf }}%</strong></p>
+                  <p><span>상태</span><strong>{{ activeLaneDetection.latest.status }}</strong></p>
+                  <p><span>판정 소스</span><strong>{{ activeLaneDetection.latest.source }}</strong></p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article v-else-if="activeMenu === '검수 큐'" class="panel subpage-panel">
+            <div class="panel-head">
+              <h2><span class="bar"></span>검수 큐</h2>
+              <span class="chip caution">{{ events.filter(e => e.status === '검수필요').length }}건 대기</span>
+            </div>
+            <div class="event-scroll subpage-table-scroll">
+              <table class="sticky-head">
+                <thead><tr><th>TIME</th><th>LANE</th><th>PLATE</th><th>CONF</th><th>사유</th><th>액션</th></tr></thead>
+                <tbody>
+                  <tr v-for="event in events.filter(e => e.status === '검수필요')" :key="event.id" @click="selectEvent(event)">
+                    <td class="mono">{{ event.time }}</td>
+                    <td>LANE {{ event.lane }}</td>
+                    <td class="mono strong">{{ event.plate }}</td>
+                    <td :class="confClass(event.conf)">{{ event.conf }}%</td>
+                    <td>OCR 저신뢰 / Front-Rear 확인 필요</td>
+                    <td><button class="row-btn" type="button" @click.stop="openReviewModal(event)">수정</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article v-else-if="activeMenu === '차로 현황'" class="panel subpage-panel">
+            <div class="panel-head"><h2><span class="bar"></span>차로별 실시간 상태</h2><span class="chip">{{ laneStatus.length }}개 차로 운영 중</span></div>
+            <div class="lane-detail-grid">
+              <article v-for="lane in laneStatus" :key="lane.lane" class="lane-detail" :class="`tone-${lane.tone}`">
+                <div class="lane-detail-head">
+                  <div><p class="lane-name">{{ lane.name }}</p><strong class="lane-current">{{ lane.plate }}</strong></div>
+                  <span class="status ok">정상</span>
+                </div>
+                <div class="metric-grid">
+                  <div class="metric"><p>금일 통행</p><strong>{{ lane.todayCount }}</strong><em>대</em></div>
+                  <div class="metric"><p>누적 통행</p><strong>{{ lane.totalCount.toLocaleString() }}</strong><em>대</em></div>
+                  <div class="metric"><p>평균 신뢰도</p><strong :class="confClass(lane.avgConf)">{{ lane.avgConf }}%</strong></div>
+                </div>
+              </article>
+            </div>
+          </article>
+
+          <article v-else-if="activeMenu === '통행 이벤트'" class="panel subpage-panel">
+            <div class="panel-head"><h2><span class="bar"></span>통행 이벤트 전체 목록</h2><span class="chip">총 {{ events.length }}건</span></div>
+            <div class="event-scroll subpage-table-scroll">
+              <table class="sticky-head">
+                <thead><tr><th>TIME</th><th>LANE</th><th>PLATE</th><th>CONF</th><th>STATUS</th><th>GPS</th></tr></thead>
+                <tbody>
+                  <tr v-for="event in events" :key="event.id" :class="{ selected: selectedEventId === event.id }" @click="openEventModal(event)">
+                    <td class="mono">{{ event.time }}</td>
+                    <td>{{ event.lane }}</td>
+                    <td class="mono strong">{{ event.plate }}</td>
+                    <td>{{ event.conf }}%</td>
+                    <td><span class="status" :class="statusClass(event.status)">{{ event.status }}</span></td>
+                    <td class="mono">{{ Number(event.gps.lat).toFixed(6) }}, {{ Number(event.gps.lng).toFixed(6) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article v-else-if="activeMenu === '이상징후 알림'" class="panel subpage-panel">
+            <div class="panel-head"><h2><span class="bar"></span>이상징후 알림</h2><span class="chip danger">{{ anomalyAlerts.filter(a => a.severity === 'critical').length }} CRITICAL</span></div>
+            <ul class="alert-list subpage-alerts">
+              <li v-for="a in anomalyAlerts" :key="a.id" :class="a.severity">
+                <span class="alert-bar"></span>
+                <div class="alert-body"><div class="alert-row"><strong>{{ a.title }}</strong><span class="mono muted">{{ a.time }}</span></div><p>{{ a.desc }}</p></div>
+                <button class="row-btn" type="button" @click="openAlertEventModal(a)">상세</button>
+              </li>
+            </ul>
+          </article>
+
+          <article v-else-if="activeMenu === '단말 상태'" class="panel subpage-panel">
+            <div class="panel-head"><h2><span class="bar"></span>단말 상태</h2><span class="chip ok">EDGE-RC-01 연결됨</span></div>
+            <div class="health-grid subpage-health">
+              <div v-for="h in systemHealth" :key="h.label" class="health-cell">
+                <span>{{ h.label }}</span>
+                <strong :class="h.tone">{{ h.value }}</strong>
+              </div>
+              <div class="health-cell"><span>GPS DEVICE</span><strong>PICO2W-NEO7M-RC-01</strong></div>
+              <div class="health-cell"><span>최근 GPS 로그</span><strong>{{ gpsTelemetry.length }}건</strong></div>
+              <div class="health-cell"><span>Spring API</span><strong class="ok">8585 OK</strong></div>
+              <div class="health-cell"><span>FastAPI Edge</span><strong class="ok">READY</strong></div>
+            </div>
+          </article>
+
+          <article v-else class="panel subpage-panel">
+            <div class="panel-head">
+              <h2><span class="bar"></span>관제 설정</h2>
+              <div class="panel-actions">
+                <button class="link-btn" type="button" @click="showGpsZoneModal = true">GPS 감지 영역 설정</button>
+                <button v-if="!isSettingsEditing" class="link-btn" type="button" @click="isSettingsEditing = true">편집</button>
+                <button v-else class="primary-btn small" type="button" @click="saveOperatorSettings">설정 저장</button>
+              </div>
+            </div>
+            <div class="settings-grid">
+              <label><span>대시보드 ID</span><input v-model="operatorSettings.dashboardId" :readonly="!isSettingsEditing" /></label>
+              <label><span>관제 차로 수</span><input v-model.number="operatorSettings.laneCount" type="number" min="1" max="8" :readonly="!isSettingsEditing" /></label>
+              <label><span>GPS 단말 ID</span><input v-model="operatorSettings.gpsDeviceId" :readonly="!isSettingsEditing" /></label>
+              <label><span>OCR confidence 기준</span><input v-model.number="operatorSettings.ocrConfidence" type="number" min="0" max="100" :readonly="!isSettingsEditing" /></label>
+              <label><span>검수 큐 기준</span><input v-model.number="operatorSettings.reviewThreshold" type="number" min="0" max="100" :readonly="!isSettingsEditing" /></label>
+              <label><span>통행 이벤트 보관</span><input v-model="operatorSettings.storagePolicy" :readonly="!isSettingsEditing" /></label>
+            </div>
+          </article>
+        </section>
       </main>
+    </div>
+
+    <div v-if="showReviewModal" class="modal-bg" @click.self="showReviewModal = false">
+      <section class="modal panel">
+        <div class="panel-head">
+          <h2><span class="bar"></span>검수 결과 처리</h2>
+          <button class="link-btn" type="button" @click="showReviewModal = false">닫기</button>
+        </div>
+        <div v-if="reviewTarget" class="review-modal-body">
+          <div class="subpage-info-grid">
+            <p><span>차량 번호</span><strong class="mono">{{ reviewTarget.plate }}</strong></p>
+            <p><span>차로</span><strong>LANE {{ reviewTarget.lane }}</strong></p>
+            <p><span>신뢰도</span><strong :class="confClass(reviewTarget.conf)">{{ reviewTarget.conf }}%</strong></p>
+            <p><span>현재 상태</span><strong>{{ reviewTarget.status }}</strong></p>
+          </div>
+          <label class="modal-field">
+            <span>처리 유형</span>
+            <select v-model="reviewAction">
+              <option>확인완료</option>
+              <option>예외처리</option>
+            </select>
+          </label>
+          <label class="modal-field">
+            <span>처리 메모</span>
+            <textarea v-model="reviewMemo" rows="4" placeholder="예외 사유 또는 확인 내용을 입력하세요."></textarea>
+          </label>
+          <button class="primary-btn" type="button" @click="saveReviewAction">검수 결과 저장</button>
+        </div>
+      </section>
+    </div>
+
+    <div v-if="showEventModal" class="modal-bg" @click.self="showEventModal = false">
+      <section class="modal panel event-modal">
+        <div class="panel-head">
+          <h2><span class="bar"></span>차량 통행 상세</h2>
+          <button class="link-btn" type="button" @click="showEventModal = false">닫기</button>
+        </div>
+        <div v-if="eventModalTarget" class="event-modal-grid">
+          <div class="detail-card">
+            <div class="detail-head"><p class="eyebrow">FRONT 앞 번호판</p><span class="badge" :class="confClass(eventModalTarget.front.conf)">{{ eventModalTarget.front.conf }}%</span></div>
+            <div class="plate-img"><div class="plate-placeholder"><span class="placeholder-tag">FRONT CROP</span><span class="placeholder-meta mono">960×480 · top half</span></div></div>
+            <div class="plate-result mono">{{ eventModalTarget.front.plate }}</div>
+            <span class="capture-ts mono">{{ eventModalTarget.front.ts }}</span>
+          </div>
+          <div class="detail-card">
+            <div class="detail-head"><p class="eyebrow">REAR 뒷 번호판</p><span class="badge" :class="confClass(eventModalTarget.rear.conf)">{{ eventModalTarget.rear.conf }}%</span></div>
+            <div class="plate-img"><div class="plate-placeholder"><span class="placeholder-tag">REAR CROP</span><span class="placeholder-meta mono">960×480 · bottom half</span></div></div>
+            <div class="plate-result mono">{{ eventModalTarget.rear.plate }}</div>
+            <span class="capture-ts mono">{{ eventModalTarget.rear.ts }}</span>
+          </div>
+          <div class="detail-card final">
+            <div class="detail-head"><p class="eyebrow">FUSION 최종 판정</p><span class="badge" :class="confClass(eventModalTarget.final.conf)">{{ eventModalTarget.final.conf }}%</span></div>
+            <div class="plate-final mono">{{ eventModalTarget.final.plate }}</div>
+            <div class="fusion-meta">
+              <p><span>차로</span><strong>LANE {{ eventModalTarget.lane }}</strong></p>
+              <p><span>통과 시각</span><strong class="mono">{{ eventModalTarget.time }}</strong></p>
+              <p><span>상태</span><strong>{{ eventModalTarget.status }}</strong></p>
+              <p><span>소스</span><strong>{{ eventModalTarget.source }}</strong></p>
+            </div>
+          </div>
+          <div class="detail-card gps-modal-card">
+            <div class="detail-head"><p class="eyebrow">GPS 경로 분석</p><span class="badge" :class="eventModalGpsScatter.inside ? 'ok' : 'danger'">{{ eventModalGpsScatter.inside ? '통과' : '이탈' }}</span></div>
+            <div class="gps-map modal-gps-map">
+              <div class="zone"></div>
+              <span v-for="p in eventModalGpsScatter.points" :key="p.id" class="gps-point" :class="p.type" :style="{ left: p.x + '%', top: p.y + '%' }"><em v-if="p.label">{{ p.label }}</em></span>
+            </div>
+            <div class="gps-info modal-gps-info">
+              <p><span>차량</span><strong class="mono">{{ eventModalTarget.plate }}</strong></p>
+              <p><span>위도</span><strong class="mono">{{ Number(eventModalTarget.gps.lat).toFixed(6) }}</strong></p>
+              <p><span>경도</span><strong class="mono">{{ Number(eventModalTarget.gps.lng).toFixed(6) }}</strong></p>
+              <p><span>속도</span><strong class="mono">{{ eventModalTarget.gps.speed }} km/h</strong></p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div v-if="showGpsZoneModal" class="modal-bg" @click.self="showGpsZoneModal = false">
@@ -955,13 +1252,17 @@ main{padding:22px 24px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .donut-legend span{color:#a8c4e8}
 .donut-legend strong{color:#fff;text-align:right;font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
 
-.vclass-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
-.vclass-head{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:6px}
-.vclass-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
-.vclass-head strong{color:#fff;font-weight:600;flex:1}
-.vclass-head em{font-style:normal;color:#dcecff;font-family:'JetBrains Mono',monospace;font-size:12px}
-.vclass-bar{height:6px;border-radius:999px;background:rgba(56,120,245,.14);overflow:hidden}
-.vclass-bar b{display:block;height:100%;border-radius:inherit}
+.esg-score{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid rgba(51,230,161,.22);border-radius:10px;background:linear-gradient(135deg,rgba(51,230,161,.16),rgba(56,190,245,.08))}
+.esg-score span{color:#7be9b8;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.esg-score strong{font-size:34px;line-height:1;color:#fff;font-weight:900;text-shadow:0 0 18px rgba(51,230,161,.28)}
+.esg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.esg-list li{display:grid;grid-template-columns:12px 1fr;gap:10px;align-items:center;padding:10px 12px;border-radius:9px;background:rgba(2,9,22,.48);border:1px solid rgba(56,120,245,.12)}
+.esg-dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 10px currentColor}
+.esg-dot.green{background:#33e6a1;color:#33e6a1}
+.esg-dot.blue{background:#38bef5;color:#38bef5}
+.esg-dot.yellow{background:#ffd166;color:#ffd166}
+.esg-list strong{display:block;color:#fff;font-size:14px;font-family:'JetBrains Mono',monospace;font-weight:800}
+.esg-list em{display:block;margin-top:2px;color:#8aa6cc;font-size:10.5px;font-style:normal;line-height:1.35}
 
 /* ===== Events ===== */
 .event-scroll{flex:1 1 600px;min-height:600px;overflow-y:auto;border-radius:8px;border:1px solid rgba(56,120,245,.12);background:rgba(2,9,22,.3)}
@@ -1052,8 +1353,58 @@ tbody tr:last-child td{border-bottom:0}
 .row-btn{padding:5px 12px;border:1px solid rgba(56,120,245,.3);border-radius:6px;background:rgba(20,36,68,.58);color:#a8c4e8;font-size:11.5px}
 .row-btn:hover{background:rgba(56,190,245,.18);color:#fff}
 
+/* ===== Operator subpages ===== */
+.ops-subpage{display:flex;flex-direction:column;gap:16px}
+.subpage-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:118px}
+.subpage-kicker{margin:0 0 6px;color:#38bef5;font-size:11px;font-weight:800;letter-spacing:.16em}
+.subpage-hero h2{margin:0 0 6px;color:#fff;font-size:26px;font-weight:800}
+.subpage-hero span{color:#a8c4e8;font-size:13px}
+.subpage-panel{min-height:560px;display:flex;flex-direction:column;gap:16px}
+.subpage-two{display:grid;grid-template-columns:minmax(420px,1.05fr) minmax(320px,.95fr);gap:16px;align-items:stretch}
+.lane-ocr-layout{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:stretch}
+.lane-detect-list{display:flex;flex-direction:column;gap:12px}
+.lane-detect-card{min-height:136px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;padding:16px;border:1px solid rgba(56,120,245,.18);border-radius:12px;background:rgba(2,9,22,.5);text-align:left}
+.lane-detect-card:hover,.lane-detect-card.active{border-color:rgba(56,190,245,.55);background:rgba(56,190,245,.12)}
+.lane-detect-title{color:#8aa6cc;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.lane-detect-card strong{color:#fff;font-size:22px}
+.lane-detect-card em{font-style:normal;font-weight:800}
+.lane-detect-card small{color:#7290b8;font-size:11.5px}
+.lane-detect-detail{display:grid;grid-template-columns:minmax(420px,1.05fr) minmax(320px,.95fr);gap:16px;align-items:stretch}
+.subpage-frame{aspect-ratio:16/9;max-height:none}
+.subpage-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.subpage-info-grid p{margin:0;display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:84px;padding:14px;border:1px solid rgba(56,120,245,.16);border-radius:10px;background:rgba(2,9,22,.5)}
+.subpage-info-grid span{color:#7290b8;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.subpage-info-grid strong{color:#fff;font-size:17px;font-weight:800}
+.subpage-table-scroll{min-height:520px;max-height:620px}
+.subpage-alerts{max-height:none}
+.subpage-health{grid-template-columns:repeat(4,minmax(0,1fr))}
+.settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.settings-grid label{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid rgba(56,120,245,.16);border-radius:10px;background:rgba(2,9,22,.5)}
+.settings-grid span{color:#7290b8;font-size:11px;font-weight:700;letter-spacing:.06em}
+.settings-grid input{height:38px;border:1px solid rgba(56,120,245,.22);border-radius:8px;background:rgba(8,14,32,.72);color:#fff;padding:0 12px}
+.review-modal-body{display:flex;flex-direction:column;gap:14px}
+.modal-field{display:flex;flex-direction:column;gap:6px}
+.modal-field span{color:#7290b8;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.modal-field select,.modal-field textarea{border:1px solid rgba(56,120,245,.22);border-radius:8px;background:rgba(2,9,22,.5);color:#fff;padding:10px 12px;resize:vertical}
+.modal{width:min(720px,94vw)}
+.event-modal{width:min(1220px,96vw);max-height:90vh;overflow:auto}
+.event-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(540px,1fr));gap:16px}
+.gps-modal-card{min-width:0;overflow:hidden}
+.modal-gps-map{height:230px}
+.modal-gps-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.settings-grid input[readonly]{cursor:default;opacity:.72}
+.event-modal .detail-card{min-width:0}
+.event-modal .detail-head,
+.event-modal .fusion-meta p,
+.event-modal .gps-info p,
+.review-modal-body .subpage-info-grid p{white-space:nowrap}
+.event-modal .plate-result,
+.event-modal .plate-final{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-modal .placeholder-meta,
+.event-modal .capture-ts,
+.modal-field span{white-space:nowrap}
+
 .modal-bg{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,8,20,.72);backdrop-filter:blur(6px);z-index:50}
-.modal{width:min(560px,92vw)}
 .modal-copy{margin:0;font-size:12.5px;color:#a8c4e8}
 .zone-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .zone-grid label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:#7290b8}
@@ -1065,7 +1416,7 @@ tbody tr:last-child td{border-bottom:0}
 .ops-shell.light .particle{background:rgba(52,102,168,.32);box-shadow:0 0 6px rgba(52,102,168,.22)}
 .ops-shell.light .sidebar,.ops-shell.light .topbar{background:rgba(248,251,255,.86);border-color:rgba(42,113,190,.2);box-shadow:0 14px 38px rgba(24,57,100,.08)}
 .ops-shell.light .panel,.ops-shell.light .kpi-card,.ops-shell.light .lane-detail,.ops-shell.light .metric,.ops-shell.light .detail-card,.ops-shell.light .health-cell,.ops-shell.light .quick-section{background:rgba(255,255,255,.78);border-color:rgba(42,113,190,.18);box-shadow:0 12px 34px rgba(24,57,100,.08)}
-.ops-shell.light .top-brand strong,.ops-shell.light .brand-header strong,.ops-shell.light .panel-head h2,.ops-shell.light .big-num,.ops-shell.light .kpi-value,.ops-shell.light .admin-info strong,.ops-shell.light .frame-foot strong,.ops-shell.light .health-cell strong,.ops-shell.light .vclass-head strong,.ops-shell.light .donut-legend strong,.ops-shell.light .plate-result,.ops-shell.light .plate-final,.ops-shell.light .fusion-meta strong,.ops-shell.light .lane-current,.ops-shell.light .metric strong,.ops-shell.light .alert-row strong{color:#102033;text-shadow:none}
+.ops-shell.light .top-brand strong,.ops-shell.light .brand-header strong,.ops-shell.light .panel-head h2,.ops-shell.light .big-num,.ops-shell.light .kpi-value,.ops-shell.light .admin-info strong,.ops-shell.light .frame-foot strong,.ops-shell.light .health-cell strong,.ops-shell.light .esg-list strong,.ops-shell.light .donut-legend strong,.ops-shell.light .plate-result,.ops-shell.light .plate-final,.ops-shell.light .fusion-meta strong,.ops-shell.light .lane-current,.ops-shell.light .metric strong,.ops-shell.light .alert-row strong{color:#102033;text-shadow:none}
 .ops-shell.light .top-sub,.ops-shell.light .top-info,.ops-shell.light .brand-header span,.ops-shell.light .brand-header strong small,.ops-shell.light .side-nav button,.ops-shell.light .submenu button,.ops-shell.light .quick-section p,.ops-shell.light .kpi-title,.ops-shell.light .chip,.ops-shell.light .muted,.ops-shell.light .capture-ts,.ops-shell.light .modal-copy{color:#526b88}
 .ops-shell.light .top-btn,.ops-shell.light .link-btn,.ops-shell.light .quick-pill,.ops-shell.light .ctrl,.ops-shell.light .row-btn,.ops-shell.light .filter-row,.ops-shell.light .period-tabs,.ops-shell.light .detail-tabs{background:rgba(235,243,255,.9);border-color:rgba(42,113,190,.24);color:#24425f}
 .ops-shell.light .top-btn.theme-btn{color:#05233d;background:linear-gradient(135deg,#ffffff,#dcecff);border-color:rgba(33,98,170,.42);box-shadow:0 4px 14px rgba(24,57,100,.14)}
@@ -1094,12 +1445,32 @@ tbody tr:last-child td{border-bottom:0}
 .ops-shell.light .kpi-delta,.ops-shell.light .top-info.ok{color:#087a50}
 .ops-shell.light .kpi-delta.down{color:#b3203a}
 .ops-shell.light .bar-item,.ops-shell.light .metric-bars span,.ops-shell.light .cumulative-bar b,.ops-shell.light .conf-bar b{filter:saturate(1.05)}
-.ops-shell.light .vclass-bar,.ops-shell.light .cumulative-bar,.ops-shell.light .conf-bar{background:rgba(42,113,190,.14)}
+.ops-shell.light .cumulative-bar,.ops-shell.light .conf-bar{background:rgba(42,113,190,.14)}
 .ops-shell.light .detail-card.final{background:linear-gradient(145deg,rgba(22,131,255,.12),rgba(51,230,161,.08));border-color:rgba(22,131,255,.24)}
 .ops-shell.light .plate-final,.ops-shell.light .plate-result{background:rgba(255,255,255,.82);border-color:rgba(34,93,156,.18)}
 .ops-shell.light .alert-list li{background:rgba(255,255,255,.74);border-color:rgba(42,113,190,.14)}
 .ops-shell.light .alert-body p,.ops-shell.light .decision{color:#38536f}
 .ops-shell.light .modal{background:rgba(255,255,255,.94)}
+.ops-shell.light .subpage-hero h2,
+.ops-shell.light .subpage-info-grid strong,
+.ops-shell.light .settings-grid input,
+.ops-shell.light .lane-detect-card strong,
+.ops-shell.light .modal-field select,
+.ops-shell.light .modal-field textarea{color:#102033}
+.ops-shell.light .subpage-hero span,
+.ops-shell.light .subpage-info-grid span,
+.ops-shell.light .settings-grid span,
+.ops-shell.light .lane-detect-title,
+.ops-shell.light .lane-detect-card small,
+.ops-shell.light .modal-field span{color:#425b78}
+.ops-shell.light .subpage-info-grid p,
+.ops-shell.light .settings-grid label,
+.ops-shell.light .lane-detect-card{background:rgba(255,255,255,.78);border-color:rgba(42,113,190,.18)}
+.ops-shell.light .settings-grid input,
+.ops-shell.light .modal-field select,
+.ops-shell.light .modal-field textarea{background:#fff;border-color:rgba(42,113,190,.24)}
+.ops-shell.light .lane-detect-card.active{background:rgba(22,131,255,.12);border-color:rgba(22,131,255,.34)}
+.ops-shell.light .settings-grid input[readonly]{background:rgba(239,247,255,.78)}
 
 /* 라이트 모드 최종 대비 보정 */
 .ops-shell.light .panel *,
@@ -1141,7 +1512,7 @@ tbody tr:last-child td{border-bottom:0}
 .ops-shell.light .metric p,
 .ops-shell.light .metric em,
 .ops-shell.light .donut-legend span,
-.ops-shell.light .vclass-head em {
+.ops-shell.light .esg-list em {
   color: #425b78;
 }
 
