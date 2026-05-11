@@ -58,6 +58,14 @@ public class Member {
 		return "MASTER_ADMIN".equals(role);
 	}
 
+	public void promoteToMasterAdmin(String passwordHash) {
+		this.passwordHash = passwordHash;
+		this.memberName = "admin";
+		this.plateNumber = null;
+		this.role = "MASTER_ADMIN";
+		this.assignedDashboardId = null;
+	}
+
 	public void assignDashboard(String assignedDashboardId) {
 		this.assignedDashboardId = assignedDashboardId;
 	}
