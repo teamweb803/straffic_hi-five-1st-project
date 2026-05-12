@@ -6,6 +6,7 @@ const routes = [
   { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { hideAuth: true } },
   { path: '/signup', name: 'signup', component: () => import('@/views/SignupView.vue'), meta: { hideAuth: true } },
   { path: '/dashboard', name: 'dashboard', component: () => import('@/views/DashboardView.vue'), meta: { requiresAuth: true, requiresDashboard: true } },
+  { path: '/dashboard-compact', name: 'dashboard-compact', component: () => import('@/views/CompactControlDashboardView.vue'), meta: { requiresAuth: true, requiresDashboard: true } },
   { path: '/master-admin', name: 'master-admin', component: () => import('@/views/MasterAdminDashboardView.vue'), meta: { requiresAuth: true, requiresMasterAdmin: true } },
   { path: '/company', name: 'company', component: () => import('@/views/CompanyView.vue') },
   { path: '/solution', name: 'solution', component: () => import('@/views/SolutionView.vue') },

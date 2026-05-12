@@ -288,6 +288,11 @@ function enterCenter(center) {
   router.push({ path: '/dashboard', query: { center: center.dashboardId } })
 }
 
+function enterCompactCenter(center) {
+  selectedCenter.value = center.name
+  router.push({ path: '/dashboard-compact', query: { center: center.dashboardId } })
+}
+
 function showActionMessage(message) {
   memberMessage.value = message
   window.alert(message)
@@ -666,7 +671,10 @@ onBeforeUnmount(() => {
                     <td>{{ center.current.toLocaleString() }}</td>
                     <td>{{ center.today.toLocaleString() }}</td>
                     <td><span class="status" :class="statusClass(center.status)">{{ center.status }}</span></td>
-                    <td><button class="small-btn" type="button" @click="enterCenter(center)">진입</button></td>
+                    <td class="dashboard-entry-cell">
+                      <button class="small-btn" type="button" @click="enterCenter(center)">진입1</button>
+                      <button class="small-btn compact-entry-btn" type="button" @click="enterCompactCenter(center)">진입2</button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -961,7 +969,10 @@ onBeforeUnmount(() => {
                   <td>{{ center.current.toLocaleString() }}</td>
                   <td>{{ center.today.toLocaleString() }}</td>
                   <td><span class="status" :class="statusClass(center.status)">{{ center.status }}</span></td>
-                  <td><button class="small-btn" type="button" @click="enterCenter(center)">진입</button></td>
+                  <td class="dashboard-entry-cell">
+                    <button class="small-btn" type="button" @click="enterCenter(center)">진입1</button>
+                    <button class="small-btn compact-entry-btn" type="button" @click="enterCompactCenter(center)">진입2</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1826,6 +1837,24 @@ main {
   border-color: #1683ff;
   background: rgba(22, 131, 255, 0.24);
   box-shadow: 0 0 16px rgba(22, 131, 255, 0.22);
+}
+
+.dashboard-entry-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dashboard-entry-cell .small-btn {
+  min-width: 48px;
+  margin-right: 0;
+  padding: 0 8px;
+}
+
+.compact-entry-btn {
+  border-color: rgba(47, 224, 235, 0.42);
+  background: rgba(18, 92, 112, 0.24);
 }
 
 .notice-panel {
