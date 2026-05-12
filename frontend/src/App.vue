@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 const route = useRoute()
 
-const chromeHiddenRoutes = ['home', 'dashboard', 'dashboard-compact', 'master-admin']
+const chromeHiddenRoutes = ['home', 'dashboard', 'master-admin']
 const useGlobalChrome = computed(() => !chromeHiddenRoutes.includes(route.name))
 
 onMounted(() => {
