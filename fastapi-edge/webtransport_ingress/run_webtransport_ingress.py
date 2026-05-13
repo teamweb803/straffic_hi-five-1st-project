@@ -4,9 +4,10 @@ import argparse
 import asyncio
 import logging
 import ssl
+import time
 
 from hifive_jetson_py.ingress_state import IngressStats
-from hifive_jetson_py.spring_forwarder import SpringForwarder
+from hifive_jetson_py.spring_forwarder import SpringForwarder, SpringJsonForwarder
 from hifive_jetson_py.webtransport_ingress import WebTransportIngressFactory
 
 
@@ -18,6 +19,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--key", required=True)
     parser.add_argument("--wt-path", default="/hifive/edge")
     parser.add_argument("--spring-url", default="http://127.0.0.1:8080/api/ingest/passage-events")
+    parser.add_argument("--spring-edge-status-url", default="")
+    parser.add_argument("--spring-ingress-status-url", default="")
+    parser.add_argument("--ingress-status-forward-interval-sec", type=float, default=0.0)
     parser.add_argument("--spring-timeout-sec", type=float, default=3.0)
     parser.add_argument("--ingest-key", default="")
     parser.add_argument("--dry-run-spring", action="store_true")
@@ -60,6 +64,31 @@ async def run_ops_api(stats: IngressStats, host: str, port: int) -> None:
     await server.serve()
 
 
+async def forward_ingress_status_loop(
+    stats: IngressStats,
+    forwarder: SpringJsonForwarder,
+    interval_sec: float,
+) -> None:
+    interval = max(0.2, interval_sec)
+    while True:
+        ts_ms = int(time.time() * 1000)
+        event_id = f"ingress-status-{ts_ms}"
+        payload = {
+            "type": "ingress_status",
+            "schema_version": "hifive.ingress_status.v1",
+            "ts_ms": ts_ms,
+            "status": stats.snapshot(),
+        }
+        result = await forwarder.forward(payload, event_id)
+        if result.accepted:
+            stats.mark_ingress_status_forward(event_id, "accepted", result.status_code, result.detail)
+        elif result.retryable:
+            stats.mark_ingress_status_forward(event_id, "retry", result.status_code, result.detail)
+        else:
+            stats.mark_ingress_status_forward(event_id, "rejected", result.status_code, result.detail)
+        await asyncio.sleep(interval)
+
+
 async def async_main() -> None:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="INFO:     %(message)s")
@@ -75,6 +104,22 @@ async def async_main() -> None:
         ingest_key=args.ingest_key,
         dry_run=args.dry_run_spring,
     )
+    edge_status_forwarder = None
+    if args.spring_edge_status_url or args.dry_run_spring:
+        edge_status_forwarder = SpringJsonForwarder(
+            endpoint=args.spring_edge_status_url,
+            timeout_sec=args.spring_timeout_sec,
+            ingest_key=args.ingest_key,
+            dry_run=args.dry_run_spring,
+        )
+    ingress_status_forwarder = None
+    if args.spring_ingress_status_url or args.dry_run_spring:
+        ingress_status_forwarder = SpringJsonForwarder(
+            endpoint=args.spring_ingress_status_url,
+            timeout_sec=args.spring_timeout_sec,
+            ingest_key=args.ingest_key,
+            dry_run=args.dry_run_spring,
+        )
 
     configuration = QuicConfiguration(
         is_client=False,
@@ -91,10 +136,19 @@ async def async_main() -> None:
         create_protocol=WebTransportIngressFactory(
             path=args.wt_path,
             forwarder=forwarder,
+            edge_status_forwarder=edge_status_forwarder,
             stats=stats,
         ).create(),
     )
     asyncio.create_task(run_ops_api(stats, args.ops_host, args.ops_port))
+    if args.ingress_status_forward_interval_sec > 0 and ingress_status_forwarder is not None:
+        asyncio.create_task(
+            forward_ingress_status_loop(
+                stats,
+                ingress_status_forwarder,
+                args.ingress_status_forward_interval_sec,
+            )
+        )
     print(f"WebTransport ingress listening on {args.host}:{args.port}{args.wt_path}")
     print(f"Ops API listening on http://{args.ops_host}:{args.ops_port}")
     await asyncio.Future()

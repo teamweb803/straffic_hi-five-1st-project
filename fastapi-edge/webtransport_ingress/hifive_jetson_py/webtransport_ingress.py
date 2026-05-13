@@ -10,12 +10,13 @@ from typing import Any
 from .ack import ACK, REJECT, RETRY, encode_ack
 from .framing import FrameError, unpack_ready_event_frame
 from .ingress_state import IngressStats
-from .spring_forwarder import SpringForwarder
+from .spring_forwarder import SpringForwarder, SpringJsonForwarder
 
 
 logger = logging.getLogger("hifive.ingress")
 
 NETWORK_TRANSITION_EVENT_PREFIX = "network-transition-"
+EDGE_STATUS_EVENT_PREFIX = "edge-status-"
 
 
 def _decode_network_transition_payload(payload: bytes) -> dict[str, Any]:
@@ -32,10 +33,25 @@ def _decode_network_transition_payload(payload: bytes) -> dict[str, Any]:
     return {"type": "network_transition", "value": decoded}
 
 
+def _decode_edge_status_payload(payload: bytes) -> dict[str, Any]:
+    try:
+        decoded = json.loads(payload.decode("utf-8"))
+    except Exception as exc:
+        return {
+            "type": "edge_status",
+            "parse_error": str(exc),
+            "raw": payload[:200].decode("utf-8", errors="replace"),
+        }
+    if isinstance(decoded, dict):
+        return decoded
+    return {"type": "edge_status", "value": decoded}
+
+
 @dataclass
 class IngressSession:
     session_id: int
     forwarder: SpringForwarder
+    edge_status_forwarder: SpringJsonForwarder | None
     stats: IngressStats
     buffers: dict[int, bytearray]
 
@@ -81,7 +97,51 @@ class IngressSession:
             )
             return encode_ack(ACK, frame.event_id, "network transition logged")
 
+        if frame.event_id.startswith(EDGE_STATUS_EVENT_PREFIX):
+            detail = _decode_edge_status_payload(frame.payload)
+            self.stats.mark_edge_status(
+                frame.event_id,
+                detail,
+                payload_bytes=len(frame.payload),
+            )
+            if self.edge_status_forwarder is not None:
+                result = await self.edge_status_forwarder.forward(detail, frame.event_id)
+                if result.accepted:
+                    self.stats.mark_edge_status_forward(
+                        frame.event_id,
+                        "accepted",
+                        result.status_code,
+                        result.detail,
+                    )
+                elif result.retryable:
+                    self.stats.mark_edge_status_forward(
+                        frame.event_id,
+                        "retry",
+                        result.status_code,
+                        result.detail,
+                    )
+                else:
+                    self.stats.mark_edge_status_forward(
+                        frame.event_id,
+                        "rejected",
+                        result.status_code,
+                        result.detail,
+                    )
+            logger.info(
+                "Edge status event_id=%s device_id=%s active_path=%s",
+                frame.event_id,
+                detail.get("device_id", ""),
+                (detail.get("transport") or {}).get("active_path", "") if isinstance(detail.get("transport"), dict) else "",
+            )
+            return encode_ack(ACK, frame.event_id, "edge status logged")
+
         result = await self.forwarder.forward(frame.payload, frame.event_id)
+        if result.accepted:
+            self.stats.mark_spring_forward(frame.event_id, "accepted", result.status_code, result.detail)
+        elif result.retryable:
+            self.stats.mark_spring_forward(frame.event_id, "retry", result.status_code, result.detail)
+        else:
+            self.stats.mark_spring_forward(frame.event_id, "rejected", result.status_code, result.detail)
         if result.accepted:
             self.stats.mark_ack(frame.event_id)
             logger.info("WebTransport event ACK event_id=%s detail=%s", frame.event_id, result.detail)
@@ -101,10 +161,12 @@ class WebTransportIngressFactory:
         *,
         path: str,
         forwarder: SpringForwarder,
+        edge_status_forwarder: SpringJsonForwarder | None = None,
         stats: IngressStats,
     ) -> None:
         self.path = path if path.startswith("/") else f"/{path}"
         self.forwarder = forwarder
+        self.edge_status_forwarder = edge_status_forwarder
         self.stats = stats
 
     def create(self):  # type: ignore[no-untyped-def]
@@ -115,6 +177,7 @@ class WebTransportIngressFactory:
 
         expected_path = self.path
         forwarder = self.forwarder
+        edge_status_forwarder = self.edge_status_forwarder
         stats = self.stats
 
         class IngressProtocol(QuicConnectionProtocol):
@@ -122,6 +185,11 @@ class WebTransportIngressFactory:
                 super().__init__(*args, **kwargs)
                 self.http: H3Connection | None = None
                 self.sessions: dict[int, IngressSession] = {}
+                stats.mark_connection_open()
+
+            def connection_lost(self, exc) -> None:  # type: ignore[no-untyped-def]
+                stats.mark_connection_closed()
+                super().connection_lost(exc)
 
             def quic_event_received(self, event: QuicEvent) -> None:
                 if isinstance(event, ProtocolNegotiated):
@@ -151,6 +219,7 @@ class WebTransportIngressFactory:
                     self.sessions[event.stream_id] = IngressSession(
                         session_id=event.stream_id,
                         forwarder=forwarder,
+                        edge_status_forwarder=edge_status_forwarder,
                         stats=stats,
                         buffers=defaultdict(bytearray),
                     )

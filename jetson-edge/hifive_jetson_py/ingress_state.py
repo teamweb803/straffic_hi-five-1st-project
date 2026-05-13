@@ -15,10 +15,16 @@ class IngressStats:
     rejected_events: int = 0
     malformed_frames: int = 0
     network_transition_events: int = 0
+    edge_status_events: int = 0
+    active_connections: int = 0
+    total_connections: int = 0
     last_event_id: str = ""
     last_error: str = ""
     last_payload_bytes: int = 0
+    last_connection_closed_ms: int = 0
+    spring_forward: dict[str, Any] = field(default_factory=dict)
     last_network_transition: dict[str, Any] = field(default_factory=dict)
+    last_edge_status: dict[str, Any] = field(default_factory=dict)
     max_recent_events: int = 20
     recent_events: list[dict[str, Any]] = field(default_factory=list)
 
@@ -32,6 +38,32 @@ class IngressStats:
             self.received_events += 1
             self.last_event_id = event_id
             self.last_payload_bytes = int(payload_bytes)
+
+    def mark_connection_open(self) -> None:
+        with self._lock:
+            self.active_connections += 1
+            self.total_connections += 1
+
+    def mark_connection_closed(self) -> None:
+        with self._lock:
+            self.active_connections = max(0, self.active_connections - 1)
+            self.last_connection_closed_ms = int(time.time() * 1000)
+
+    def mark_spring_forward(
+        self,
+        event_id: str,
+        status: str,
+        status_code: int | None,
+        detail: str,
+    ) -> None:
+        with self._lock:
+            self.spring_forward = {
+                "event_id": event_id,
+                "status": status,
+                "status_code": status_code,
+                "detail": detail,
+                "ts_ms": int(time.time() * 1000),
+            }
 
     def mark_ack(self, event_id: str) -> None:
         with self._lock:
@@ -80,6 +112,26 @@ class IngressStats:
                 self.last_payload_bytes,
             )
 
+    def mark_edge_status(
+        self,
+        event_id: str,
+        detail: dict[str, Any],
+        payload_bytes: int = 0,
+    ) -> None:
+        with self._lock:
+            self.edge_status_events += 1
+            self.acked_events += 1
+            self.last_event_id = event_id
+            self.last_error = ""
+            self.last_payload_bytes = int(payload_bytes)
+            self.last_edge_status = dict(detail)
+            self._append_recent_locked(
+                event_id,
+                "edge_status",
+                self._edge_status_detail(detail),
+                self.last_payload_bytes,
+            )
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             uptime_sec = max(0.0, (time.time_ns() - self.started_at_ns) / 1_000_000_000)
@@ -91,10 +143,17 @@ class IngressStats:
                 "rejected_events": self.rejected_events,
                 "malformed_frames": self.malformed_frames,
                 "network_transition_events": self.network_transition_events,
+                "edge_status_events": self.edge_status_events,
+                "active_connections": self.active_connections,
+                "total_connections": self.total_connections,
                 "last_event_id": self.last_event_id,
                 "last_error": self.last_error,
                 "last_payload_bytes": self.last_payload_bytes,
+                "last_connection_closed_ms": self.last_connection_closed_ms,
+                "spring_forward": dict(self.spring_forward),
                 "last_network_transition": dict(self.last_network_transition),
+                "last_edge_status": dict(self.last_edge_status),
+                "latest_edge_status": dict(self.last_edge_status),
                 "recent_events": list(self.recent_events),
             }
 
@@ -122,4 +181,20 @@ class IngressStats:
             f"recovered_event_id={recovered_event_id} "
             f"route_before={route_before} "
             f"route_after={route_after}"
+        )[:600]
+
+    @staticmethod
+    def _edge_status_detail(detail: dict[str, Any]) -> str:
+        runtime = detail.get("runtime") if isinstance(detail, dict) else {}
+        transport = detail.get("transport") if isinstance(detail, dict) else {}
+        if not isinstance(runtime, dict):
+            runtime = {}
+        if not isinstance(transport, dict):
+            transport = {}
+        return (
+            f"device_id={detail.get('device_id', '')} "
+            f"camera_id={detail.get('camera_id', '')} "
+            f"frames={runtime.get('processed_frames', '')} "
+            f"events={runtime.get('sent_events', '')} "
+            f"active_path={transport.get('active_path', '')}"
         )[:600]

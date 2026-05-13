@@ -27,7 +27,9 @@ spool/
 *.jpeg
 
 # Local secrets / certs
+certs/
 *.pem
+*.crt
 *.key
 .env
 .env.*

@@ -17,6 +17,15 @@ from .spool import FileSpool, SpoolItem
 NETWORK_TRANSITION_EVENT_PREFIX = "network-transition-"
 
 
+@dataclass(frozen=True)
+class WebTransportEndpoint:
+    label: str
+    host: str
+    port: int
+    server_name: str
+    verify_tls: bool
+
+
 @dataclass
 class WebTransportIngressSender:
     host: str
@@ -30,10 +39,26 @@ class WebTransportIngressSender:
     retry_initial_sec: float = 1.0
     retry_max_sec: float = 30.0
     retry_max_items_per_cycle: int = 16
+    failover_enabled: bool = False
+    standby_host: str = ""
+    standby_port: int = 0
+    standby_server_name: str = ""
+    standby_verify_tls: bool | None = None
+    failover_recheck_sec: float = 1.0
 
     def __post_init__(self) -> None:
         self._inflight: set[Path] = set()
         self._lock = threading.Lock()
+        self._primary = WebTransportEndpoint(
+            label="lan",
+            host=self.host,
+            port=self.port,
+            server_name=self.server_name or self.host,
+            verify_tls=self.verify_tls,
+        )
+        self._standby = self._build_standby_endpoint()
+        self._active_label = self._primary.label
+        self._next_primary_probe_at = 0.0
         self._outage_started_monotonic: float | None = None
         self._outage_started_ms = 0
         self._outage_failed_event_id = ""
@@ -46,6 +71,51 @@ class WebTransportIngressSender:
     def submit(self, payload: bytes, event_id: str) -> bool:
         item = self.spool.enqueue(payload, event_id=event_id)
         return self._send_spooled_item(item, source="live")
+
+    def submit_latest(self, payload: bytes, event_id: str) -> bool:
+        previous_active = self._active_label
+        for endpoint in self._endpoint_order():
+            try:
+                accepted = asyncio.run(self._send_once(payload, event_id, endpoint))
+            except Exception as exc:
+                if endpoint.label == self._primary.label and previous_active == self._primary.label:
+                    self._mark_send_failure(event_id, str(exc), "latest", endpoint)
+                elif endpoint.label == self._primary.label:
+                    self._defer_primary_probe()
+                print(f"WebTransport latest failed path={endpoint.label} event_id={event_id}: {exc}")
+                continue
+
+            if not accepted:
+                print(f"WebTransport latest rejected path={endpoint.label} event_id={event_id}")
+                continue
+
+            self._mark_endpoint_success(event_id, "latest", endpoint, previous_active)
+            self._flush_network_logs()
+            return True
+        return False
+
+    def snapshot(self) -> dict:
+        standby = self._standby
+        with self._lock:
+            active_label = self._active_label
+            outage_started = self._outage_started_monotonic is not None
+            next_primary_probe_ms = max(
+                0,
+                int((self._next_primary_probe_at - time.monotonic()) * 1000),
+            )
+            pending_network_logs = len(self._pending_network_logs)
+        return {
+            "kind": "webtransport_ingress",
+            "active_path": active_label,
+            "failover_enabled": self.failover_enabled and standby is not None,
+            "primary_host": self._primary.host,
+            "primary_port": self._primary.port,
+            "standby_host": standby.host if standby is not None else "",
+            "standby_port": standby.port if standby is not None else 0,
+            "outage_active": outage_started,
+            "next_primary_probe_ms": next_primary_probe_ms,
+            "pending_network_logs": pending_network_logs,
+        }
 
     def _retry_loop(self) -> None:
         delay = max(0.1, self.retry_initial_sec)
@@ -71,20 +141,31 @@ class WebTransportIngressSender:
         if not self._claim(item.path):
             return False
         item = self.spool.record_attempt(item)
-        try:
-            accepted = asyncio.run(self._send_once(item.payload, item.event_id))
-        except Exception as exc:
-            self._mark_send_failure(item.event_id, str(exc), source)
-            print(f"WebTransport {source} failed event_id={item.event_id}: {exc}")
-            self._release(item.path)
-            return False
+        previous_active = self._active_label
+        for endpoint in self._endpoint_order():
+            try:
+                accepted = asyncio.run(self._send_once(item.payload, item.event_id, endpoint))
+            except Exception as exc:
+                if endpoint.label == self._primary.label and previous_active == self._primary.label:
+                    self._mark_send_failure(item.event_id, str(exc), source, endpoint)
+                elif endpoint.label == self._primary.label:
+                    self._defer_primary_probe()
+                print(
+                    f"WebTransport {source} failed path={endpoint.label} "
+                    f"event_id={item.event_id}: {exc}"
+                )
+                continue
 
-        if accepted:
+            if not accepted:
+                print(f"WebTransport {source} rejected path={endpoint.label} event_id={item.event_id}")
+                continue
+
             self.spool.ack(item)
             self._release(item.path)
-            self._mark_send_success(item.event_id, source)
+            self._mark_endpoint_success(item.event_id, source, endpoint, previous_active)
             self._flush_network_logs()
             return True
+
         self._release(item.path)
         return False
 
@@ -99,11 +180,17 @@ class WebTransportIngressSender:
         with self._lock:
             self._inflight.discard(path)
 
-    def _mark_send_failure(self, event_id: str, detail: str, source: str) -> None:
+    def _mark_send_failure(
+        self,
+        event_id: str,
+        detail: str,
+        source: str,
+        endpoint: WebTransportEndpoint,
+    ) -> None:
         with self._lock:
             if self._outage_started_monotonic is not None:
                 return
-        route = self._route_snapshot()
+        route = self._route_snapshot(endpoint.host)
         started_ms = int(time.time() * 1000)
         with self._lock:
             if self._outage_started_monotonic is not None:
@@ -114,28 +201,41 @@ class WebTransportIngressSender:
             self._outage_failure_route = route
         print(
             "network_outage_started "
-            f"source={source} event_id={event_id} route={route} detail={detail}"
+            f"source={source} path={endpoint.label} event_id={event_id} route={route} detail={detail}"
         )
 
-    def _mark_send_success(self, event_id: str, source: str) -> None:
+    def _mark_endpoint_success(
+        self,
+        event_id: str,
+        source: str,
+        endpoint: WebTransportEndpoint,
+        previous_active: str,
+    ) -> None:
         with self._lock:
             outage_started = self._outage_started_monotonic
-            if outage_started is None:
-                return
             failed_event_id = self._outage_failed_event_id
             failure_route = self._outage_failure_route
             outage_started_ms = self._outage_started_ms
+            self._active_label = endpoint.label
+            if endpoint.label == self._standby_label:
+                self._next_primary_probe_at = time.monotonic() + max(0.1, self.failover_recheck_sec)
+            else:
+                self._next_primary_probe_at = 0.0
 
         recovered_ms = int(time.time() * 1000)
-        outage_ms = int((time.monotonic() - outage_started) * 1000)
-        recovered_route = self._route_snapshot()
+        outage_ms = int((time.monotonic() - outage_started) * 1000) if outage_started is not None else 0
+        recovered_route = self._route_snapshot(endpoint.host)
+        if outage_started is None and previous_active == endpoint.label:
+            return
         log_event_id = self._network_log_event_id(recovered_ms, event_id)
         payload = {
             "type": "network_transition",
-            "transition": "communication_recovered",
+            "transition": "communication_recovered" if outage_started is not None else "path_switched",
             "transport": "webtransport",
-            "host": self.host,
-            "port": self.port,
+            "from_path": previous_active,
+            "to_path": endpoint.label,
+            "host": endpoint.host,
+            "port": endpoint.port,
             "source": source,
             "failed_event_id": failed_event_id,
             "recovered_event_id": event_id,
@@ -154,7 +254,8 @@ class WebTransportIngressSender:
             self._pending_network_logs.append((log_event_id, body))
         print(
             "network_outage_recovered "
-            f"event_id={event_id} outage_ms={outage_ms} route={recovered_route}"
+            f"event_id={event_id} from={previous_active} to={endpoint.label} "
+            f"outage_ms={outage_ms} route={recovered_route}"
         )
 
     def _flush_network_logs(self) -> None:
@@ -163,8 +264,9 @@ class WebTransportIngressSender:
                 if not self._pending_network_logs:
                     return
                 event_id, payload = self._pending_network_logs[0]
+                endpoint = self._active_endpoint_locked()
             try:
-                accepted = asyncio.run(self._send_once(payload, event_id))
+                accepted = asyncio.run(self._send_once(payload, event_id, endpoint))
             except Exception as exc:
                 print(f"network_transition_log_send_failed event_id={event_id}: {exc}")
                 return
@@ -179,10 +281,10 @@ class WebTransportIngressSender:
                         item for item in self._pending_network_logs if item[0] != event_id
                     ]
 
-    def _route_snapshot(self) -> str:
+    def _route_snapshot(self, host: str) -> str:
         try:
             result = subprocess.run(
-                ["ip", "route", "get", self.host],
+                ["ip", "route", "get", host],
                 capture_output=True,
                 text=True,
                 timeout=0.3,
@@ -202,7 +304,49 @@ class WebTransportIngressSender:
         )[:60]
         return f"{NETWORK_TRANSITION_EVENT_PREFIX}{recovered_ms}-{suffix or 'unknown'}"
 
-    async def _send_once(self, payload: bytes, event_id: str) -> bool:
+    @property
+    def _standby_label(self) -> str:
+        return self._standby.label if self._standby is not None else self._primary.label
+
+    def _build_standby_endpoint(self) -> WebTransportEndpoint | None:
+        if not self.failover_enabled or not self.standby_host:
+            return None
+        return WebTransportEndpoint(
+            label="lte",
+            host=self.standby_host,
+            port=self.standby_port or self.port,
+            server_name=self.standby_server_name or self.standby_host,
+            verify_tls=self.verify_tls if self.standby_verify_tls is None else bool(self.standby_verify_tls),
+        )
+
+    def _endpoint_order(self) -> list[WebTransportEndpoint]:
+        standby = self._standby
+        if standby is None:
+            return [self._primary]
+        with self._lock:
+            active_label = self._active_label
+            probe_primary = active_label == standby.label and time.monotonic() >= self._next_primary_probe_at
+        if active_label == standby.label and not probe_primary:
+            return [standby]
+        if active_label == standby.label and probe_primary:
+            return [self._primary, standby]
+        return [self._primary, standby]
+
+    def _active_endpoint_locked(self) -> WebTransportEndpoint:
+        if self._standby is not None and self._active_label == self._standby.label:
+            return self._standby
+        return self._primary
+
+    def _defer_primary_probe(self) -> None:
+        with self._lock:
+            self._next_primary_probe_at = time.monotonic() + max(0.1, self.failover_recheck_sec)
+
+    async def _send_once(
+        self,
+        payload: bytes,
+        event_id: str,
+        endpoint: WebTransportEndpoint,
+    ) -> bool:
         try:
             from aioquic.asyncio import connect
             from aioquic.asyncio.protocol import QuicConnectionProtocol
@@ -213,10 +357,10 @@ class WebTransportIngressSender:
         except ImportError as exc:
             raise RuntimeError("aioquic is required for WebTransport transport") from exc
 
-        host = self.host
+        host = endpoint.host
         path = self.path if self.path.startswith("/") else f"/{self.path}"
-        authority = f"{self.server_name}:{self.port}".encode("utf-8")
-        server_name = self.server_name or self.host
+        authority = f"{endpoint.server_name}:{endpoint.port}".encode("utf-8")
+        server_name = endpoint.server_name or endpoint.host
         timeout_sec = self.timeout_sec
 
         class ClientProtocol(QuicConnectionProtocol):
@@ -289,14 +433,14 @@ class WebTransportIngressSender:
         configuration = QuicConfiguration(
             is_client=True,
             alpn_protocols=H3_ALPN,
-            verify_mode=ssl.CERT_REQUIRED if self.verify_tls else ssl.CERT_NONE,
+            verify_mode=ssl.CERT_REQUIRED if endpoint.verify_tls else ssl.CERT_NONE,
             server_name=server_name,
         )
         configuration.max_datagram_frame_size = 65536
 
         async with connect(
             host,
-            self.port,
+            endpoint.port,
             configuration=configuration,
             create_protocol=ClientProtocol,
         ) as protocol:

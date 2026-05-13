@@ -32,6 +32,9 @@ class EventDispatcher:
                 f"track=#{ready.task.display_id} plate={ready.text} frame={ready.task.frame_num}"
             )
 
+    def drain(self) -> None:
+        self._queue.join()
+
     def _run_forever(self) -> None:
         while not self.shared.stop_event.is_set() or not self._queue.empty():
             try:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -10,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .runtime import EdgeServiceRuntimeOptions
+from .status_sender import EDGE_STATUS_FILE
 
 
 @dataclass
@@ -38,7 +40,7 @@ class EdgeServiceManager:
         video: str,
         start_sec: float = 0.0,
         limit: int = 0,
-        display: bool = True,
+        display: bool = False,
     ) -> dict[str, Any]:
         if not video:
             return {"accepted": False, "detail": "video path is required", **self.status()}
@@ -48,7 +50,7 @@ class EdgeServiceManager:
         self,
         *,
         camera_index: int = 0,
-        display: bool = True,
+        display: bool = False,
         limit: int = 0,
     ) -> dict[str, Any]:
         return self._start("camera", str(camera_index), limit=limit, display=display)
@@ -82,7 +84,7 @@ class EdgeServiceManager:
         *,
         start_sec: float = 0.0,
         limit: int = 0,
-        display: bool = True,
+        display: bool = False,
     ) -> dict[str, Any]:
         with self._lock:
             self._cleanup_finished_locked()
@@ -112,15 +114,23 @@ class EdgeServiceManager:
             self._last_source_value = source_value
             self._last_started_at_ms = started_at_ms
             print(f"edge_service_source_started kind={source_kind} value={source_value} pid={process.pid}")
-            return {"accepted": True, "detail": "source started", **self._status_locked()}
+            return {
+                "accepted": True,
+                "detail": "source started",
+                "warnings": self._start_warnings(start_sec=start_sec, limit=limit, display=display),
+                **self._status_locked(),
+            }
 
     def _status_locked(self) -> dict[str, Any]:
         active = self._active
         now_ms = int(time.time() * 1000)
         running = active is not None and active.process.poll() is None
         uptime_ms = now_ms - active.started_at_ms if active is not None else 0
+        runtime_status = self._read_runtime_status()
         return {
             "running": running,
+            "source_state": "running" if running else "idle",
+            "runtime_runner": self.base_options.runtime_runner,
             "active_source_kind": active.source_kind if active is not None else "",
             "active_source_value": active.source_value if active is not None else "",
             "active_pid": active.process.pid if active is not None else 0,
@@ -131,6 +141,9 @@ class EdgeServiceManager:
             "last_source_value": self._last_source_value,
             "last_started_at_ms": self._last_started_at_ms,
             "last_stopped_at_ms": self._last_stopped_at_ms,
+            "runtime_status_stale": bool(runtime_status.get("stale", False)),
+            "runtime_status_age_ms": int(runtime_status.get("status_age_ms", 0) or 0),
+            "runtime_status": runtime_status,
         }
 
     def _cleanup_finished_locked(self) -> None:
@@ -163,6 +176,30 @@ class EdgeServiceManager:
         display: bool,
     ) -> list[str]:
         options = self.base_options
+        if options.runtime_runner == "deepstream-nvinfer":
+            return self._build_deepstream_nvinfer_command(
+                source_kind=source_kind,
+                source_value=source_value,
+                display=display,
+            )
+        return self._build_python_runtime_command(
+            source_kind=source_kind,
+            source_value=source_value,
+            start_sec=start_sec,
+            limit=limit,
+            display=display,
+        )
+
+    def _build_python_runtime_command(
+        self,
+        *,
+        source_kind: str,
+        source_value: str,
+        start_sec: float,
+        limit: int,
+        display: bool,
+    ) -> list[str]:
+        options = self.base_options
         command = [
             sys.executable,
             str(self._app_dir() / "run_edge_runtime.py"),
@@ -170,6 +207,8 @@ class EdgeServiceManager:
             options.config_path,
             "--display-scale",
             str(options.display_scale),
+            "--input-backend",
+            options.input_backend,
             "--height-threshold",
             str(options.height_threshold),
             "--ocr-stable-sec",
@@ -190,11 +229,19 @@ class EdgeServiceManager:
             str(options.retry_max_sec),
             "--output-dir",
             options.output_dir,
+            "--status-interval-sec",
+            str(options.status_interval_sec),
         ]
         if options.host_override:
             command.extend(["--host", options.host_override])
         if options.port_override > 0:
             command.extend(["--port", str(options.port_override)])
+        if options.standby_host_override:
+            command.extend(["--standby-host", options.standby_host_override])
+        if options.standby_port_override > 0:
+            command.extend(["--standby-port", str(options.standby_port_override)])
+        if options.failover_recheck_sec > 0:
+            command.extend(["--failover-recheck-sec", str(options.failover_recheck_sec)])
         if options.yolo_engine_override:
             command.extend(["--yolo-engine", options.yolo_engine_override])
         if options.ocr_engine_override:
@@ -212,6 +259,100 @@ class EdgeServiceManager:
         command.extend(["--limit", str(limit)])
         return command
 
+    def _start_warnings(self, *, start_sec: float, limit: int, display: bool) -> list[str]:
+        if self.base_options.runtime_runner != "deepstream-nvinfer":
+            return []
+        warnings: list[str] = []
+        if start_sec > 0:
+            warnings.append("start_sec is ignored by deepstream-nvinfer")
+        if limit > 0:
+            warnings.append("limit is ignored by deepstream-nvinfer")
+        return warnings
+
+    def _build_deepstream_nvinfer_command(
+        self,
+        *,
+        source_kind: str,
+        source_value: str,
+        display: bool,
+    ) -> list[str]:
+        options = self.base_options
+        command = [
+            sys.executable,
+            str(self._app_dir() / "run_deepstream_nvinfer.py"),
+            "--config",
+            options.config_path,
+            "--transport-queue-size",
+            str(options.transport_queue_size),
+            "--status-interval-sec",
+            str(options.status_interval_sec),
+            "--output-dir",
+            options.output_dir,
+            "--height-threshold",
+            str(options.height_threshold),
+            "--ocr-stable-sec",
+            str(options.ocr_stable_sec),
+            "--track-memory-sec",
+            str(options.track_memory_sec),
+            "--reid-sec",
+            str(options.reid_sec),
+            "--queue-size",
+            str(options.queue_size),
+            "--parser-lib",
+            options.parser_lib,
+            "--yolo-parser-func",
+            options.yolo_parser_func,
+            "--ocr-parser-func",
+            options.ocr_parser_func,
+            "--tracker-lib",
+            options.tracker_lib,
+            "--tracker-config",
+            options.tracker_config,
+            "--transport-timeout-sec",
+            str(options.transport_timeout_sec),
+            "--retry-initial-sec",
+            str(options.retry_initial_sec),
+            "--retry-max-sec",
+            str(options.retry_max_sec),
+        ]
+        if options.host_override:
+            command.extend(["--host", options.host_override])
+        if options.port_override > 0:
+            command.extend(["--port", str(options.port_override)])
+        if options.standby_host_override:
+            command.extend(["--standby-host", options.standby_host_override])
+        if options.standby_port_override > 0:
+            command.extend(["--standby-port", str(options.standby_port_override)])
+        if options.failover_recheck_sec > 0:
+            command.extend(["--failover-recheck-sec", str(options.failover_recheck_sec)])
+        if options.yolo_engine_override:
+            command.extend(["--yolo-engine", options.yolo_engine_override])
+        if options.ocr_engine_override:
+            command.extend(["--ocr-engine", options.ocr_engine_override])
+        if not options.save_event_images:
+            command.append("--no-save-event-images")
+        if display:
+            command.extend(
+                [
+                    "--display",
+                    "--display-scale",
+                    str(options.display_scale),
+                    "--display-sink",
+                    options.display_sink,
+                ]
+            )
+        if options.yolo_parser_lib:
+            command.extend(["--yolo-parser-lib", options.yolo_parser_lib])
+        if options.ocr_parser_lib:
+            command.extend(["--ocr-parser-lib", options.ocr_parser_lib])
+        if source_kind == "video":
+            command.extend(["--source", source_value])
+        elif source_kind == "camera":
+            command.extend(["--camera-index", source_value])
+        else:
+            raise ValueError(f"unsupported source kind: {source_kind}")
+        return command
+
     def _subprocess_env(self) -> dict[str, str]:
         env = dict(os.environ)
         app_dir = str(self._app_dir())
@@ -221,6 +362,21 @@ class EdgeServiceManager:
 
     def _app_dir(self) -> Path:
         return Path(__file__).resolve().parents[2]
+
+    def _read_runtime_status(self) -> dict[str, Any]:
+        status_path = Path(self.base_options.output_dir) / EDGE_STATUS_FILE
+        try:
+            status = json.loads(status_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return {}
+        except Exception as exc:
+            return {"read_error": str(exc)}
+        now_ms = int(time.time() * 1000)
+        ts_ms = int(status.get("ts_ms", 0) or 0)
+        age_ms = max(0, now_ms - ts_ms) if ts_ms > 0 else 0
+        status["status_age_ms"] = age_ms
+        status["stale"] = ts_ms <= 0 or age_ms > 5000
+        return status
 
 
 def build_edge_service_app(manager: EdgeServiceManager):
@@ -241,7 +397,7 @@ def build_edge_service_app(manager: EdgeServiceManager):
         video: str,
         start_sec: float = 0.0,
         limit: int = 0,
-        display: bool = True,
+        display: bool = False,
     ) -> dict[str, Any]:
         return manager.start_video(video=video, start_sec=start_sec, limit=limit, display=display)
 
@@ -250,7 +406,7 @@ def build_edge_service_app(manager: EdgeServiceManager):
         video: str,
         start_sec: float = 0.0,
         limit: int = 0,
-        display: bool = True,
+        display: bool = False,
     ) -> dict[str, Any]:
         return manager.start_video(video=video, start_sec=start_sec, limit=limit, display=display)
 
@@ -258,7 +414,7 @@ def build_edge_service_app(manager: EdgeServiceManager):
     async def start_camera(
         camera_index: int = 0,
         limit: int = 0,
-        display: bool = True,
+        display: bool = False,
     ) -> dict[str, Any]:
         return manager.start_camera(camera_index=camera_index, limit=limit, display=display)
 
@@ -266,7 +422,7 @@ def build_edge_service_app(manager: EdgeServiceManager):
     async def start_camera_alias(
         camera_index: int = 0,
         limit: int = 0,
-        display: bool = True,
+        display: bool = False,
     ) -> dict[str, Any]:
         return manager.start_camera(camera_index=camera_index, limit=limit, display=display)
 
