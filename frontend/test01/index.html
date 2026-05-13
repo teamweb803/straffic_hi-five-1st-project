@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HiFive | 위성 GPS 기반 스마트 하이패스</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+<!-- =====================================================
+     SVG SYMBOL SPRITE  (모든 아이콘 정의)
+     ===================================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- 위성 -->
+    <symbol id="i-sat" viewBox="0 0 24 24">
+      <path d="M5.5 18.5L2.5 15.5l3-3 3 3-3 3zM18.5 5.5l-3-3-3 3 3 3 3-3zM12 12l4-4M8 16l4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+      <path d="M16 20a4 4 0 0 0-4-4M20 20a8 8 0 0 0-8-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- Hi-Pass 카드 -->
+    <symbol id="i-pass" viewBox="0 0 24 24">
+      <rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M3 10h18" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M6 14h4M12 14h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- 클라우드 + 차트 -->
+    <symbol id="i-cloud" viewBox="0 0 24 24">
+      <path d="M7 17a4 4 0 1 1 .8-7.92A5 5 0 0 1 18 11a3.5 3.5 0 0 1-1 6.9H7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M9 14v-2M12 14v-3M15 14v-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- 방패 + 체크 -->
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 3l8 3v6c0 4.5-3.4 8.4-8 9.5C7.4 20.4 4 16.5 4 12V6l8-3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M8.5 12l2.5 2.5L15.5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- 안정성: 게이지/업타임 -->
+    <symbol id="i-uptime" viewBox="0 0 24 24">
+      <path d="M4 14a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M12 14l5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="12" cy="14" r="1.4" fill="currentColor"/>
+    </symbol>
+
+    <!-- 안정성: 시계 24/7 -->
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M12 7v5l3.5 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- 안정성: 서버 이중화 -->
+    <symbol id="i-server" viewBox="0 0 24 24">
+      <rect x="4" y="5" width="16" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <rect x="4" y="14" width="16" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="7" cy="7.5"  r=".9" fill="currentColor"/>
+      <circle cx="7" cy="16.5" r=".9" fill="currentColor"/>
+    </symbol>
+
+    <!-- 안정성: 보안 인증 -->
+    <symbol id="i-cert" viewBox="0 0 24 24">
+      <path d="M12 3l8 3v6c0 4.5-3.4 8.4-8 9.5C7.4 20.4 4 16.5 4 12V6l8-3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="9.5" y="10" width="5" height="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M11 10V8.5a1 1 0 0 1 2 0V10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+
+    <!-- 전화 -->
+    <symbol id="i-phone" viewBox="0 0 24 24">
+      <path d="M5 5l4 1 1.5 4-2 1.5a12 12 0 0 0 5 5L15 14.5l4 1.5 1 4a2 2 0 0 1-2 2A16 16 0 0 1 3 7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- 메일 -->
+    <symbol id="i-mail" viewBox="0 0 24 24">
+      <rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M3.5 7l8.5 6.5L20.5 7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+
+    <!-- 위치핀 -->
+    <symbol id="i-pin" viewBox="0 0 24 24">
+      <path d="M12 22s-7-7.5-7-13a7 7 0 1 1 14 0c0 5.5-7 13-7 13z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="12" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+
+    <!-- 화살표 -->
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- LinkedIn -->
+    <symbol id="i-linkedin" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M7 10v7M7 7.5v.01M11 17v-7m0 2.5c0-1.5 1-2.5 2.5-2.5S16 11 16 12.5V17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- YouTube -->
+    <symbol id="i-youtube" viewBox="0 0 24 24">
+      <rect x="2.5" y="6" width="19" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/>
+    </symbol>
+
+    <!-- Globe -->
+    <symbol id="i-globe" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+
+    <!-- 정부청사 (국토교통부) -->
+    <symbol id="i-gov" viewBox="0 0 24 24">
+      <path d="M12 3l9 5H3l9-5z" fill="currentColor"/>
+      <rect x="4" y="9" width="2.5" height="9" fill="currentColor"/>
+      <rect x="8" y="9" width="2.5" height="9" fill="currentColor"/>
+      <rect x="13.5" y="9" width="2.5" height="9" fill="currentColor"/>
+      <rect x="17.5" y="9" width="2.5" height="9" fill="currentColor"/>
+      <rect x="3" y="19" width="18" height="2" fill="currentColor"/>
+    </symbol>
+
+    <!-- 교통연구원 신호등 -->
+    <symbol id="i-traffic" viewBox="0 0 24 24">
+      <rect x="8" y="3" width="8" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="12" cy="8"  r="1.4" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
+      <circle cx="12" cy="16" r="1.4" fill="currentColor"/>
+      <path d="M8 6H5M8 12H4M8 18H5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- 트렌드 업 -->
+    <symbol id="i-up" viewBox="0 0 16 16">
+      <path d="M3 11l4-4 3 3 4-5M10 5h3v3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+
+<!-- =====================================================
+     HEADER
+     ===================================================== -->
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="#top">
+      <span class="logo-icon"><i></i><i></i><i></i><i></i><i></i></span>
+      <strong>HiFive</strong>
+    </a>
+
+    <nav class="nav-menu">
+      <a href="#about">회사소개</a>
+      <a href="#service">서비스</a>
+      <a href="#effect">도입효과</a>
+      <a href="#team">팀소개</a>
+      <a href="#devlog">개발일지</a>
+      <a href="#contact">문의하기</a>
+    </nav>
+
+    <div class="language">
+      <svg class="ic"><use href="#i-globe"/></svg>
+      <b>KOR</b>
+      <span class="caret">⌄</span>
+    </div>
+  </div>
+</header>
+
+
+<main id="top">
+  <!-- ===================================================
+       HERO
+       =================================================== -->
+  <section class="hero" id="about">
+    <img src="../assets/hero-highway.png" class="hero-bg" alt="" />
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <h1>위성으로 연결된 길,<br />더 빠르고, 더 안전한 대한민국</h1>
+        <p>
+          HiFive 위성 GPS 기반 Hi-Pass 시스템으로<br />
+          전국 고속도로의 스마트한 통행과 결제를 혁신합니다.
+        </p>
+        <a class="outline-button" href="#service">
+          HiFive 소개
+          <svg class="ic ic-arrow"><use href="#i-arrow"/></svg>
+        </a>
+
+        <div class="hero-features">
+          <div class="hero-feature">
+            <span class="ic-box"><svg><use href="#i-sat"/></svg></span>
+            <b>위성 GPS 기반</b>
+            <small>정밀 통행 인식</small>
+          </div>
+          <div class="hero-feature">
+            <span class="ic-box"><svg><use href="#i-pass"/></svg></span>
+            <b>Hi-Pass</b>
+            <small>스마트 결제</small>
+          </div>
+          <div class="hero-feature">
+            <span class="ic-box"><svg><use href="#i-cloud"/></svg></span>
+            <b>통합 관제 플랫폼</b>
+            <small>실시간 모니터링</small>
+          </div>
+          <div class="hero-feature">
+            <span class="ic-box"><svg><use href="#i-shield"/></svg></span>
+            <b>안정적·신뢰성 높은</b>
+            <small>국가 인프라 운영</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-ui">
+        <div class="map-pin pin-one">
+          <i></i>
+          <div>
+            <b>서울 ⇄ 부산</b>
+            <small>정상 운행</small>
+          </div>
+        </div>
+
+        <div class="map-pin pin-two">
+          <i></i>
+          <div>
+            <b>대전 톨게이트</b>
+            <small>정상 처리 2.1초</small>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <small>일 통행 처리</small>
+            <strong>1,250만 건+</strong>
+          </div>
+          <div>
+            <small>전국 커버리지</small>
+            <strong>100%</strong>
+          </div>
+          <div>
+            <small>시스템 가동률</small>
+            <strong>99.999%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       MISSION
+       =================================================== -->
+  <section class="mission">
+    <div class="container mission-inner">
+      <div class="mission-title">
+        <span>우리의 미션</span>
+        <h2>국가 교통 인프라의 혁신으로<br />국민의 이동을 더 가치 있게</h2>
+      </div>
+
+      <p class="mission-desc">
+        HiFive는 위성, 통신, 빅데이터 기술을 결합하여<br />
+        고속도로의 효율적인 운영과 안전한 이동 경험을 제공하고,<br />
+        미래 모빌리티 생태계를 선도합니다.
+      </p>
+
+      <img class="mission-art" src="../assets/mission-lineart.png" alt="" />
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       SERVICE CARDS
+       =================================================== -->
+  <section class="service" id="service">
+    <div class="container service-grid">
+
+      <!-- 카드 1 : 통합 관제 플랫폼 -->
+      <article class="service-card card-dark">
+        <h3>통합 관제 플랫폼</h3>
+        <p>전국 고속도로의 통행·관제·결제·데이터를<br />하나의 플랫폼에서 실시간 통합 관리</p>
+
+        <div class="dashboard-frame">
+          <img src="../assets/control-dashboard.png" alt="" />
+        </div>
+
+        <a class="card-cta" href="#">
+          자세히 보기
+          <svg class="ic ic-arrow"><use href="#i-arrow"/></svg>
+        </a>
+      </article>
+
+      <!-- 카드 2 : 전국 커버리지 -->
+      <article class="service-card card-light">
+        <h3>전국 커버리지</h3>
+        <p>위성 기반의 정밀한 전국 고속도로 커버리지로<br />끊김 없는 서비스 제공</p>
+
+        <div class="map-frame">
+          <img src="../assets/korea-network-map.png" alt="" />
+        </div>
+
+        <ul class="legend">
+          <li><i class="dot-blue"></i>운영 중</li>
+          <li><i class="dot-orange"></i>구축 예정</li>
+          <li><i class="dot-gray"></i>확장 예정</li>
+        </ul>
+
+        <a class="card-cta light" href="#">
+          자세히 보기
+          <svg class="ic ic-arrow"><use href="#i-arrow"/></svg>
+        </a>
+      </article>
+
+      <!-- 카드 3 : 데이터로 비즈니스 가치를 창출 -->
+      <article class="service-card card-light">
+        <h3>데이터로 비즈니스 가치를 창출</h3>
+        <p>정밀한 통행 데이터와 AI 분석으로 교통 흐름 예측,<br />수요 분석 및 수익 최적화 지원</p>
+
+        <div class="data-top">
+          <div class="data-num">
+            <small>일 통행량</small>
+            <strong>12,580,000 <em>건+</em></strong>
+            <span class="trend">
+              <svg><use href="#i-up"/></svg>
+              7.2% (전일 대비)
+            </span>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut"></div>
+          </div>
+        </div>
+
+        <div class="bar-panel">
+          <b>시간대별 통행량</b>
+          <div class="bar-list">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="bar-axis">
+            <span>0시</span><span>4시</span><span>8시</span><span>12시</span><span>16시</span><span>20시</span>
+          </div>
+        </div>
+
+        <a class="card-cta light" href="#">
+          자세히 보기
+          <svg class="ic ic-arrow"><use href="#i-arrow"/></svg>
+        </a>
+      </article>
+
+      <!-- 카드 4 : 운영 안정성 -->
+      <article class="service-card card-light">
+        <h3>운영 안정성</h3>
+        <p>이중화된 시스템과 24/7 모니터링으로<br />최고 수준의 안정성 보장</p>
+
+        <ul class="stable-list">
+          <li>
+            <span class="ic-circle"><svg><use href="#i-uptime"/></svg></span>
+            <div>
+              <b>시스템 가동률</b>
+              <em>99.999%</em>
+            </div>
+          </li>
+          <li>
+            <span class="ic-circle"><svg><use href="#i-clock"/></svg></span>
+            <div>
+              <b>24/7 관제 센터</b>
+              <em>365일 무중단 운영</em>
+            </div>
+          </li>
+          <li>
+            <span class="ic-circle"><svg><use href="#i-server"/></svg></span>
+            <div>
+              <b>재해 복구 시스템</b>
+              <em>이중화 및 백업 체계</em>
+            </div>
+          </li>
+          <li>
+            <span class="ic-circle"><svg><use href="#i-cert"/></svg></span>
+            <div>
+              <b>보안 인증</b>
+              <em>ISMS-P, ISO/IEC 27001</em>
+            </div>
+          </li>
+        </ul>
+
+        <a class="card-cta light" href="#">
+          자세히 보기
+          <svg class="ic ic-arrow"><use href="#i-arrow"/></svg>
+        </a>
+      </article>
+
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       PARTNERS
+       =================================================== -->
+  <section class="partners-section">
+    <div class="container partners-inner">
+      <div class="partners-title">
+        <span class="orange-label">함께하는 파트너</span>
+        <p>국가 인프라의 동반자로서 함께 성장합니다.</p>
+      </div>
+      <div class="partner-logos">
+        <span class="p-logo p-moilt">
+          <svg><use href="#i-gov"/></svg>
+          <b>국토교통부</b>
+        </span>
+        <span class="p-logo p-ex"><b>ex</b><em>한국도로공사</em></span>
+        <span class="p-logo p-kotsa">
+          <svg><use href="#i-traffic"/></svg>
+          <b>한국교통연구원</b>
+        </span>
+        <span class="p-logo p-kt">kt</span>
+        <span class="p-logo p-lgu">LG U<sup>+</sup></span>
+        <span class="p-logo p-sk">SK <em>telecom</em></span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       CONTACT
+       =================================================== -->
+  <section class="contact" id="contact">
+    <div class="container contact-inner">
+      <div class="contact-main">
+        <h2>문의 및 상담</h2>
+        <p>HiFive가 만드는 스마트한 고속도로,<br />지금 바로 문의하세요.</p>
+      </div>
+
+      <div class="contact-info">
+        <p><svg class="ic"><use href="#i-phone"/></svg>02-1234-5678</p>
+        <p><svg class="ic"><use href="#i-mail"/></svg>contact@hifive.co.kr</p>
+        <p><svg class="ic"><use href="#i-pin"/></svg><span>서울 강남구 테헤란로 253<br />에스빌딩 6층 78</span></p>
+      </div>
+
+      <div class="business-card">
+        <img src="../assets/contact-highway.png" alt="" />
+        <div>
+          <h3>제품 및 사업 문의</h3>
+          <p>기술 제휴, 서비스 연계, 비즈니스 협력 등<br />다양한 제안을 기다립니다.</p>
+          <a class="outline-button small" href="#">
+            제휴 문의하기
+            <svg class="ic ic-arrow"><use href="#i-arrow"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a class="logo logo-white" href="#top">
+        <span class="logo-icon"><i></i><i></i><i></i><i></i><i></i></span>
+        <strong>HiFive</strong>
+      </a>
+      <p>
+        HiFive는 위성 GPS 기반 Hi-Pass 시스템으로<br />
+        전국 고속도로의 효율적 운영과 안전한 이동을<br />
+        지원하는 스마트 교통 인프라 기업입니다.
+      </p>
+      <small>© 2024 HiFive. All Rights Reserved.</small>
+    </div>
+
+    <div class="footer-col">
+      <h4>회사소개</h4>
+      <a>CEO 인사말</a>
+      <a>미션과 비전</a>
+      <a>핵심가치</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>서비스</h4>
+      <a>Hi-Pass 서비스</a>
+      <a>위성 통행 인식</a>
+      <a>통합 관제</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>도입효과</h4>
+      <a>핵심 기술</a>
+      <a>솔루션 소개</a>
+      <a>R&D</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>팀소개</h4>
+      <a>공지사항</a>
+      <a>자료실</a>
+      <a>FAQ</a>
+    </div>
+
+    <div class="footer-side">
+      <div class="family-site">
+        <button>
+          <span>Family Site</span>
+          <i>⌄</i>
+        </button>
+      </div>
+      <div class="sns">
+        <a aria-label="LinkedIn"><svg><use href="#i-linkedin"/></svg></a>
+        <a aria-label="YouTube"><svg><use href="#i-youtube"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<button class="top-button" type="button" aria-label="맨 위로">TOP</button>
+
+<script src="./script.js"></script>
+</body>
+</html>
