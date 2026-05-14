@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HiFive | 위성 GPS 기반 Hi-Pass 시스템</title>
+  <title>Hi-Five | 위성 GPS 기반 Hi-Pass 시스템</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -14,19 +14,19 @@
           <span class="brand-mark" aria-hidden="true">
             <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
           </span>
-          <span>HiFive</span>
+          <span>Hi-Five</span>
         </a>
 
         <nav class="main-nav" aria-label="주요 메뉴">
           <a href="#company">소개</a>
           <a href="#service">서비스</a>
           <a href="#effect">도입효과</a>
-          <a href="#team">팀소개</a>
+          <a href="#team">팀 소개</a>
           <a href="#log">개발일지</a>
           <a href="#contact">문의하기</a>
         </nav>
 
-        <button class="language" type="button">
+        <div class="language">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="9"></circle>
             <path d="M3 12h18M12 3c2.5 2.8 3.6 5.8 3.6 9S14.5 18.2 12 21M12 3c-2.5 2.8-3.6 5.8-3.6 9S9.5 18.2 12 21"></path>
@@ -35,23 +35,19 @@
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
             <path d="m7 10 5 5 5-5"></path>
           </svg>
-        </button>
+        </div>
       </div>
     </header>
 
     <main id="top">
       <section class="hero" id="company">
-        <div class="hero-slider" aria-hidden="true">
-          <img class="hero-bg is-active" src="../img/07.png" alt="" data-hero-slide />
-          <img class="hero-bg" src="../img/08.png" alt="" data-hero-slide />
-          <img class="hero-bg" src="../img/09.png" alt="" data-hero-slide />
-        </div>
+        <img class="hero-bg" src="../img/hero.png" alt="HiFive 위성 기반 Hi-Pass 시스템" />
         <div class="hero-shade"></div>
 
         <div class="inner hero-inner">
           <div class="hero-copy">
-            <h1>위성으로 연결된 길,<br />더 빠르고, 더 안전한 대한민국</h1>
-            <p>HiFive 위성 GPS 기반 Hi-Pass 시스템으로<br />전국 고속도로의 스마트한 통행과 결제를 혁신합니다.</p>
+            <h1>K-GPS와 AI로 완성하는<br />차세대 스마트 하이패스</h1>
+            <p>차량과 도로, 결제 데이터를 하나로 연결해<br />미래형 고속도로 인프라를 현실로 만듭니다.</p>
             <a class="pill-button hero-button" href="#service">HiFive 소개 <span aria-hidden="true">&rarr;</span></a>
           </div>
 
@@ -92,18 +88,9 @@
                   <path d="m11.5 16 3 3 6-7"></path>
                 </svg>
               </span>
-              <strong>안정성·신뢰성 높은</strong>
+              <strong>안정성·신뢰성</strong>
               <small>국가 인프라 운영</small>
             </article>
-          </div>
-
-          <div class="route-label label-seoul">
-            <span class="pin-dot" aria-hidden="true"></span>
-            <p><b>서울 &harr; 부산</b><small>정상 운행</small></p>
-          </div>
-          <div class="route-label label-daejeon">
-            <span class="pin-dot" aria-hidden="true"></span>
-            <p><b>대전 톨게이트</b><small>정상 처리 2.1초</small></p>
           </div>
 
           <div class="hero-stats">
@@ -120,16 +107,6 @@
               <strong>99.99%</strong>
             </div>
           </div>
-
-          <div class="hero-controls" aria-label="히어로 이미지 선택">
-            <button class="hero-arrow" type="button" data-hero-prev aria-label="이전 이미지">&lsaquo;</button>
-            <div class="hero-dots">
-              <button class="is-active" type="button" data-hero-dot="0" aria-label="첫 번째 이미지"></button>
-              <button type="button" data-hero-dot="1" aria-label="두 번째 이미지"></button>
-              <button type="button" data-hero-dot="2" aria-label="세 번째 이미지"></button>
-            </div>
-            <button class="hero-arrow" type="button" data-hero-next aria-label="다음 이미지">&rsaquo;</button>
-          </div>
         </div>
       </section>
 
@@ -140,7 +117,7 @@
             <h2>국가 교통 인프라의 혁신으로<br />국민의 이동을 더 가치 있게</h2>
           </div>
           <p class="mission-text">
-            HiFive는 위성, 통신, 빅데이터 기술을 결합하여<br />
+            Hi-Five는 위성, 통신, 빅데이터 기술을 결합하여<br />
             고속도로의 효율적인 운영과 안전한 이동 경험을 제공하고,<br />
             미래 모빌리티 생태계를 선도합니다.
           </p>
@@ -149,7 +126,7 @@
       </section>
 
       <section class="services" id="service">
-        <div class="wide service-grid">
+        <div class="inner service-grid">
           <article class="service-card control-card">
             <h3>통합 관제 플랫폼</h3>
             <p>전국 고속도로의 통행 관제·장애 데이터를<br />하나의 플랫폼에서 실시간 통합 관제</p>
@@ -258,7 +235,7 @@
         <div class="inner contact-inner">
           <div class="contact-copy">
             <h2>문의 및 상담</h2>
-            <p>HiFive가 만드는 스마트한 고속도로,<br />지금 바로 문의하세요.</p>
+            <p>Hi-Five가 만드는 스마트한 고속도로,<br />지금 바로 문의하세요.</p>
             <a class="pill-button contact-button" href="#">문의하기 <span aria-hidden="true">&rarr;</span></a>
           </div>
 
@@ -278,7 +255,7 @@
           </address>
 
           <article class="proposal-card">
-            <img src="../assets/contact-highway.png" alt="" />
+            <img src="../img/img02.png" alt="" />
             <div>
               <h3>제품 및 사업 문의</h3>
               <p>기술 제휴, 서비스 연계, 비즈니스 협력 등<br />다양한 제안을 기다립니다.</p>
@@ -324,7 +301,7 @@
             <a href="#">R&amp;D</a>
           </div>
           <div>
-            <h4>팀소개</h4>
+            <h4>팀 소개</h4>
             <a href="#">공지사항</a>
             <a href="#">자료실</a>
             <a href="#">자주 묻는 질문</a>
@@ -352,6 +329,5 @@
       </div>
     </footer>
   </div>
-  <script src="./script.js"></script>
 </body>
 </html>
