@@ -112,7 +112,8 @@ def _sink_part(*, display: bool, display_sink: str) -> str:
     return (
         "tee name=post_yolo_tee "
         "post_yolo_tee. ! queue ! fakesink sync=false "
-        "post_yolo_tee. ! queue ! nvdsosd name=display_osd ! "
+        "post_yolo_tee. ! queue ! nvdsosd name=display_osd "
+        "process-mode=0 display-bbox=1 display-text=1 ! "
         f"{sink}"
     )
 

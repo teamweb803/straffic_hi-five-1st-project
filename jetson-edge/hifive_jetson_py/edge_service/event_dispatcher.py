@@ -8,6 +8,7 @@ from hifive_jetson_py.config import RuntimeConfig
 from hifive_jetson_py.event_builder import PassageEventBuilder
 from hifive_jetson_py.models import PlateDecision, PlateObservation
 
+from .evidence_sender import EvidenceFrameSender
 from .types import ReadyPlateEvent, SharedState
 
 
@@ -17,6 +18,7 @@ class EventDispatcher:
     builder: PassageEventBuilder
     shared: SharedState
     queue_size: int = 128
+    evidence_sender: EvidenceFrameSender | None = None
 
     def __post_init__(self) -> None:
         self._queue: queue.Queue[ReadyPlateEvent] = queue.Queue(maxsize=self.queue_size)
@@ -65,11 +67,14 @@ class EventDispatcher:
             candidate_count=1,
             agreement_ratio=1.0,
         )
-        self.builder.build_and_submit(
+        event = self.builder.build_and_submit(
             observation=observation,
             lane_no=task.lane_no,
             global_lane_no=task.global_lane_no,
             decision=decision,
         )
+        event_id = str(event.get("event_id") or "")
+        if self.evidence_sender is not None and event_id:
+            self.evidence_sender.submit(ready, event_id)
         with self.shared.lock:
             self.shared.sent_events += 1

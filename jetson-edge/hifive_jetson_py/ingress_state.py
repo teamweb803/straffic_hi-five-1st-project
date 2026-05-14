@@ -16,6 +16,8 @@ class IngressStats:
     malformed_frames: int = 0
     network_transition_events: int = 0
     edge_status_events: int = 0
+    preview_frame_events: int = 0
+    unreliable_datagram_events: int = 0
     active_connections: int = 0
     total_connections: int = 0
     last_event_id: str = ""
@@ -25,6 +27,9 @@ class IngressStats:
     spring_forward: dict[str, Any] = field(default_factory=dict)
     last_network_transition: dict[str, Any] = field(default_factory=dict)
     last_edge_status: dict[str, Any] = field(default_factory=dict)
+    last_unreliable_datagram: dict[str, Any] = field(default_factory=dict)
+    latest_preview_frame: dict[str, Any] = field(default_factory=dict)
+    latest_preview_payload: bytes = field(default=b"", repr=False)
     max_recent_events: int = 20
     recent_events: list[dict[str, Any]] = field(default_factory=list)
 
@@ -132,6 +137,57 @@ class IngressStats:
                 self.last_payload_bytes,
             )
 
+    def mark_unreliable_datagram(
+        self,
+        event_id: str,
+        payload_bytes: int = 0,
+        payload: bytes | None = None,
+    ) -> None:
+        with self._lock:
+            ts_ms = int(time.time() * 1000)
+            self.unreliable_datagram_events += 1
+            self.last_unreliable_datagram = {
+                "event_id": event_id,
+                "payload_bytes": int(payload_bytes),
+                "ts_ms": ts_ms,
+            }
+            if payload and event_id.startswith("preview-frame-") and payload.startswith(b"\xff\xd8"):
+                self.latest_preview_payload = bytes(payload)
+                self.latest_preview_frame = {
+                    "event_id": event_id,
+                    "payload_bytes": int(payload_bytes),
+                    "ts_ms": ts_ms,
+                    "content_type": "image/jpeg",
+                }
+            self._append_recent_locked(
+                event_id,
+                "unreliable_datagram",
+                "latest-only datagram received",
+                int(payload_bytes),
+            )
+
+    def mark_preview_frame(self, event_id: str, payload: bytes) -> None:
+        with self._lock:
+            ts_ms = int(time.time() * 1000)
+            self.preview_frame_events += 1
+            self.last_event_id = event_id
+            self.last_error = ""
+            self.last_payload_bytes = len(payload)
+            self.latest_preview_payload = bytes(payload)
+            self.latest_preview_frame = {
+                "event_id": event_id,
+                "payload_bytes": len(payload),
+                "ts_ms": ts_ms,
+                "content_type": "image/jpeg",
+                "transport": "webtransport_stream_latest",
+            }
+            self._append_recent_locked(
+                event_id,
+                "preview_frame",
+                "latest preview frame received",
+                len(payload),
+            )
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             uptime_sec = max(0.0, (time.time_ns() - self.started_at_ns) / 1_000_000_000)
@@ -144,6 +200,8 @@ class IngressStats:
                 "malformed_frames": self.malformed_frames,
                 "network_transition_events": self.network_transition_events,
                 "edge_status_events": self.edge_status_events,
+                "preview_frame_events": self.preview_frame_events,
+                "unreliable_datagram_events": self.unreliable_datagram_events,
                 "active_connections": self.active_connections,
                 "total_connections": self.total_connections,
                 "last_event_id": self.last_event_id,
@@ -153,9 +211,15 @@ class IngressStats:
                 "spring_forward": dict(self.spring_forward),
                 "last_network_transition": dict(self.last_network_transition),
                 "last_edge_status": dict(self.last_edge_status),
+                "last_unreliable_datagram": dict(self.last_unreliable_datagram),
+                "latest_preview_frame": dict(self.latest_preview_frame),
                 "latest_edge_status": dict(self.last_edge_status),
                 "recent_events": list(self.recent_events),
             }
+
+    def get_latest_preview(self) -> tuple[bytes, dict[str, Any]]:
+        with self._lock:
+            return bytes(self.latest_preview_payload), dict(self.latest_preview_frame)
 
     def _append_recent_locked(self, event_id: str, status: str, detail: str, payload_bytes: int) -> None:
         self.recent_events.append(

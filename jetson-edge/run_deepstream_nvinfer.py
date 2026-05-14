@@ -22,9 +22,11 @@ from hifive_jetson_py.spool import FileSpool
 from hifive_jetson_py.transport import build_sender
 from hifive_jetson_py.edge_service.deepstream_yolo_adapter import DeepStreamYoloAdapter
 from hifive_jetson_py.edge_service.display import GREEN, draw_text
+from hifive_jetson_py.edge_service.evidence_sender import EvidenceFrameSender
 from hifive_jetson_py.edge_service.event_dispatcher import EventDispatcher
 from hifive_jetson_py.edge_service.ocr_worker import OcrWorker
 from hifive_jetson_py.edge_service.plate_tracker import PlateBBoxTracker
+from hifive_jetson_py.edge_service.preview_datagram import PreviewFrameSender
 from hifive_jetson_py.edge_service.status_sender import EdgeStatusSender
 from hifive_jetson_py.edge_service.types import OcrTask, ReadyPlateEvent, SharedState
 
@@ -66,6 +68,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--display", action="store_true")
     parser.add_argument("--display-scale", type=float, default=0.75, help="Deprecated: DeepStream display uses native sink")
     parser.add_argument("--display-sink", choices=("egl", "drm", "3d"), default="egl")
+    parser.add_argument("--preview-datagram-fps", type=float, default=0.0)
+    parser.add_argument("--preview-jpeg-quality", type=int, default=45)
+    parser.add_argument("--evidence-upload", action="store_true")
+    parser.add_argument("--evidence-jpeg-quality", type=int, default=85)
+    parser.add_argument("--repeat", action="store_true", help="Repeat finite video source until stopped")
+    parser.add_argument("--repeat-delay-sec", type=float, default=0.2)
     parser.add_argument("--no-save-event-images", action="store_true")
     parser.add_argument("--print-pipeline", action="store_true")
     parser.add_argument("--dry-run-build", action="store_true")
@@ -177,7 +185,17 @@ def main() -> None:
         builder=builder,
         shared=shared,
         queue_size=args.transport_queue_size,
+        evidence_sender=EvidenceFrameSender(sender, args.evidence_jpeg_quality) if args.evidence_upload else None,
     )
+    preview_sender = None
+    if args.preview_datagram_fps > 0:
+        preview_sender = PreviewFrameSender(
+            sender=sender,
+            device_id=config.device_id,
+            camera_id=camera.camera_id,
+            fps=args.preview_datagram_fps,
+            jpeg_quality=args.preview_jpeg_quality,
+        )
     output_dir = Path(args.output_dir)
     if not args.no_save_event_images:
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -187,6 +205,8 @@ def main() -> None:
     print(f"ocr_engine={config.ocr.engine_path}")
     print(f"transport={config.transport.kind} host={config.transport.ingress_host} port={config.transport.ingress_port}")
     print(f"edge_status_interval_sec={args.status_interval_sec}")
+    print(f"repeat_video={args.repeat}")
+    print(f"evidence_upload={args.evidence_upload}")
 
     def on_frame(frame_num: int) -> None:
         nonlocal last_frame_at
@@ -198,7 +218,11 @@ def main() -> None:
             shared.latest_fps = instant_fps if shared.latest_fps <= 0 else shared.latest_fps * 0.85 + instant_fps * 0.15
             shared.processed_frames = max(shared.processed_frames + 1, frame_num + 1)
 
+    runtime_error = False
+
     def on_error(detail: str) -> None:
+        nonlocal runtime_error
+        runtime_error = True
         with shared.lock:
             shared.last_error = detail
 
@@ -207,6 +231,14 @@ def main() -> None:
         tracks = adapter.process_yolo_frame(canvas_bgr, frame_num, timestamp_ns, detections)
         with shared.lock:
             shared.latest_yolo_ms = (time.perf_counter() - start) * 1000.0
+        if preview_sender is not None:
+            preview_sender.maybe_send(
+                canvas_bgr,
+                list(tracker.tracks.values()),
+                shared,
+                args.height_threshold,
+                frame_num,
+            )
         _drain_events(
             event_queue=event_queue,
             dispatcher=dispatcher,
@@ -216,23 +248,50 @@ def main() -> None:
         return tracks
 
     try:
-        DeepStreamRuntime(
-            config=config,
-            on_yolo_frame=on_yolo_frame,
-            on_frame=on_frame,
-            on_error=on_error,
-            shared=shared,
-            height_threshold=args.height_threshold,
-        ).run()
+        cycle = 0
+        while not stop_event.is_set():
+            runtime_error = False
+            last_frame_at = time.perf_counter()
+            if cycle > 0:
+                tracker.reset()
+                with shared.lock:
+                    shared.latest_yolo_ms = 0.0
+                    shared.latest_ocr_ms = 0.0
+                    shared.yolo_detections = 0
+            DeepStreamRuntime(
+                config=config,
+                on_yolo_frame=on_yolo_frame,
+                on_frame=on_frame,
+                on_error=on_error,
+                shared=shared,
+                height_threshold=args.height_threshold,
+                always_extract_frame=args.preview_datagram_fps > 0,
+            ).run()
+            for _ in range(20):
+                _drain_events(
+                    event_queue=event_queue,
+                    dispatcher=dispatcher,
+                    output_dir=output_dir,
+                    save_images=not args.no_save_event_images,
+                )
+                if getattr(ocr_queue, "unfinished_tasks", 0) == 0 and event_queue.empty():
+                    break
+                time.sleep(0.05)
+            if runtime_error or not args.repeat or not args.source:
+                break
+            cycle += 1
+            if args.repeat_delay_sec > 0:
+                time.sleep(args.repeat_delay_sec)
+            print(f"deepstream_nvinfer=repeat cycle={cycle} source={args.source}")
     finally:
-        for _ in range(10):
+        for _ in range(20):
             _drain_events(
                 event_queue=event_queue,
                 dispatcher=dispatcher,
                 output_dir=output_dir,
                 save_images=not args.no_save_event_images,
             )
-            if ocr_queue.empty() and event_queue.empty():
+            if getattr(ocr_queue, "unfinished_tasks", 0) == 0 and event_queue.empty():
                 break
             time.sleep(0.05)
         stop_event.set()

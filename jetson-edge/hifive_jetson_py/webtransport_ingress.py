@@ -17,6 +17,7 @@ logger = logging.getLogger("hifive.ingress")
 
 NETWORK_TRANSITION_EVENT_PREFIX = "network-transition-"
 EDGE_STATUS_EVENT_PREFIX = "edge-status-"
+PREVIEW_FRAME_EVENT_PREFIX = "preview-frame-"
 
 
 def _decode_network_transition_payload(payload: bytes) -> dict[str, Any]:
@@ -79,6 +80,17 @@ class IngressSession:
             self.session_id,
             stream_id,
         )
+        if frame.event_id.startswith(PREVIEW_FRAME_EVENT_PREFIX) and frame.payload.startswith(b"\xff\xd8"):
+            self.stats.mark_preview_frame(frame.event_id, frame.payload)
+            logger.info(
+                "Preview frame received event_id=%s bytes=%d session=%s stream=%s",
+                frame.event_id,
+                len(frame.payload),
+                self.session_id,
+                stream_id,
+            )
+            return encode_ack(ACK, frame.event_id, "preview frame stored")
+
         if frame.event_id.startswith(NETWORK_TRANSITION_EVENT_PREFIX):
             detail = _decode_network_transition_payload(frame.payload)
             self.stats.mark_network_transition(
@@ -130,6 +142,27 @@ class IngressSession:
         logger.info("WebTransport event REJECT event_id=%s detail=%s", frame.event_id, result.detail)
         return encode_ack(REJECT, frame.event_id, result.detail)
 
+    def receive_datagram(self, data: bytes) -> None:
+        try:
+            frame = unpack_ready_event_frame(bytearray(data))
+        except FrameError as exc:
+            self.stats.mark_malformed(f"datagram: {exc}")
+            return
+        if frame is None:
+            self.stats.mark_malformed("datagram: incomplete frame")
+            return
+        self.stats.mark_unreliable_datagram(
+            frame.event_id,
+            payload_bytes=len(frame.payload),
+            payload=frame.payload,
+        )
+        logger.info(
+            "WebTransport datagram received event_id=%s bytes=%d session=%s",
+            frame.event_id,
+            len(frame.payload),
+            self.session_id,
+        )
+
 
 class WebTransportIngressFactory:
     def __init__(
@@ -146,7 +179,7 @@ class WebTransportIngressFactory:
     def create(self):  # type: ignore[no-untyped-def]
         from aioquic.asyncio.protocol import QuicConnectionProtocol
         from aioquic.h3.connection import H3Connection
-        from aioquic.h3.events import HeadersReceived, WebTransportStreamDataReceived
+        from aioquic.h3.events import DatagramReceived, HeadersReceived, WebTransportStreamDataReceived
         from aioquic.quic.events import ProtocolNegotiated, QuicEvent
 
         expected_path = self.path
@@ -174,6 +207,8 @@ class WebTransportIngressFactory:
                         self._handle_headers(http_event)
                     elif isinstance(http_event, WebTransportStreamDataReceived):
                         asyncio.create_task(self._handle_webtransport_stream(http_event))
+                    elif isinstance(http_event, DatagramReceived):
+                        self._handle_webtransport_datagram(http_event)
 
             def _handle_headers(self, event: HeadersReceived) -> None:
                 assert self.http is not None
@@ -211,5 +246,17 @@ class WebTransportIngressFactory:
                 ack_stream_id = self.http.create_webtransport_stream(event.session_id)
                 self._quic.send_stream_data(stream_id=ack_stream_id, data=response, end_stream=True)
                 self.transmit()
+
+            def _handle_webtransport_datagram(self, event: DatagramReceived) -> None:
+                session = self.sessions.get(event.stream_id)
+                if session is None:
+                    stats.mark_malformed(f"datagram: unknown session stream_id={event.stream_id}")
+                    logger.info(
+                        "WebTransport datagram dropped unknown_session stream_id=%s bytes=%d",
+                        event.stream_id,
+                        len(event.data),
+                    )
+                    return
+                session.receive_datagram(event.data)
 
         return IngressProtocol

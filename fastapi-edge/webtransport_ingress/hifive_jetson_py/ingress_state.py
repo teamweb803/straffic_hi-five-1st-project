@@ -16,10 +16,15 @@ class IngressStats:
     malformed_frames: int = 0
     network_transition_events: int = 0
     edge_status_events: int = 0
+    preview_frame_events: int = 0
+    evidence_events: int = 0
+    unreliable_datagram_events: int = 0
     edge_status_forward_ok: int = 0
     edge_status_forward_fail: int = 0
     ingress_status_forward_ok: int = 0
     ingress_status_forward_fail: int = 0
+    evidence_forward_ok: int = 0
+    evidence_forward_fail: int = 0
     active_connections: int = 0
     total_connections: int = 0
     last_event_id: str = ""
@@ -29,8 +34,13 @@ class IngressStats:
     spring_forward: dict[str, Any] = field(default_factory=dict)
     edge_status_forward: dict[str, Any] = field(default_factory=dict)
     ingress_status_forward: dict[str, Any] = field(default_factory=dict)
+    evidence_forward: dict[str, Any] = field(default_factory=dict)
     last_network_transition: dict[str, Any] = field(default_factory=dict)
     last_edge_status: dict[str, Any] = field(default_factory=dict)
+    last_evidence: dict[str, Any] = field(default_factory=dict)
+    last_unreliable_datagram: dict[str, Any] = field(default_factory=dict)
+    latest_preview_frame: dict[str, Any] = field(default_factory=dict)
+    latest_preview_payload: bytes = field(default=b"", repr=False)
     max_recent_events: int = 20
     recent_events: list[dict[str, Any]] = field(default_factory=list)
 
@@ -111,6 +121,28 @@ class IngressStats:
                 "ts_ms": int(time.time() * 1000),
             }
 
+    def mark_evidence_forward(
+        self,
+        event_id: str,
+        evidence_kind: str,
+        status: str,
+        status_code: int | None,
+        detail: str,
+    ) -> None:
+        with self._lock:
+            if status == "accepted":
+                self.evidence_forward_ok += 1
+            else:
+                self.evidence_forward_fail += 1
+            self.evidence_forward = {
+                "event_id": event_id,
+                "kind": evidence_kind,
+                "status": status,
+                "status_code": status_code,
+                "detail": detail,
+                "ts_ms": int(time.time() * 1000),
+            }
+
     def mark_ack(self, event_id: str) -> None:
         with self._lock:
             self.acked_events += 1
@@ -178,6 +210,79 @@ class IngressStats:
                 self.last_payload_bytes,
             )
 
+    def mark_unreliable_datagram(
+        self,
+        event_id: str,
+        payload_bytes: int = 0,
+        payload: bytes | None = None,
+    ) -> None:
+        with self._lock:
+            ts_ms = int(time.time() * 1000)
+            self.unreliable_datagram_events += 1
+            self.last_unreliable_datagram = {
+                "event_id": event_id,
+                "payload_bytes": int(payload_bytes),
+                "ts_ms": ts_ms,
+            }
+            if payload and event_id.startswith("preview-frame-") and payload.startswith(b"\xff\xd8"):
+                self.latest_preview_payload = bytes(payload)
+                self.latest_preview_frame = {
+                    "event_id": event_id,
+                    "payload_bytes": int(payload_bytes),
+                    "ts_ms": ts_ms,
+                    "content_type": "image/jpeg",
+                }
+            self._append_recent_locked(
+                event_id,
+                "unreliable_datagram",
+                "latest-only datagram received",
+                int(payload_bytes),
+            )
+
+    def mark_preview_frame(self, event_id: str, payload: bytes) -> None:
+        with self._lock:
+            ts_ms = int(time.time() * 1000)
+            self.preview_frame_events += 1
+            self.last_event_id = event_id
+            self.last_error = ""
+            self.last_payload_bytes = len(payload)
+            self.latest_preview_payload = bytes(payload)
+            self.latest_preview_frame = {
+                "event_id": event_id,
+                "payload_bytes": len(payload),
+                "ts_ms": ts_ms,
+                "content_type": "image/jpeg",
+                "transport": "webtransport_stream_latest",
+            }
+            self._append_recent_locked(
+                event_id,
+                "preview_frame",
+                "latest preview frame received",
+                len(payload),
+            )
+
+    def mark_evidence(self, event_id: str, evidence_kind: str, payload_bytes: int) -> None:
+        with self._lock:
+            ts_ms = int(time.time() * 1000)
+            self.evidence_events += 1
+            self.acked_events += 1
+            self.last_event_id = event_id
+            self.last_error = ""
+            self.last_payload_bytes = int(payload_bytes)
+            self.last_evidence = {
+                "event_id": event_id,
+                "kind": evidence_kind,
+                "payload_bytes": int(payload_bytes),
+                "ts_ms": ts_ms,
+                "content_type": "image/jpeg",
+            }
+            self._append_recent_locked(
+                event_id,
+                "evidence",
+                f"{evidence_kind} received",
+                int(payload_bytes),
+            )
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             uptime_sec = max(0.0, (time.time_ns() - self.started_at_ns) / 1_000_000_000)
@@ -196,10 +301,15 @@ class IngressStats:
                 "malformed_frames": self.malformed_frames,
                 "network_transition_events": self.network_transition_events,
                 "edge_status_events": self.edge_status_events,
+                "preview_frame_events": self.preview_frame_events,
+                "evidence_events": self.evidence_events,
+                "unreliable_datagram_events": self.unreliable_datagram_events,
                 "edge_status_forward_ok": self.edge_status_forward_ok,
                 "edge_status_forward_fail": self.edge_status_forward_fail,
                 "ingress_status_forward_ok": self.ingress_status_forward_ok,
                 "ingress_status_forward_fail": self.ingress_status_forward_fail,
+                "evidence_forward_ok": self.evidence_forward_ok,
+                "evidence_forward_fail": self.evidence_forward_fail,
                 "active_connections": self.active_connections,
                 "total_connections": self.total_connections,
                 "last_event_id": self.last_event_id,
@@ -209,11 +319,19 @@ class IngressStats:
                 "spring_forward": dict(self.spring_forward),
                 "edge_status_forward": dict(self.edge_status_forward),
                 "ingress_status_forward": dict(self.ingress_status_forward),
+                "evidence_forward": dict(self.evidence_forward),
                 "last_network_transition": dict(self.last_network_transition),
                 "last_edge_status": dict(self.last_edge_status),
+                "last_evidence": dict(self.last_evidence),
+                "last_unreliable_datagram": dict(self.last_unreliable_datagram),
+                "latest_preview_frame": dict(self.latest_preview_frame),
                 "latest_edge_status": latest_edge_status,
                 "recent_events": list(self.recent_events),
             }
+
+    def get_latest_preview(self) -> tuple[bytes, dict[str, Any]]:
+        with self._lock:
+            return bytes(self.latest_preview_payload), dict(self.latest_preview_frame)
 
     def _append_recent_locked(self, event_id: str, status: str, detail: str, payload_bytes: int) -> None:
         self.recent_events.append(

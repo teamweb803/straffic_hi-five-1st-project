@@ -38,6 +38,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default="/home/jetson/hifive/output/edge_service")
     parser.add_argument("--no-save-event-images", action="store_true")
     parser.add_argument("--status-interval-sec", type=float, default=1.0)
+    parser.add_argument("--preview-datagram-fps", type=float, default=0.0)
+    parser.add_argument("--preview-jpeg-quality", type=int, default=45)
+    parser.add_argument("--evidence-upload", action="store_true")
+    parser.add_argument("--evidence-jpeg-quality", type=int, default=85)
     parser.add_argument("--parser-lib", default="/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so")
     parser.add_argument("--yolo-parser-lib", default="")
     parser.add_argument("--ocr-parser-lib", default="")
@@ -79,6 +83,10 @@ def main() -> None:
         output_dir=args.output_dir,
         save_event_images=not args.no_save_event_images,
         status_interval_sec=args.status_interval_sec,
+        preview_datagram_fps=args.preview_datagram_fps,
+        preview_jpeg_quality=args.preview_jpeg_quality,
+        evidence_upload=args.evidence_upload,
+        evidence_jpeg_quality=args.evidence_jpeg_quality,
         parser_lib=args.parser_lib,
         yolo_parser_lib=args.yolo_parser_lib,
         ocr_parser_lib=args.ocr_parser_lib,

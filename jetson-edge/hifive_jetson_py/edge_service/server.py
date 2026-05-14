@@ -41,10 +41,20 @@ class EdgeServiceManager:
         start_sec: float = 0.0,
         limit: int = 0,
         display: bool = False,
+        repeat: bool = False,
+        repeat_delay_sec: float = 0.2,
     ) -> dict[str, Any]:
         if not video:
             return {"accepted": False, "detail": "video path is required", **self.status()}
-        return self._start("video", video, start_sec=start_sec, limit=limit, display=display)
+        return self._start(
+            "video",
+            video,
+            start_sec=start_sec,
+            limit=limit,
+            display=display,
+            repeat=repeat,
+            repeat_delay_sec=repeat_delay_sec,
+        )
 
     def start_camera(
         self,
@@ -85,6 +95,8 @@ class EdgeServiceManager:
         start_sec: float = 0.0,
         limit: int = 0,
         display: bool = False,
+        repeat: bool = False,
+        repeat_delay_sec: float = 0.2,
     ) -> dict[str, Any]:
         with self._lock:
             self._cleanup_finished_locked()
@@ -99,6 +111,8 @@ class EdgeServiceManager:
                     start_sec=start_sec,
                     limit=limit,
                     display=display,
+                    repeat=repeat,
+                    repeat_delay_sec=repeat_delay_sec,
                 ),
                 cwd=str(self._app_dir()),
                 env=self._subprocess_env(),
@@ -174,6 +188,8 @@ class EdgeServiceManager:
         start_sec: float,
         limit: int,
         display: bool,
+        repeat: bool,
+        repeat_delay_sec: float,
     ) -> list[str]:
         options = self.base_options
         if options.runtime_runner == "deepstream-nvinfer":
@@ -181,6 +197,8 @@ class EdgeServiceManager:
                 source_kind=source_kind,
                 source_value=source_value,
                 display=display,
+                repeat=repeat,
+                repeat_delay_sec=repeat_delay_sec,
             )
         return self._build_python_runtime_command(
             source_kind=source_kind,
@@ -275,6 +293,8 @@ class EdgeServiceManager:
         source_kind: str,
         source_value: str,
         display: bool,
+        repeat: bool,
+        repeat_delay_sec: float,
     ) -> list[str]:
         options = self.base_options
         command = [
@@ -286,6 +306,12 @@ class EdgeServiceManager:
             str(options.transport_queue_size),
             "--status-interval-sec",
             str(options.status_interval_sec),
+            "--preview-datagram-fps",
+            str(options.preview_datagram_fps),
+            "--preview-jpeg-quality",
+            str(options.preview_jpeg_quality),
+            "--evidence-jpeg-quality",
+            str(options.evidence_jpeg_quality),
             "--output-dir",
             options.output_dir,
             "--height-threshold",
@@ -329,6 +355,8 @@ class EdgeServiceManager:
             command.extend(["--yolo-engine", options.yolo_engine_override])
         if options.ocr_engine_override:
             command.extend(["--ocr-engine", options.ocr_engine_override])
+        if options.evidence_upload:
+            command.append("--evidence-upload")
         if not options.save_event_images:
             command.append("--no-save-event-images")
         if display:
@@ -347,6 +375,8 @@ class EdgeServiceManager:
             command.extend(["--ocr-parser-lib", options.ocr_parser_lib])
         if source_kind == "video":
             command.extend(["--source", source_value])
+            if repeat:
+                command.extend(["--repeat", "--repeat-delay-sec", str(repeat_delay_sec)])
         elif source_kind == "camera":
             command.extend(["--camera-index", source_value])
         else:
@@ -398,8 +428,17 @@ def build_edge_service_app(manager: EdgeServiceManager):
         start_sec: float = 0.0,
         limit: int = 0,
         display: bool = False,
+        repeat: bool = False,
+        repeat_delay_sec: float = 0.2,
     ) -> dict[str, Any]:
-        return manager.start_video(video=video, start_sec=start_sec, limit=limit, display=display)
+        return manager.start_video(
+            video=video,
+            start_sec=start_sec,
+            limit=limit,
+            display=display,
+            repeat=repeat,
+            repeat_delay_sec=repeat_delay_sec,
+        )
 
     @app.post("/start-video")
     async def start_video_alias(
@@ -407,8 +446,17 @@ def build_edge_service_app(manager: EdgeServiceManager):
         start_sec: float = 0.0,
         limit: int = 0,
         display: bool = False,
+        repeat: bool = False,
+        repeat_delay_sec: float = 0.2,
     ) -> dict[str, Any]:
-        return manager.start_video(video=video, start_sec=start_sec, limit=limit, display=display)
+        return manager.start_video(
+            video=video,
+            start_sec=start_sec,
+            limit=limit,
+            display=display,
+            repeat=repeat,
+            repeat_delay_sec=repeat_delay_sec,
+        )
 
     @app.post("/source/camera")
     async def start_camera(

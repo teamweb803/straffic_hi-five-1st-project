@@ -15,6 +15,7 @@ from .spool import FileSpool, SpoolItem
 
 
 NETWORK_TRANSITION_EVENT_PREFIX = "network-transition-"
+MAX_UNRELIABLE_DATAGRAM_BYTES = 60_000
 
 
 @dataclass(frozen=True)
@@ -91,6 +92,24 @@ class WebTransportIngressSender:
 
             self._mark_endpoint_success(event_id, "latest", endpoint, previous_active)
             self._flush_network_logs()
+            return True
+        return False
+
+    def submit_unreliable(self, payload: bytes, event_id: str) -> bool:
+        frame = pack_event_frame(event_id, payload)
+        if len(frame) > MAX_UNRELIABLE_DATAGRAM_BYTES:
+            print(
+                "WebTransport unreliable dropped "
+                f"event_id={event_id} bytes={len(frame)} max={MAX_UNRELIABLE_DATAGRAM_BYTES}"
+            )
+            return False
+
+        for endpoint in self._endpoint_order():
+            try:
+                asyncio.run(self._send_datagram_once(frame, event_id, endpoint))
+            except Exception as exc:
+                print(f"WebTransport unreliable failed path={endpoint.label} event_id={event_id}: {exc}")
+                continue
             return True
         return False
 
@@ -446,3 +465,90 @@ class WebTransportIngressSender:
         ) as protocol:
             client = protocol  # type: ignore[assignment]
             return await client.send_payload(payload, event_id)
+
+    async def _send_datagram_once(
+        self,
+        frame: bytes,
+        event_id: str,
+        endpoint: WebTransportEndpoint,
+    ) -> None:
+        try:
+            from aioquic.asyncio import connect
+            from aioquic.asyncio.protocol import QuicConnectionProtocol
+            from aioquic.h3.connection import H3_ALPN, H3Connection
+            from aioquic.h3.events import HeadersReceived
+            from aioquic.quic.configuration import QuicConfiguration
+            from aioquic.quic.events import ProtocolNegotiated, QuicEvent
+        except ImportError as exc:
+            raise RuntimeError("aioquic is required for WebTransport transport") from exc
+
+        host = endpoint.host
+        path = self.path if self.path.startswith("/") else f"/{self.path}"
+        authority = f"{endpoint.server_name}:{endpoint.port}".encode("utf-8")
+        server_name = endpoint.server_name or endpoint.host
+        timeout_sec = self.timeout_sec
+
+        class DatagramClientProtocol(QuicConnectionProtocol):
+            def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+                super().__init__(*args, **kwargs)
+                loop = asyncio.get_running_loop()
+                self.http: H3Connection | None = None
+                self.ready: asyncio.Future[None] = loop.create_future()
+                self.connected: asyncio.Future[None] | None = None
+                self.session_id: int | None = None
+
+            def quic_event_received(self, event: QuicEvent) -> None:
+                if isinstance(event, ProtocolNegotiated):
+                    self.http = H3Connection(self._quic, enable_webtransport=True)
+                    if not self.ready.done():
+                        self.ready.set_result(None)
+                if self.http is None:
+                    return
+                for http_event in self.http.handle_event(event):
+                    if isinstance(http_event, HeadersReceived) and http_event.stream_id == self.session_id:
+                        headers = dict(http_event.headers)
+                        status = headers.get(b":status", b"").decode("ascii", errors="ignore")
+                        if status == "200" and self.connected and not self.connected.done():
+                            self.connected.set_result(None)
+                        elif self.connected and not self.connected.done():
+                            self.connected.set_exception(RuntimeError(f"WebTransport rejected status={status}"))
+
+            async def send_datagram_payload(self, datagram_frame: bytes) -> None:
+                await asyncio.wait_for(self.ready, timeout=timeout_sec)
+                assert self.http is not None
+                loop = asyncio.get_running_loop()
+                self.connected = loop.create_future()
+                self.session_id = self._quic.get_next_available_stream_id()
+                self.http.send_headers(
+                    stream_id=self.session_id,
+                    headers=[
+                        (b":method", b"CONNECT"),
+                        (b":scheme", b"https"),
+                        (b":authority", authority),
+                        (b":path", path.encode("utf-8")),
+                        (b":protocol", b"webtransport"),
+                        (b"sec-webtransport-http3-draft", b"draft02"),
+                    ],
+                )
+                self.transmit()
+                await asyncio.wait_for(self.connected, timeout=timeout_sec)
+                self.http.send_datagram(self.session_id, datagram_frame)
+                self.transmit()
+                await asyncio.sleep(0.2)
+
+        configuration = QuicConfiguration(
+            is_client=True,
+            alpn_protocols=H3_ALPN,
+            verify_mode=ssl.CERT_REQUIRED if endpoint.verify_tls else ssl.CERT_NONE,
+            server_name=server_name,
+        )
+        configuration.max_datagram_frame_size = 65536
+
+        async with connect(
+            host,
+            endpoint.port,
+            configuration=configuration,
+            create_protocol=DatagramClientProtocol,
+        ) as protocol:
+            client = protocol  # type: ignore[assignment]
+            await client.send_datagram_payload(frame)

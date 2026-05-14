@@ -7,7 +7,7 @@ import ssl
 import time
 
 from hifive_jetson_py.ingress_state import IngressStats
-from hifive_jetson_py.spring_forwarder import SpringForwarder, SpringJsonForwarder
+from hifive_jetson_py.spring_forwarder import SpringEvidenceForwarder, SpringForwarder, SpringJsonForwarder
 from hifive_jetson_py.webtransport_ingress import WebTransportIngressFactory
 
 
@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--spring-url", default="http://127.0.0.1:8080/api/ingest/passage-events")
     parser.add_argument("--spring-edge-status-url", default="")
     parser.add_argument("--spring-ingress-status-url", default="")
+    parser.add_argument("--spring-evidence-url", default="")
     parser.add_argument("--ingress-status-forward-interval-sec", type=float, default=0.0)
     parser.add_argument("--spring-timeout-sec", type=float, default=3.0)
     parser.add_argument("--ingest-key", default="")
@@ -32,7 +33,7 @@ def parse_args() -> argparse.Namespace:
 
 def build_ops_app(stats: IngressStats):
     from fastapi import FastAPI
-    from fastapi.responses import PlainTextResponse
+    from fastapi.responses import PlainTextResponse, Response
 
     app = FastAPI(title="HI-FIVE Python Ingress Ops")
 
@@ -43,6 +44,18 @@ def build_ops_app(stats: IngressStats):
     @app.get("/status")
     async def status() -> dict:
         return stats.snapshot()
+
+    @app.get("/preview/latest.jpg")
+    async def latest_preview() -> Response:
+        payload, meta = stats.get_latest_preview()
+        if not payload:
+            return Response(status_code=404)
+        headers = {}
+        if meta.get("event_id"):
+            headers["X-Hifive-Preview-Event-Id"] = str(meta["event_id"])
+        if meta.get("ts_ms"):
+            headers["X-Hifive-Preview-Ts-Ms"] = str(meta["ts_ms"])
+        return Response(content=payload, media_type="image/jpeg", headers=headers)
 
     @app.get("/metrics", response_class=PlainTextResponse)
     async def metrics() -> str:
@@ -73,11 +86,14 @@ async def forward_ingress_status_loop(
     while True:
         ts_ms = int(time.time() * 1000)
         event_id = f"ingress-status-{ts_ms}"
+        snapshot = stats.snapshot()
+        snapshot["uptime_sec"] = int(snapshot.get("uptime_sec") or 0)
         payload = {
             "type": "ingress_status",
             "schema_version": "hifive.ingress_status.v1",
             "ts_ms": ts_ms,
-            "status": stats.snapshot(),
+            "ingress_id": "python-webtransport-ingress",
+            **snapshot,
         }
         result = await forwarder.forward(payload, event_id)
         if result.accepted:
@@ -120,6 +136,14 @@ async def async_main() -> None:
             ingest_key=args.ingest_key,
             dry_run=args.dry_run_spring,
         )
+    evidence_forwarder = None
+    if args.spring_evidence_url or args.dry_run_spring:
+        evidence_forwarder = SpringEvidenceForwarder(
+            endpoint=args.spring_evidence_url,
+            timeout_sec=args.spring_timeout_sec,
+            ingest_key=args.ingest_key,
+            dry_run=args.dry_run_spring,
+        )
 
     configuration = QuicConfiguration(
         is_client=False,
@@ -137,6 +161,7 @@ async def async_main() -> None:
             path=args.wt_path,
             forwarder=forwarder,
             edge_status_forwarder=edge_status_forwarder,
+            evidence_forwarder=evidence_forwarder,
             stats=stats,
         ).create(),
     )

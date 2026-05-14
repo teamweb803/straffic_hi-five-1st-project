@@ -55,6 +55,10 @@ class EdgeServiceRuntimeOptions:
     output_dir: str = "/home/jetson/hifive/output/edge_service"
     save_event_images: bool = True
     status_interval_sec: float = 1.0
+    preview_datagram_fps: float = 0.0
+    preview_jpeg_quality: int = 45
+    evidence_upload: bool = False
+    evidence_jpeg_quality: int = 85
     parser_lib: str = "/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so"
     yolo_parser_lib: str = ""
     ocr_parser_lib: str = ""

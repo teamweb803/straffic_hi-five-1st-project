@@ -10,13 +10,15 @@ from typing import Any
 from .ack import ACK, REJECT, RETRY, encode_ack
 from .framing import FrameError, unpack_ready_event_frame
 from .ingress_state import IngressStats
-from .spring_forwarder import SpringForwarder, SpringJsonForwarder
+from .spring_forwarder import SpringEvidenceForwarder, SpringForwarder, SpringJsonForwarder
 
 
 logger = logging.getLogger("hifive.ingress")
 
 NETWORK_TRANSITION_EVENT_PREFIX = "network-transition-"
 EDGE_STATUS_EVENT_PREFIX = "edge-status-"
+PREVIEW_FRAME_EVENT_PREFIX = "preview-frame-"
+EVIDENCE_EVENT_PREFIX = "evidence:"
 
 
 def _decode_network_transition_payload(payload: bytes) -> dict[str, Any]:
@@ -47,11 +49,22 @@ def _decode_edge_status_payload(payload: bytes) -> dict[str, Any]:
     return {"type": "edge_status", "value": decoded}
 
 
+def _parse_evidence_event_id(frame_event_id: str) -> tuple[str, str] | None:
+    if not frame_event_id.startswith(EVIDENCE_EVENT_PREFIX):
+        return None
+    remainder = frame_event_id[len(EVIDENCE_EVENT_PREFIX) :]
+    kind, sep, event_id = remainder.partition(":")
+    if not sep or not kind or not event_id:
+        return None
+    return kind, event_id
+
+
 @dataclass
 class IngressSession:
     session_id: int
     forwarder: SpringForwarder
     edge_status_forwarder: SpringJsonForwarder | None
+    evidence_forwarder: SpringEvidenceForwarder | None
     stats: IngressStats
     buffers: dict[int, bytearray]
 
@@ -80,6 +93,72 @@ class IngressSession:
             self.session_id,
             stream_id,
         )
+        if frame.event_id.startswith(PREVIEW_FRAME_EVENT_PREFIX) and frame.payload.startswith(b"\xff\xd8"):
+            self.stats.mark_preview_frame(frame.event_id, frame.payload)
+            logger.info(
+                "Preview frame received event_id=%s bytes=%d session=%s stream=%s",
+                frame.event_id,
+                len(frame.payload),
+                self.session_id,
+                stream_id,
+            )
+            return encode_ack(ACK, frame.event_id, "preview frame stored")
+
+        evidence = _parse_evidence_event_id(frame.event_id)
+        if evidence is not None:
+            evidence_kind, passage_event_id = evidence
+            if not frame.payload.startswith(b"\xff\xd8"):
+                detail = "evidence payload must be jpeg"
+                self.stats.mark_reject(frame.event_id, detail)
+                return encode_ack(REJECT, frame.event_id, detail)
+            if self.evidence_forwarder is None:
+                self.stats.mark_evidence(frame.event_id, evidence_kind, len(frame.payload))
+                logger.info(
+                    "Evidence received event_id=%s passage_event_id=%s kind=%s bytes=%d",
+                    frame.event_id,
+                    passage_event_id,
+                    evidence_kind,
+                    len(frame.payload),
+                )
+                return encode_ack(ACK, frame.event_id, "evidence stored in ingress only")
+            result = await self.evidence_forwarder.forward(passage_event_id, evidence_kind, frame.payload)
+            if result.accepted:
+                self.stats.mark_evidence_forward(
+                    passage_event_id,
+                    evidence_kind,
+                    "accepted",
+                    result.status_code,
+                    result.detail,
+                )
+                self.stats.mark_evidence(frame.event_id, evidence_kind, len(frame.payload))
+                logger.info(
+                    "Evidence ACK event_id=%s passage_event_id=%s kind=%s detail=%s",
+                    frame.event_id,
+                    passage_event_id,
+                    evidence_kind,
+                    result.detail,
+                )
+                return encode_ack(ACK, frame.event_id, result.detail)
+            if result.retryable:
+                self.stats.mark_evidence_forward(
+                    passage_event_id,
+                    evidence_kind,
+                    "retry",
+                    result.status_code,
+                    result.detail,
+                )
+                self.stats.mark_retry(frame.event_id, result.detail)
+                return encode_ack(RETRY, frame.event_id, result.detail)
+            self.stats.mark_evidence_forward(
+                passage_event_id,
+                evidence_kind,
+                "rejected",
+                result.status_code,
+                result.detail,
+            )
+            self.stats.mark_reject(frame.event_id, result.detail)
+            return encode_ack(REJECT, frame.event_id, result.detail)
+
         if frame.event_id.startswith(NETWORK_TRANSITION_EVENT_PREFIX):
             detail = _decode_network_transition_payload(frame.payload)
             self.stats.mark_network_transition(
@@ -154,6 +233,27 @@ class IngressSession:
         logger.info("WebTransport event REJECT event_id=%s detail=%s", frame.event_id, result.detail)
         return encode_ack(REJECT, frame.event_id, result.detail)
 
+    def receive_datagram(self, data: bytes) -> None:
+        try:
+            frame = unpack_ready_event_frame(bytearray(data))
+        except FrameError as exc:
+            self.stats.mark_malformed(f"datagram: {exc}")
+            return
+        if frame is None:
+            self.stats.mark_malformed("datagram: incomplete frame")
+            return
+        self.stats.mark_unreliable_datagram(
+            frame.event_id,
+            payload_bytes=len(frame.payload),
+            payload=frame.payload,
+        )
+        logger.info(
+            "WebTransport datagram received event_id=%s bytes=%d session=%s",
+            frame.event_id,
+            len(frame.payload),
+            self.session_id,
+        )
+
 
 class WebTransportIngressFactory:
     def __init__(
@@ -162,22 +262,25 @@ class WebTransportIngressFactory:
         path: str,
         forwarder: SpringForwarder,
         edge_status_forwarder: SpringJsonForwarder | None = None,
+        evidence_forwarder: SpringEvidenceForwarder | None = None,
         stats: IngressStats,
     ) -> None:
         self.path = path if path.startswith("/") else f"/{path}"
         self.forwarder = forwarder
         self.edge_status_forwarder = edge_status_forwarder
+        self.evidence_forwarder = evidence_forwarder
         self.stats = stats
 
     def create(self):  # type: ignore[no-untyped-def]
         from aioquic.asyncio.protocol import QuicConnectionProtocol
         from aioquic.h3.connection import H3Connection
-        from aioquic.h3.events import HeadersReceived, WebTransportStreamDataReceived
+        from aioquic.h3.events import DatagramReceived, HeadersReceived, WebTransportStreamDataReceived
         from aioquic.quic.events import ProtocolNegotiated, QuicEvent
 
         expected_path = self.path
         forwarder = self.forwarder
         edge_status_forwarder = self.edge_status_forwarder
+        evidence_forwarder = self.evidence_forwarder
         stats = self.stats
 
         class IngressProtocol(QuicConnectionProtocol):
@@ -201,6 +304,8 @@ class WebTransportIngressFactory:
                         self._handle_headers(http_event)
                     elif isinstance(http_event, WebTransportStreamDataReceived):
                         asyncio.create_task(self._handle_webtransport_stream(http_event))
+                    elif isinstance(http_event, DatagramReceived):
+                        self._handle_webtransport_datagram(http_event)
 
             def _handle_headers(self, event: HeadersReceived) -> None:
                 assert self.http is not None
@@ -220,6 +325,7 @@ class WebTransportIngressFactory:
                         session_id=event.stream_id,
                         forwarder=forwarder,
                         edge_status_forwarder=edge_status_forwarder,
+                        evidence_forwarder=evidence_forwarder,
                         stats=stats,
                         buffers=defaultdict(bytearray),
                     )
@@ -239,5 +345,17 @@ class WebTransportIngressFactory:
                 ack_stream_id = self.http.create_webtransport_stream(event.session_id)
                 self._quic.send_stream_data(stream_id=ack_stream_id, data=response, end_stream=True)
                 self.transmit()
+
+            def _handle_webtransport_datagram(self, event: DatagramReceived) -> None:
+                session = self.sessions.get(event.stream_id)
+                if session is None:
+                    stats.mark_malformed(f"datagram: unknown session stream_id={event.stream_id}")
+                    logger.info(
+                        "WebTransport datagram dropped unknown_session stream_id=%s bytes=%d",
+                        event.stream_id,
+                        len(event.data),
+                    )
+                    return
+                session.receive_datagram(event.data)
 
         return IngressProtocol

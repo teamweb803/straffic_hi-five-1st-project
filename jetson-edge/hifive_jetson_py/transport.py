@@ -17,6 +17,9 @@ class Sender(Protocol):
     def submit_latest(self, payload: bytes, event_id: str) -> bool:
         ...
 
+    def submit_unreliable(self, payload: bytes, event_id: str) -> bool:
+        ...
+
     def snapshot(self) -> dict:
         ...
 
@@ -32,6 +35,10 @@ class DryRunSender:
 
     def submit_latest(self, payload: bytes, event_id: str) -> bool:
         print(f"dry-run latest event_id={event_id} bytes={len(payload)}")
+        return True
+
+    def submit_unreliable(self, payload: bytes, event_id: str) -> bool:
+        print(f"dry-run unreliable event_id={event_id} bytes={len(payload)}")
         return True
 
     def snapshot(self) -> dict:
@@ -64,6 +71,9 @@ class QueuedSender:
 
     def submit_latest(self, payload: bytes, event_id: str) -> bool:
         return self.delegate.submit_latest(payload, event_id)
+
+    def submit_unreliable(self, payload: bytes, event_id: str) -> bool:
+        return self.delegate.submit_unreliable(payload, event_id)
 
     def snapshot(self) -> dict:
         snapshot = dict(self.delegate.snapshot())
