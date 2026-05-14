@@ -14,6 +14,8 @@ const activeMenu = ref('대시보드')
 const activeTab = ref('companies')
 const selectedCenter = ref('서울 톨게이트')
 const expandedCenter = ref('')
+const showCenterModal = ref(false)
+const centerMetricPeriod = ref('daily')
 const search = ref('')
 const members = ref([])
 const companies = ref([])
@@ -168,6 +170,104 @@ const recentIssueByCenter = {
   '대전 톨게이트': '1건',
   '대구 톨게이트': '2건'
 }
+
+const centerDetailMeta = {
+  '서울 톨게이트': {
+    address: '서울특별시 서초구 양재대로 12',
+    lat: '37.56668',
+    lng: '126.97841',
+    edgeCount: 3,
+    metrics: {
+      daily: { label: '일간', traffic: 12456, settlement: 2450800, bars: [42, 58, 74, 92, 86, 68, 54] },
+      weekly: { label: '주간', traffic: 86420, settlement: 17155600, bars: [56, 68, 72, 88, 94, 80, 64] },
+      monthly: { label: '월간', traffic: 358420, settlement: 71135800, bars: [48, 64, 79, 84, 91, 88, 76] }
+    }
+  },
+  '수원 톨게이트': {
+    address: '경기도 수원시 영통구 중부대로 88',
+    lat: '37.26357',
+    lng: '127.02860',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 9876, settlement: 1896200, bars: [34, 44, 61, 78, 72, 62, 48] },
+      weekly: { label: '주간', traffic: 68450, settlement: 13005500, bars: [45, 54, 66, 74, 82, 73, 58] },
+      monthly: { label: '월간', traffic: 292380, settlement: 55552200, bars: [42, 58, 70, 76, 84, 79, 67] }
+    }
+  },
+  '대전 톨게이트': {
+    address: '대전광역시 유성구 북유성대로 154',
+    lat: '36.35041',
+    lng: '127.38455',
+    edgeCount: 3,
+    metrics: {
+      daily: { label: '일간', traffic: 7654, settlement: 1454260, bars: [28, 38, 50, 68, 61, 47, 36] },
+      weekly: { label: '주간', traffic: 52380, settlement: 9952200, bars: [38, 46, 59, 70, 66, 56, 44] },
+      monthly: { label: '월간', traffic: 218700, settlement: 41553000, bars: [36, 49, 61, 73, 70, 63, 54] }
+    }
+  },
+  '대구 톨게이트': {
+    address: '대구광역시 동구 팔공로 221',
+    lat: '35.87144',
+    lng: '128.60144',
+    edgeCount: 3,
+    metrics: {
+      daily: { label: '일간', traffic: 5321, settlement: 1010990, bars: [24, 32, 45, 54, 50, 41, 30] },
+      weekly: { label: '주간', traffic: 38210, settlement: 7259900, bars: [31, 40, 52, 62, 58, 48, 37] },
+      monthly: { label: '월간', traffic: 162400, settlement: 30856000, bars: [30, 43, 55, 66, 61, 53, 42] }
+    }
+  },
+  '부산 톨게이트': {
+    address: '부산광역시 금정구 중앙대로 2101',
+    lat: '35.17955',
+    lng: '129.07564',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 11023, settlement: 2094370, bars: [38, 52, 67, 80, 88, 74, 59] },
+      weekly: { label: '주간', traffic: 76230, settlement: 14483700, bars: [46, 58, 70, 84, 91, 79, 66] },
+      monthly: { label: '월간', traffic: 321500, settlement: 61085000, bars: [43, 60, 76, 86, 92, 84, 72] }
+    }
+  },
+  '광주 톨게이트': {
+    address: '광주광역시 광산구 무진대로 303',
+    lat: '35.15955',
+    lng: '126.85260',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 6120, settlement: 1162800, bars: [26, 36, 49, 61, 57, 44, 34] },
+      weekly: { label: '주간', traffic: 42100, settlement: 7999000, bars: [34, 45, 56, 68, 63, 53, 41] },
+      monthly: { label: '월간', traffic: 178300, settlement: 33877000, bars: [32, 47, 59, 70, 66, 58, 46] }
+    }
+  },
+  '강릉 톨게이트': {
+    address: '강원특별자치도 강릉시 경강로 2301',
+    lat: '37.75185',
+    lng: '128.87606',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 4320, settlement: 820800, bars: [20, 30, 42, 53, 49, 38, 28] },
+      weekly: { label: '주간', traffic: 30140, settlement: 5726600, bars: [28, 38, 49, 60, 56, 46, 35] },
+      monthly: { label: '월간', traffic: 129900, settlement: 24681000, bars: [27, 41, 52, 64, 60, 50, 39] }
+    }
+  },
+  '제주 톨게이트': {
+    address: '제주특별자치도 제주시 공항로 2',
+    lat: '33.49962',
+    lng: '126.53119',
+    edgeCount: 1,
+    metrics: {
+      daily: { label: '일간', traffic: 2210, settlement: 419900, bars: [16, 22, 31, 44, 40, 30, 23] },
+      weekly: { label: '주간', traffic: 15980, settlement: 3036200, bars: [24, 31, 43, 54, 50, 39, 30] },
+      monthly: { label: '월간', traffic: 68420, settlement: 12999800, bars: [22, 36, 48, 58, 54, 44, 34] }
+    }
+  }
+}
+
+const selectedCenterDetail = computed(() => {
+  const center = centers.value.find((item) => item.name === selectedCenter.value) ?? centers.value[0]
+  const meta = centerDetailMeta[center.name] ?? centerDetailMeta['서울 톨게이트']
+  const metric = meta.metrics[centerMetricPeriod.value] ?? meta.metrics.daily
+  return { ...center, ...meta, metric }
+})
 
 function centerOwner(centerName) {
   return companyByCenter[centerName] ?? '담당 회원사'
@@ -444,7 +544,8 @@ function cancelMapEditMode() {
 function toggleCenterDetail(center) {
   if (isMapEditMode.value) return
   selectedCenter.value = center.name
-  expandedCenter.value = expandedCenter.value === center.name ? '' : center.name
+  centerMetricPeriod.value = 'daily'
+  showCenterModal.value = true
 }
 
 function markMapDirty() {
@@ -736,7 +837,6 @@ onBeforeUnmount(() => {
                   statusClass(center.status),
                   {
                     selected: selectedCenter === center.name,
-                    expanded: expandedCenter === center.name,
                     dragging: draggingCenterName === center.name,
                     labelDragging: draggingLabelName === center.name
                   }
@@ -760,9 +860,6 @@ onBeforeUnmount(() => {
                 >
                   <b>{{ center.name }}</b>
                   <small>{{ statusText(center.status) }}</small>
-                  <span v-if="expandedCenter === center.name" class="marker-detail">
-                    담당 회원사 {{ centerOwner(center.name) }} · Edge 2대 · 최근 장애 {{ centerIssueCount(center.name) }}
-                  </span>
                 </button>
               </div>
 
@@ -770,112 +867,136 @@ onBeforeUnmount(() => {
           </article>
 
           <aside class="right-column">
-            <article ref="centerSection" class="panel glass">
+            <article class="panel glass dashboard-pipeline-panel">
               <div class="panel-title">
-                <h2>지점별 실시간 통행 현황 (상위 5)</h2>
+                <h2>시스템 파이프라인 상태</h2>
               </div>
 
-              <table class="control-table live-center-table">
-                <thead>
-                  <tr>
-                    <th>지점명</th>
-                    <th>담당 회원사</th>
-                    <th>오늘 통행</th>
-                    <th>상태</th>
-                    <th>최근 장애</th>
-                    <th>대시보드 보기</th>
-                  </tr>
-                </thead>
+              <table class="dashboard-pipeline-table">
                 <tbody>
-                  <tr
-                    v-for="center in topCenters"
-                    :key="center.name"
-                    :class="{ selected: selectedCenter === center.name }"
-                  >
-                    <td>{{ center.name }}</td>
-                    <td>{{ centerOwner(center.name) }}</td>
-                    <td>{{ center.today.toLocaleString() }}</td>
-                    <td><span class="status" :class="statusClass(center.status)">{{ center.status }}</span></td>
-                    <td>{{ centerIssueCount(center.name) }}</td>
-                    <td class="dashboard-entry-cell">
-                      <button class="small-btn" type="button" @click="enterCenter(center)">대시보드 보기</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <button class="center-more-btn" type="button" @click="activateMenu('지점 관리')">전체 지점 보기 ›</button>
-            </article>
-
-            <article class="panel glass audit-panel">
-              <div class="panel-title with-button">
-                <h2>대리조회 감사 <small>(최근 5건)</small></h2>
-                <button class="text-btn" type="button" @click="activateMenu('감사 로그')">전체 감사 로그 보기 ›</button>
-              </div>
-              <table class="control-table audit-mini-table">
-                <thead>
                   <tr>
-                    <th>시간</th>
-                    <th>관리자</th>
-                    <th>회원사 / 지점</th>
-                    <th>사유</th>
-                    <th>결과</th>
+                    <td rowspan="3" class="pipeline-table-icon">▣</td>
+                    <td rowspan="3" class="pipeline-table-name">Edge</td>
+                    <td>FPS</td>
+                    <td>29.8</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,16 16,12 30,14 44,8 58,10 72,6 84,9"/></svg></td>
+                    <td rowspan="3" class="pipeline-table-state"><b>정상 장비 : 78</b><span>State 5</span></td>
                   </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="audit in recentAuditRows" :key="`${audit.time}-${audit.target}`">
-                    <td>{{ audit.time }}</td>
-                    <td>{{ audit.actor }}</td>
-                    <td>{{ audit.target }}</td>
-                    <td>{{ audit.reason }}</td>
-                    <td><span class="status ok">{{ audit.result }}</span></td>
+                  <tr>
+                    <td>Spool</td>
+                    <td>12</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,9 16,11 30,8 44,12 58,10 72,13 84,12"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td>Active Path</td>
+                    <td>LAN</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,15 16,15 30,11 44,11 58,8 72,8 84,6"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td rowspan="3" class="pipeline-table-icon">▤</td>
+                    <td rowspan="3" class="pipeline-table-name">Ingress</td>
+                    <td>수신 이벤트</td>
+                    <td>128,456건</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,18 16,15 30,13 44,10 58,9 72,7 84,5"/></svg></td>
+                    <td rowspan="3" class="pipeline-table-state"><b>연결 상태 정상</b><span>RETRY 1,208</span></td>
+                  </tr>
+                  <tr>
+                    <td>ACK</td>
+                    <td>126,842건</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,17 16,13 30,14 44,10 58,8 72,7 84,6"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td>RETRY</td>
+                    <td>1,208건</td>
+                    <td class="pipeline-spark warn"><svg viewBox="0 0 86 24"><polyline points="2,7 16,9 30,8 44,12 58,14 72,13 84,17"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td rowspan="3" class="pipeline-table-icon">◒</td>
+                    <td rowspan="3" class="pipeline-table-name">Backend</td>
+                    <td>Validation 실패</td>
+                    <td>0.18%</td>
+                    <td class="pipeline-spark warn"><svg viewBox="0 0 86 24"><polyline points="2,8 16,9 30,13 44,11 58,15 72,14 84,16"/></svg></td>
+                    <td rowspan="3" class="pipeline-table-state"><b>API 상태 정상</b><span>p95 128ms</span></td>
+                  </tr>
+                  <tr>
+                    <td>Duplicate 차단</td>
+                    <td>1,284건</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,11 16,12 30,10 44,9 58,11 72,8 84,9"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td>API Latency</td>
+                    <td>128 ms</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,13 16,10 30,12 44,9 58,8 72,11 84,7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td rowspan="3" class="pipeline-table-icon">◉</td>
+                    <td rowspan="3" class="pipeline-table-name">DB</td>
+                    <td>Write TPS</td>
+                    <td>412</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,17 16,13 30,14 44,11 58,10 72,8 84,6"/></svg></td>
+                    <td rowspan="3" class="pipeline-table-state"><b>복제 지연 0.2초</b><span>Backup 정상</span></td>
+                  </tr>
+                  <tr>
+                    <td>Read TPS</td>
+                    <td>256</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,14 16,12 30,13 44,10 58,12 72,9 84,10"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td>Backup 상태</td>
+                    <td>정상</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,16 16,14 30,14 44,11 58,10 72,8 84,8"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td rowspan="3" class="pipeline-table-icon">V</td>
+                    <td rowspan="3" class="pipeline-table-name">API</td>
+                    <td>응답 시간</td>
+                    <td>145 ms</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,15 16,12 30,13 44,10 58,9 72,7 84,8"/></svg></td>
+                    <td rowspan="3" class="pipeline-table-state"><b>API 상태 정상</b><span>1,284 rpm</span></td>
+                  </tr>
+                  <tr>
+                    <td>오류율</td>
+                    <td>0.02%</td>
+                    <td class="pipeline-spark warn"><svg viewBox="0 0 86 24"><polyline points="2,7 16,8 30,10 44,13 58,14 72,16 84,17"/></svg></td>
+                  </tr>
+                  <tr>
+                    <td>요청 처리량</td>
+                    <td>1,284 rpm</td>
+                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,17 16,15 30,12 44,14 58,10 72,8 84,6"/></svg></td>
                   </tr>
                 </tbody>
               </table>
             </article>
           </aside>
-        </section>
 
-        <section ref="companySection" class="bottom-grid master-bottom-grid">
-          <article class="panel glass donut-panel">
-            <div class="panel-title">
-              <h2>회원사 상태</h2>
-            </div>
-            <div class="donut-content">
-              <div class="donut"><span>24</span></div>
-              <div class="legend">
-                <p><i class="legend-dot ok"></i><span>정상</span><strong>18 (75%)</strong></p>
-                <p><i class="legend-dot caution"></i><span>주의</span><strong>4 (16.7%)</strong></p>
-                <p><i class="legend-dot inactive"></i><span>비활성</span><strong>2 (8.3%)</strong></p>
+          <section ref="companySection" class="dashboard-lower-panels">
+            <article ref="noticeSection" class="panel glass notice-panel">
+              <div class="panel-title with-button">
+                <h2>시스템 공지사항</h2>
+                <button class="text-btn" type="button" @click="showMoreNotices">전체 보기 ›</button>
               </div>
-            </div>
-          </article>
+              <ul class="notice-list">
+                <li v-for="notice in notices" :key="notice.title">
+                  <span>{{ notice.title }}</span>
+                  <time>{{ notice.date }}</time>
+                </li>
+              </ul>
+            </article>
 
-          <article ref="noticeSection" class="panel glass notice-panel">
-            <div class="panel-title with-button">
-              <h2>시스템 공지사항</h2>
-              <button class="text-btn" type="button" @click="showMoreNotices">전체 보기 ›</button>
-            </div>
-            <ul class="notice-list">
-              <li v-for="notice in notices" :key="notice.title">
-                <span>{{ notice.title }}</span>
-                <time>{{ notice.date }}</time>
-              </li>
-            </ul>
-          </article>
-
-          <article class="panel glass alert-panel">
-            <div class="panel-title with-button">
-              <h2>최근 장애 알림</h2>
-              <button class="text-btn" type="button" @click="activateMenu('장애 알림')">전체 보기 ›</button>
-            </div>
-            <ul class="alert-list">
-              <li v-for="alert in recentAlerts" :key="`${alert.time}-${alert.title}`">
-                <b :class="alert.tone">{{ alert.level }}</b>
-                <span>{{ alert.title }}</span>
-                <time>{{ alert.time }}</time>
-              </li>
-            </ul>
-          </article>
+            <article class="panel glass alert-panel">
+              <div class="panel-title with-button">
+                <h2>최근 장애 알림</h2>
+                <button class="text-btn" type="button" @click="activateMenu('장애 알림')">전체 보기 ›</button>
+              </div>
+              <ul class="alert-list">
+                <li v-for="alert in recentAlerts" :key="`${alert.time}-${alert.title}`">
+                  <b :class="alert.tone">{{ alert.level }}</b>
+                  <span>{{ alert.title }}</span>
+                  <time>{{ alert.time }}</time>
+                </li>
+              </ul>
+            </article>
+          </section>
         </section>
         </template>
 
@@ -1775,6 +1896,94 @@ onBeforeUnmount(() => {
             </section>
           </article>
         </section>
+
+        <div v-if="showCenterModal" class="modal-backdrop" @click.self="showCenterModal = false">
+          <article class="center-detail-modal glass">
+            <div class="modal-head">
+              <div>
+                <p class="subpage-kicker">TOLLING CENTER</p>
+                <h3>{{ selectedCenterDetail.name }}</h3>
+              </div>
+              <span class="center-modal-status" :class="statusClass(selectedCenterDetail.status)">
+                {{ statusText(selectedCenterDetail.status) }}
+              </span>
+              <button class="modal-close" type="button" @click="showCenterModal = false">×</button>
+            </div>
+
+            <section class="center-modal-summary">
+              <dl>
+                <div>
+                  <dt>지점명</dt>
+                  <dd>{{ selectedCenterDetail.name }}</dd>
+                </div>
+                <div>
+                  <dt>담당 회원사</dt>
+                  <dd>{{ centerOwner(selectedCenterDetail.name) }}</dd>
+                </div>
+                <div>
+                  <dt>Edge 대수</dt>
+                  <dd>{{ selectedCenterDetail.edgeCount }}대</dd>
+                </div>
+                <div>
+                  <dt>최근 장애</dt>
+                  <dd>{{ centerIssueCount(selectedCenterDetail.name) }}</dd>
+                </div>
+                <div class="wide">
+                  <dt>위치 주소</dt>
+                  <dd>{{ selectedCenterDetail.address }}</dd>
+                </div>
+                <div>
+                  <dt>위도</dt>
+                  <dd>{{ selectedCenterDetail.lat }}</dd>
+                </div>
+                <div>
+                  <dt>경도</dt>
+                  <dd>{{ selectedCenterDetail.lng }}</dd>
+                </div>
+              </dl>
+              <button class="center-dashboard-btn" type="button" @click="enterCenter(selectedCenterDetail)">
+                관제 대시보드 진입
+              </button>
+            </section>
+
+            <section class="center-modal-metrics">
+              <div class="center-period-tabs">
+                <button
+                  v-for="period in ['daily', 'weekly', 'monthly']"
+                  :key="period"
+                  type="button"
+                  :class="{ active: centerMetricPeriod === period }"
+                  @click="centerMetricPeriod = period"
+                >
+                  {{ selectedCenterDetail.metrics[period].label }}
+                </button>
+              </div>
+
+              <div class="center-metric-cards">
+                <article>
+                  <span>통행량</span>
+                  <strong>{{ selectedCenterDetail.metric.traffic.toLocaleString() }}</strong>
+                  <small>{{ selectedCenterDetail.metric.label }} 기준</small>
+                </article>
+                <article>
+                  <span>정산 금액</span>
+                  <strong>₩{{ selectedCenterDetail.metric.settlement.toLocaleString() }}</strong>
+                  <small>정산 후보 포함</small>
+                </article>
+              </div>
+
+              <div class="center-bar-chart">
+                <span
+                  v-for="(height, index) in selectedCenterDetail.metric.bars"
+                  :key="`${selectedCenterDetail.name}-${centerMetricPeriod}-${index}`"
+                  :style="{ height: `${height}%` }"
+                >
+                  <i></i>
+                </span>
+              </div>
+            </section>
+          </article>
+        </div>
 
         <div v-if="showCompanyModal" class="modal-backdrop" @click.self="showCompanyModal = false">
           <form class="company-modal glass" @submit.prevent="createCompany">
@@ -2941,6 +3150,12 @@ main {
   border-radius: 8px;
 }
 
+.center-detail-modal {
+  width: min(860px, 100%);
+  padding: 20px;
+  border-radius: 8px;
+}
+
 .modal-head {
   display: flex;
   align-items: flex-start;
@@ -2962,6 +3177,179 @@ main {
   border-radius: 5px;
   color: #dce9f7;
   background: rgba(3, 12, 26, 0.72);
+}
+
+.center-modal-status {
+  min-width: 68px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.center-modal-status.ok {
+  color: #78f39b;
+  background: rgba(37, 204, 113, 0.15);
+  border: 1px solid rgba(37, 204, 113, 0.32);
+}
+
+.center-modal-status.caution {
+  color: #ffd05f;
+  background: rgba(255, 185, 40, 0.13);
+  border: 1px solid rgba(255, 185, 40, 0.34);
+}
+
+.center-modal-status.danger {
+  color: #ff817a;
+  background: rgba(255, 100, 93, 0.13);
+  border: 1px solid rgba(255, 100, 93, 0.34);
+}
+
+.center-modal-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.center-modal-summary dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.center-modal-summary dl div {
+  min-height: 58px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(117, 151, 194, 0.15);
+  border-radius: 6px;
+  background: rgba(5, 18, 37, 0.52);
+}
+
+.center-modal-summary dl .wide {
+  grid-column: span 2;
+}
+
+.center-modal-summary dt,
+.center-modal-summary dd {
+  margin: 0;
+}
+
+.center-modal-summary dt {
+  color: #9fb2cb;
+  font-size: 12px;
+}
+
+.center-modal-summary dd {
+  color: #f4f8ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.center-dashboard-btn {
+  min-height: 100%;
+  border: 1px solid rgba(42, 133, 227, 0.52);
+  border-radius: 6px;
+  color: #eef7ff;
+  background: linear-gradient(135deg, rgba(22, 131, 255, 0.78), rgba(10, 67, 143, 0.9));
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.center-modal-metrics {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(117, 151, 194, 0.15);
+  border-radius: 6px;
+  background: rgba(5, 18, 37, 0.42);
+}
+
+.center-period-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.center-period-tabs button {
+  width: 82px;
+  height: 32px;
+  border: 1px solid rgba(42, 133, 227, 0.32);
+  border-radius: 5px;
+  color: #c9d7eb;
+  background: rgba(3, 12, 26, 0.64);
+}
+
+.center-period-tabs button.active {
+  color: #fff;
+  border-color: rgba(42, 133, 227, 0.68);
+  background: rgba(22, 103, 219, 0.52);
+}
+
+.center-metric-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.center-metric-cards article {
+  min-height: 92px;
+  padding: 14px;
+  border: 1px solid rgba(42, 133, 227, 0.22);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(16, 42, 76, 0.78), rgba(7, 24, 47, 0.72));
+}
+
+.center-metric-cards span,
+.center-metric-cards small {
+  display: block;
+  color: #9fb2cb;
+  font-size: 12px;
+}
+
+.center-metric-cards strong {
+  display: block;
+  margin: 7px 0 5px;
+  color: #fff;
+  font-size: 26px;
+}
+
+.center-bar-chart {
+  height: 150px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: end;
+  gap: 12px;
+  padding: 18px 18px 12px;
+  border: 1px solid rgba(117, 151, 194, 0.13);
+  border-radius: 6px;
+  background:
+    linear-gradient(rgba(117, 151, 194, 0.1) 1px, transparent 1px),
+    rgba(2, 10, 22, 0.34);
+  background-size: 100% 30px;
+}
+
+.center-bar-chart span {
+  min-height: 18px;
+  display: block;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(180deg, #53d98a, #1778ef);
+  box-shadow: 0 0 12px rgba(22, 131, 255, 0.22);
+}
+
+.center-bar-chart i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), transparent);
 }
 
 .modal-grid {
@@ -3046,7 +3434,8 @@ select {
 
 .master-shell.light .glass,
 .master-shell.light .quick-menu,
-.master-shell.light .company-modal {
+.master-shell.light .company-modal,
+.master-shell.light .center-detail-modal {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(242, 248, 255, 0.72)),
     rgba(255, 255, 255, 0.72);
@@ -3060,6 +3449,9 @@ select {
 .master-shell.light .kpi strong,
 .master-shell.light .total-number,
 .master-shell.light .subpage-hero h2,
+.master-shell.light .modal-head h3,
+.master-shell.light .center-modal-summary dd,
+.master-shell.light .center-metric-cards strong,
 .master-shell.light .subpage-toolbar h3,
 .master-shell.light .modal-head h3,
 .master-shell.light .admin-chip,
@@ -3193,6 +3585,38 @@ select {
   border-color: rgba(38, 107, 186, 0.24);
 }
 
+.master-shell.light .center-modal-summary dl div,
+.master-shell.light .center-modal-metrics,
+.master-shell.light .center-metric-cards article {
+  background: rgba(246, 250, 255, 0.88);
+  border-color: rgba(58, 126, 204, 0.24);
+}
+
+.master-shell.light .center-modal-summary dt,
+.master-shell.light .center-metric-cards span,
+.master-shell.light .center-metric-cards small {
+  color: #53677f;
+}
+
+.master-shell.light .center-period-tabs button {
+  color: #34536f;
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(58, 126, 204, 0.24);
+}
+
+.master-shell.light .center-period-tabs button.active {
+  color: #063963;
+  background: rgba(22, 131, 255, 0.15);
+  border-color: rgba(22, 131, 255, 0.45);
+}
+
+.master-shell.light .center-bar-chart {
+  background:
+    linear-gradient(rgba(82, 112, 145, 0.12) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.82);
+  border-color: rgba(58, 126, 204, 0.22);
+}
+
 .master-shell.light .map-panel::after {
   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.18));
 }
@@ -3207,7 +3631,8 @@ select {
 .master-shell.light .sidebar *,
 .master-shell.light .topbar *,
 .master-shell.light .glass *,
-.master-shell.light .company-modal * {
+.master-shell.light .company-modal *,
+.master-shell.light .center-detail-modal * {
   text-shadow: none;
 }
 
@@ -3225,8 +3650,11 @@ select {
 .master-shell.light .glass td,
 .master-shell.light .glass th,
 .master-shell.light .company-modal,
+.master-shell.light .center-detail-modal,
 .master-shell.light .company-modal p,
-.master-shell.light .company-modal span {
+.master-shell.light .company-modal span,
+.master-shell.light .center-detail-modal p,
+.master-shell.light .center-detail-modal span {
   color: #17283b;
 }
 
@@ -3435,7 +3863,7 @@ select {
 
 .master-overview-grid .right-column {
   display: grid;
-  grid-template-rows: 1fr 0.78fr;
+  grid-template-rows: 1fr;
   gap: 14px;
 }
 
@@ -3550,6 +3978,117 @@ select {
   font-size: 12.5px;
 }
 
+.dashboard-pipeline-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.dashboard-pipeline-table {
+  width: 100%;
+  flex: 1;
+  border-collapse: collapse;
+  table-layout: auto;
+  overflow: hidden;
+  border: 1px solid rgba(117, 151, 194, 0.14);
+  border-radius: 6px;
+}
+
+.dashboard-pipeline-table tr {
+  border-bottom: 1px solid rgba(117, 151, 194, 0.1);
+}
+
+.dashboard-pipeline-table tr:nth-child(3n) {
+  border-bottom-color: rgba(42, 133, 227, 0.32);
+}
+
+.dashboard-pipeline-table td {
+  height: 38px;
+  padding: 0 12px;
+  color: #dce9f8;
+  font-size: 13.5px;
+  white-space: nowrap;
+  border-right: 1px solid rgba(117, 151, 194, 0.1);
+}
+
+.dashboard-pipeline-table td:last-child {
+  border-right: 0;
+}
+
+.pipeline-table-icon {
+  width: 58px;
+  text-align: center;
+  color: #7ec1ff !important;
+  font-size: 28px !important;
+  background: rgba(47, 140, 255, 0.1);
+}
+
+.pipeline-table-name {
+  width: 92px;
+  color: #f2f7ff !important;
+  font-size: 16px !important;
+  font-weight: 700;
+}
+
+.dashboard-pipeline-table td:nth-child(3),
+.dashboard-pipeline-table tr:not(:first-child) td:first-child:not(.pipeline-table-icon) {
+  color: #9fb2cb;
+}
+
+.dashboard-pipeline-table td:nth-child(4),
+.dashboard-pipeline-table tr:not(:first-child) td:nth-child(2):not(.pipeline-table-name) {
+  color: #f2f7ff;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pipeline-spark {
+  width: 96px;
+  min-width: 96px;
+  text-align: center !important;
+}
+
+.pipeline-spark svg {
+  width: 86px;
+  height: 24px;
+  overflow: visible;
+}
+
+.pipeline-spark polyline {
+  fill: none;
+  stroke: #35dc72;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px rgba(53, 220, 114, 0.34));
+}
+
+.pipeline-spark.warn polyline {
+  stroke: #ffb928;
+  filter: drop-shadow(0 0 5px rgba(255, 185, 40, 0.28));
+}
+
+.pipeline-table-state {
+  width: 144px;
+  text-align: center;
+  background: rgba(37, 204, 113, 0.08);
+}
+
+.pipeline-table-state b,
+.pipeline-table-state span {
+  display: block;
+  color: #65eb8a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pipeline-table-state span {
+  margin-top: 4px;
+  color: #dce9f8;
+  font-weight: 400;
+}
+
 .master-bottom-grid {
   display: grid;
   grid-template-columns: 330px 1fr 1fr;
@@ -3645,6 +4184,46 @@ select {
   color: #17283b;
 }
 
+.master-shell.light .dashboard-pipeline-table {
+  border-color: rgba(58, 126, 204, 0.22);
+}
+
+.master-shell.light .dashboard-pipeline-table td,
+.master-shell.light .pipeline-table-name {
+  color: #102033 !important;
+}
+
+.master-shell.light .dashboard-pipeline-table td:nth-child(3),
+.master-shell.light .dashboard-pipeline-table tr:not(:first-child) td:first-child:not(.pipeline-table-icon) {
+  color: #53677f !important;
+}
+
+.master-shell.light .pipeline-table-icon {
+  color: #0f67b4 !important;
+  background: rgba(36, 126, 219, 0.1);
+}
+
+.master-shell.light .pipeline-table-state {
+  background: rgba(24, 142, 84, 0.08);
+}
+
+.master-shell.light .pipeline-table-state b {
+  color: #087a50;
+}
+
+.master-shell.light .pipeline-table-state span {
+  color: #425b78;
+}
+
+.master-shell.light .pipeline-spark polyline {
+  stroke: #178f52;
+  filter: none;
+}
+
+.master-shell.light .pipeline-spark.warn polyline {
+  stroke: #b46b00;
+}
+
 .master-shell.light .alert-list b.danger {
   color: #a33b00;
   background: rgba(179, 75, 0, 0.1);
@@ -3664,7 +4243,10 @@ select {
 .master-overview-grid.dashboard-grid {
   display: grid;
   grid-template-columns: minmax(700px, 1.08fr) minmax(560px, 0.92fr);
-  grid-template-areas: "map side";
+  grid-template-rows: minmax(548px, 1fr) minmax(218px, 0.4fr);
+  grid-template-areas:
+    "map side"
+    "lower side";
   align-items: stretch;
   gap: 14px;
   margin-top: 12px;
@@ -3679,9 +4261,9 @@ select {
 .master-overview-grid > .right-column {
   grid-area: side;
   grid-column: auto;
-  min-height: 548px;
+  min-height: 780px;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 0.82fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -3690,16 +4272,28 @@ select {
   overflow: hidden;
 }
 
+.dashboard-lower-panels {
+  grid-area: lower;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(420px, 1.28fr);
+  gap: 14px;
+  min-height: 218px;
+}
+
+.dashboard-lower-panels > .panel {
+  min-height: 218px;
+}
+
 .master-bottom-grid.bottom-grid {
   display: grid;
   grid-template-columns: minmax(300px, 0.82fr) minmax(380px, 1fr) minmax(380px, 1fr);
-  grid-template-areas: "company notice alert";
+  grid-template-areas: "audit notice alert";
   gap: 14px;
   margin-top: 14px;
 }
 
-.master-bottom-grid > .donut-panel {
-  grid-area: company;
+.master-bottom-grid > .dashboard-audit-panel {
+  grid-area: audit;
 }
 
 .master-bottom-grid > .notice-panel {
