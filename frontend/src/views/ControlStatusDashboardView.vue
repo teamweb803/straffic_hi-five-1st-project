@@ -190,7 +190,57 @@ onBeforeUnmount(() => {
         </button>
       </nav>
 
-      <section class="zone-card">
+      <div v-if="activeMenu === '정산'" class="event-side-stack settlement-side-stack">
+        <section class="zone-card event-stats-card">
+          <h3>정산 상태 <small>ⓘ</small></h3>
+          <p><span class="zone-icon gps">✓</span><b>완료</b><strong>2,356건</strong></p>
+          <p><span class="zone-icon warn">◔</span><b>대기</b><strong>142건</strong></p>
+          <p><span class="zone-icon danger">!</span><b>보류</b><strong>36건</strong></p>
+        </section>
+      </div>
+
+      <div v-else-if="activeMenu === '검수'" class="event-side-stack review-side-stack">
+        <section class="zone-card event-stats-card">
+          <h3>검수 요약 <small>ⓘ</small></h3>
+          <p><span class="zone-icon warn">⌛</span><b>대기</b><strong>12</strong></p>
+          <p><span class="zone-icon cctv">↻</span><b>처리중</b><strong>3</strong></p>
+          <p><span class="zone-icon gps">✓</span><b>완료</b><strong>48</strong></p>
+        </section>
+        <section class="zone-card gps-guide-card">
+          <p><span class="zone-icon cctv">▧</span><b>검수 가이드</b><strong></strong></p>
+        </section>
+      </div>
+
+      <div v-else-if="activeMenu === 'GPS 판정'" class="event-side-stack gps-side-stack">
+        <section class="zone-card event-stats-card">
+          <h3>GPS 요약 <small>ⓘ</small></h3>
+          <p><span class="zone-icon gps">✓</span><b>정상</b><strong>4,512건</strong></p>
+          <p><span class="zone-icon danger">!</span><b>영역 이탈</b><strong>214건</strong></p>
+          <p><span class="zone-icon lan">◉</span><b>최근 반영</b><strong>2초 전</strong></p>
+        </section>
+        <section class="zone-card gps-guide-card">
+          <p><span class="zone-icon cctv">▧</span><b>GPS 판정 가이드</b><strong></strong></p>
+        </section>
+      </div>
+
+      <div v-else-if="activeMenu === '통행 이벤트'" class="event-side-stack">
+        <section class="zone-card event-filter-card">
+          <h3>빠른 필터 <small>⌘</small></h3>
+          <p><span class="zone-icon cctv">▣</span><b>오늘</b><strong></strong></p>
+          <p><span class="zone-icon gps">✓</span><b>GPS 정상</b><strong></strong></p>
+          <p><span class="zone-icon danger">△</span><b>영역 이탈</b><strong></strong></p>
+          <p><span class="zone-icon warn">◎</span><b>검수 필요</b><strong></strong></p>
+        </section>
+        <section class="zone-card event-stats-card">
+          <h3>이벤트 통계 <small>(금일)</small></h3>
+          <p><b>전체 이벤트</b><strong>1,248건</strong></p>
+          <p><b>GPS 정상</b><strong>1,074건</strong></p>
+          <p><b>영역 이탈</b><strong>36건</strong></p>
+          <p><b>검수 필요</b><strong>138건</strong></p>
+        </section>
+      </div>
+
+      <section v-else class="zone-card">
         <h3>구역 상태</h3>
         <p><span class="zone-icon cctv">▰</span><b>CCTV</b><strong>정상</strong></p>
         <p><span class="zone-icon gps">⌖</span><b>GPS 수신</b><strong>정상</strong></p>
@@ -382,6 +432,352 @@ onBeforeUnmount(() => {
         </article>
       </section>
 
+      <section v-else-if="activeMenu === '통행 이벤트'" class="traffic-event-page">
+        <section class="event-title-row">
+          <h1>통행 이벤트</h1>
+          <p>통행 기록과 현장 이벤트를 조회하고 검수/처리할 수 있습니다.</p>
+        </section>
+
+        <section class="event-filter-row">
+          <label class="date-range"><span>기간</span><b>2025-05-11 00:00 ~ 2025-05-11 23:59</b><i>▣</i></label>
+          <button class="filter-toggle" type="button">차선 <b>전체</b></button>
+          <button class="filter-toggle" type="button">방향 <b>전체</b></button>
+          <button class="filter-toggle" type="button">GPS 판정 <b>전체</b></button>
+          <label class="event-search"><input type="search" placeholder="차량번호 검색" /><span>⌕</span></label>
+          <button class="reset-filter" type="button">필터 초기화</button>
+        </section>
+
+        <section class="event-main-grid">
+          <article class="panel event-list-panel">
+            <table class="event-table">
+              <thead>
+                <tr><th>No.</th><th>차량번호</th><th>차선</th><th>방향</th><th>통과시각</th><th>GPS 판정</th><th>결제 판정</th><th>현장 이벤트</th><th>증빙</th></tr>
+              </thead>
+              <tbody>
+                <tr class="selected"><td>1</td><td>12가 3456</td><td>2차선</td><td><span class="event-pill out">OUT</span></td><td>17:35:42.289</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td>-</td><td><button>이미지 있음</button></td></tr>
+                <tr><td>2</td><td>45나 6721</td><td>2차선</td><td><span class="event-pill in">IN</span></td><td>17:33:18.102</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td>-</td><td>이미지 없음</td></tr>
+                <tr><td>3</td><td>67다 9012</td><td>1차선</td><td><span class="event-pill out">OUT</span></td><td>17:31:41.552</td><td><span class="event-state ok">정상</span></td><td><span class="event-state warn">검수 필요</span></td><td><span class="event-state warn">차선 경계</span></td><td><button>이미지 있음</button></td></tr>
+                <tr><td>4</td><td>98머 3344</td><td>2차선</td><td><span class="event-pill in">IN</span></td><td>17:28:55.873</td><td><span class="event-state ok">정상</span></td><td><span class="event-state warn">검수 필요</span></td><td><span class="event-state danger">정차 의심</span></td><td><button>이미지 있음</button></td></tr>
+                <tr><td>5</td><td>34다 1122</td><td>2차선</td><td><span class="event-pill out">OUT</span></td><td>17:26:17.430</td><td><span class="event-state danger">영역 이탈</span></td><td><span class="event-state danger">결제 불가</span></td><td>-</td><td><button>이미지 있음</button></td></tr>
+                <tr><td>6</td><td>56라 7788</td><td>1차선</td><td><span class="event-pill in">IN</span></td><td>17:23:50.219</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td>-</td><td>이미지 없음</td></tr>
+                <tr><td>7</td><td>12바 1234</td><td>2차선</td><td><span class="event-pill out">OUT</span></td><td>17:21:38.901</td><td><span class="event-state ok">정상</span></td><td><span class="event-state warn">검수 필요</span></td><td><span class="event-state danger">기준 구역 외</span></td><td><button>이미지 있음</button></td></tr>
+                <tr><td>8</td><td>90허 5678</td><td>1차선</td><td><span class="event-pill in">IN</span></td><td>17:19:12.654</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td>-</td><td>이미지 없음</td></tr>
+                <tr><td>9</td><td>22거 4567</td><td>2차선</td><td><span class="event-pill in">IN</span></td><td>17:17:05.338</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td>-</td><td>이미지 없음</td></tr>
+                <tr><td>10</td><td>11서 2233</td><td>1차선</td><td><span class="event-pill out">OUT</span></td><td>17:14:46.072</td><td><span class="event-state danger">영역 이탈</span></td><td><span class="event-state danger">결제 불가</span></td><td>-</td><td><button>이미지 있음</button></td></tr>
+              </tbody>
+            </table>
+            <footer class="event-pagination">
+              <span>전체 1,248건</span>
+              <div><button>‹</button><button class="active">1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>…</button><button>125</button><button>›</button></div>
+              <button class="filter-toggle">10개씩 보기</button>
+            </footer>
+          </article>
+
+          <article class="panel event-detail-panel">
+            <div class="event-detail-head"><h2>선택 이벤트 상세</h2><span class="event-state danger">정차 의심</span></div>
+            <section class="event-detail-top">
+              <dl>
+                <dt>차량번호</dt><dd>12가 3456</dd>
+                <dt>차선</dt><dd>2차선</dd>
+                <dt>방향</dt><dd>OUT (출구)</dd>
+                <dt>통과시각</dt><dd>2025-05-11 17:35:42.289</dd>
+              </dl>
+              <div class="plate-crop"><span>번호판 crop</span><strong>12가 3456</strong></div>
+              <div class="event-image"><span>이벤트 이미지</span><div class="event-road-shot"><div class="event-car"><b>12가 3456</b></div></div></div>
+            </section>
+
+            <section class="gps-judge-card">
+              <div class="event-detail-head"><h2>GPS 결제 영역 판정</h2><span class="event-state ok">정상 (영역 안)</span></div>
+              <div class="gps-judge-body">
+                <div class="gps-legend"><span class="zone">유효 통행 구역</span><span class="point">현재 GPS 위치</span><span class="lane">A 통행 차선(예시)</span></div>
+                <div class="gps-map-mini"><i></i><b></b><em>A</em></div>
+                <dl>
+                  <dt>위도 (LAT)</dt><dd>37.491032</dd>
+                  <dt>경도 (LNG)</dt><dd>126.725124</dd>
+                  <dt>속도 (km/h)</dt><dd>58.6</dd>
+                  <dt>방향각 (°)</dt><dd>185° (S)</dd>
+                  <dt>GPS 판정</dt><dd><span class="event-state ok">정상</span></dd>
+                  <dt>결제 판정</dt><dd><span class="event-state ok">결제 가능</span></dd>
+                </dl>
+              </div>
+            </section>
+
+            <footer class="event-detail-actions">
+              <button type="button">▧ 증빙 이미지 보기</button>
+              <button type="button">⌖ GPS 판정 확인</button>
+              <button type="button" class="review">♙ 검수 요청</button>
+            </footer>
+          </article>
+        </section>
+
+        <article class="panel event-history-panel">
+          <div class="panel-head"><h2>선택 이벤트 처리 내역 <small>(12가 3456)</small></h2></div>
+          <table>
+            <thead><tr><th>순번</th><th>처리시각</th><th>처리자</th><th>처리구분</th><th>내용</th><th>결과</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>2025-05-11 17:36:02</td><td>operator01</td><td>자동 판정</td><td>GPS 영역 판정: 정상, 결제 판정: 결제 가능</td><td><span class="event-state ok">완료</span></td></tr>
+              <tr><td>2</td><td>2025-05-11 17:36:12</td><td>operator01</td><td>검수 요청</td><td>정차 의심 이벤트 - 현장 확인 요청</td><td><span class="event-state warn">요청 중</span></td></tr>
+              <tr><td>3</td><td>2025-05-11 17:36:28</td><td>operator02</td><td>현장 확인 결과</td><td>현장 확인 결과: 이상 없음</td><td><span class="event-state ok">완료</span></td></tr>
+              <tr><td>4</td><td>2025-05-11 17:36:45</td><td>operator01</td><td>검수 완료</td><td>검수 완료 처리</td><td><span class="event-state ok">완료</span></td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section v-else-if="activeMenu === 'GPS 판정'" class="gps-decision-page">
+        <section class="event-title-row">
+          <h1>GPS 판정</h1>
+          <p>GPS 수신 데이터로 결제 영역 내 통과 여부를 판정합니다.</p>
+        </section>
+
+        <section class="gps-filter-row">
+          <label class="date-range"><span>기간</span><b>2026-05-11 00:00 ~ 2026-05-11 23:59</b><i>▣</i></label>
+          <button class="filter-toggle" type="button">차선 <b>전체</b></button>
+          <button class="filter-toggle" type="button">방향 <b>전체</b></button>
+          <button class="filter-toggle" type="button">판정 상태 <b>전체</b></button>
+          <label class="event-search"><input type="search" placeholder="차량번호 검색" /><span>⌕</span></label>
+          <button class="reset-filter" type="button">필터 초기화</button>
+        </section>
+
+        <section class="gps-decision-grid">
+          <article class="panel gps-log-panel">
+            <div class="panel-head">
+              <h2>GPS Telemetry 실시간 로그</h2>
+              <div class="gps-log-actions"><span class="event-state ok">저장 중</span><button type="button">열 설정</button></div>
+            </div>
+            <table>
+              <thead><tr><th>TIME</th><th>DEVICE</th><th>LAT/LNG</th><th>SPD (km/h)</th><th>HEAD (°)</th><th>FIX</th></tr></thead>
+              <tbody>
+                <tr><td>17:36:47.120</td><td>TERMUX-GPS-01</td><td>37.491032, 126.725124</td><td>58.6</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:46.120</td><td>TERMUX-GPS-01</td><td>37.491040, 126.725083</td><td>57.9</td><td>88</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:45.120</td><td>TERMUX-GPS-01</td><td>37.490976, 126.725041</td><td>57.4</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:44.120</td><td>TERMUX-GPS-01</td><td>37.490948, 126.724999</td><td>56.8</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:43.120</td><td>TERMUX-GPS-01</td><td>37.490920, 126.724957</td><td>56.1</td><td>88</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:42.120</td><td>TERMUX-GPS-01</td><td>37.490893, 126.724915</td><td>55.6</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:41.120</td><td>TERMUX-GPS-01</td><td>37.490865, 126.724874</td><td>54.9</td><td>87</td><td><span class="fix-bad">No Fix</span></td></tr>
+                <tr><td>17:36:40.120</td><td>TERMUX-GPS-02</td><td>37.490837, 126.724833</td><td>54.2</td><td>86</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:39.120</td><td>TERMUX-GPS-01</td><td>37.490810, 126.724792</td><td>53.9</td><td>86</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:38.120</td><td>TERMUX-GPS-01</td><td>37.490783, 126.724750</td><td>52.7</td><td>85</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+              </tbody>
+            </table>
+            <footer><span>조회 건수: 1,248건</span><button type="button"><i class="pause-icon"></i>일시정지</button></footer>
+          </article>
+
+          <article class="panel gps-area-panel">
+            <div class="panel-head"><h2>결제 영역 판정 <small>ⓘ</small></h2></div>
+            <div class="gps-area-legend"><span class="ok">유효 결제 영역</span><span class="point">GPS 위치(선택)</span><span class="danger">영역 밖</span></div>
+            <section class="gps-case ok-case">
+              <b>정상 예시 (영역 안)</b>
+              <div class="gps-case-map"><i></i><em></em></div>
+              <dl><dt>상태</dt><dd><span class="event-state ok">정상</span></dd><dt>설명</dt><dd>GPS 위치가 유효 결제 영역 내에 있습니다.</dd></dl>
+            </section>
+            <section class="gps-case danger-case">
+              <b>영역 이탈 예시 (영역 밖)</b>
+              <div class="gps-case-map"><i></i><em></em><strong>50 m</strong></div>
+              <dl><dt>상태</dt><dd><span class="event-state danger">영역 이탈</span></dd><dt>설명</dt><dd>GPS 위치가 유효 결제 영역 밖에 있습니다.</dd></dl>
+            </section>
+          </article>
+
+          <article class="panel selected-gps-panel">
+            <div class="event-detail-head"><h2>선택 이벤트 판정</h2><span class="event-state ok">정상 (결제 가능)</span></div>
+            <dl>
+              <dt>차량번호</dt><dd>12가 3456</dd>
+              <dt>차선</dt><dd>2차선</dd>
+              <dt>방향</dt><dd><span class="event-pill in">IN (진입)</span></dd>
+              <dt>통과시각</dt><dd>2026-05-11 17:35:42.289</dd>
+              <dt>위도 (LAT)</dt><dd>37.491032</dd>
+              <dt>경도 (LNG)</dt><dd>126.725124</dd>
+              <dt>속도 (SPD)</dt><dd>58.6 km/h</dd>
+              <dt>방향각 (HEAD)</dt><dd>87° (E)</dd>
+              <dt>GPS 판정</dt><dd><span class="event-state ok">정상 (영역 안)</span></dd>
+              <dt>결제 판정</dt><dd><span class="event-state ok">결제 가능</span></dd>
+            </dl>
+            <button class="decision-run" type="button">⌖ 결제 판정 실행</button>
+            <div class="selected-gps-actions"><button type="button">▤ GPS 상세 보기</button><button type="button">▦ 로그 보기</button></div>
+          </article>
+        </section>
+
+        <article class="panel gps-history-panel">
+          <div class="panel-head"><h2>최근 GPS 판정 이력</h2><button type="button">⇩ 내보내기 <span class="filter-caret">⌄</span></button></div>
+          <table>
+            <thead><tr><th>No.</th><th>차량번호</th><th>방향</th><th>차선</th><th>통과시각</th><th>GPS 판정</th><th>결제 판정</th><th>상세</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>12가 3456</td><td>IN (진입)</td><td>2차선</td><td>17:35:42.289</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state ok">결제 가능</span></td><td><button>보기 ›</button></td></tr>
+              <tr><td>2</td><td>45나 6721</td><td>OUT (출구)</td><td>2차선</td><td>17:33:18.102</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state ok">결제 가능</span></td><td><button>보기 ›</button></td></tr>
+              <tr><td>3</td><td>67다 9012</td><td>IN (진입)</td><td>1차선</td><td>17:31:41.552</td><td><i class="row-dot danger"></i>영역 이탈</td><td><span class="event-state danger">결제 불가</span></td><td><button>보기 ›</button></td></tr>
+              <tr><td>4</td><td>98머 3344</td><td>OUT (출구)</td><td>2차선</td><td>17:28:55.873</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state warn">검수 필요</span></td><td><button>보기 ›</button></td></tr>
+              <tr><td>5</td><td>34다 1122</td><td>IN (진입)</td><td>2차선</td><td>17:26:17.430</td><td><i class="row-dot danger"></i>영역 이탈</td><td><span class="event-state danger">결제 불가</span></td><td><button>보기 ›</button></td></tr>
+              <tr><td>6</td><td>56라 7788</td><td>OUT (출구)</td><td>1차선</td><td>17:23:50.219</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state ok">결제 가능</span></td><td><button>보기 ›</button></td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section v-else-if="activeMenu === '검수'" class="review-page">
+        <section class="event-title-row">
+          <h1>검수</h1>
+          <p>이벤트 증거와 GPS 판선 결과를 확인하고 검수 처리합니다.</p>
+        </section>
+
+        <div class="review-tabs">
+          <button class="active" type="button">검수 대기</button>
+          <button type="button">현장 이벤트</button>
+          <button type="button">완료 내역</button>
+        </div>
+
+        <section class="review-main-grid">
+          <article class="panel review-queue-panel">
+            <div class="panel-head"><h2>검수 대기 목록 <small>(12)</small></h2><button type="button">최신순 <span class="filter-caret">⌄</span></button></div>
+            <div class="review-cards">
+              <article class="selected danger"><header><b>정차 의심</b><span>높음</span></header><strong>12가 3456</strong><p>2차선 <i></i> OUT <i></i> 17:35:42</p></article>
+              <article class="danger"><header><b>GPS 영역 이탈</b><span>높음</span></header><strong>46다 7720</strong><p>2차선 <i></i> OUT <i></i> 17:35:18</p></article>
+              <article class="warn"><header><b>차선 경계 통과</b><span>보통</span></header><strong>34다 1122</strong><p>2차선 <i></i> OUT <i></i> 17:34:53</p></article>
+              <article class="info"><header><b>기준 구역 외 통과</b><span>보통</span></header><strong>67더 9012</strong><p>1차선 <i></i> IN <i></i> 17:34:27</p></article>
+              <article class="warn"><header><b>차선 경계 통과</b><span>보통</span></header><strong>85버 1212</strong><p>1차선 <i></i> OUT <i></i> 17:33:18</p></article>
+            </div>
+            <button class="review-more" type="button">더보기 <span class="filter-caret">⌄</span></button>
+          </article>
+
+          <article class="panel evidence-panel">
+            <div class="panel-head"><h2>이벤트 증거</h2></div>
+            <p class="evidence-sub">이벤트 발생 시 저장된 이미지</p>
+            <section class="evidence-images">
+              <div class="evidence-main"><span>이벤트 이미지</span><div class="evidence-road"><div class="evidence-car"><b>12가 3456</b></div></div></div>
+              <div class="evidence-crop"><span>번호판 crop</span><strong>12가 3456</strong></div>
+            </section>
+            <section class="evidence-meta">
+              <p><span>⌂ 차선</span><b>2차선</b></p>
+              <p><span>→ 방향</span><b>OUT (출구)</b></p>
+              <p><span>◷ 통과시각</span><b>2025-05-11 17:35:42.289</b></p>
+            </section>
+          </article>
+
+          <article class="panel review-decision-panel">
+            <div class="event-detail-head"><h2>검수 정보 및 판정</h2><span class="event-state danger">정차 의심</span></div>
+            <dl class="review-info-list">
+              <dt>차량번호</dt><dd>12가 3456</dd>
+              <dt>차선</dt><dd>2차선</dd>
+              <dt>방향</dt><dd>OUT (출구)</dd>
+              <dt>통과시각</dt><dd>2025-05-11 17:35:42.289</dd>
+              <dt>이벤트 유형</dt><dd>정차 의심</dd>
+            </dl>
+            <section class="review-gps-box">
+              <h3>GPS 결제 영역 판정</h3>
+              <div class="review-gps-content">
+                <div class="review-gps-map"><i></i><b></b></div>
+                <div class="review-gps-legend"><span class="zone">유효 통과 구역</span><span class="point">GPS 위치(현재)</span><span class="center">톨링 지점(CENTER)</span></div>
+              </div>
+            </section>
+            <dl class="review-result-grid">
+              <dt>위도 (LAT)</dt><dd>37.491032</dd>
+              <dt>경도 (LNG)</dt><dd>126.725124</dd>
+              <dt>속도 (km/h)</dt><dd>0.0</dd>
+              <dt>방향각 (HEAD)</dt><dd>0° (N)</dd>
+              <dt>GPS 판정</dt><dd><span class="event-state ok">정상 (영역 안)</span></dd>
+              <dt>결제 판정</dt><dd><span class="event-state ok">결제 가능</span></dd>
+              <dt>검수 상태</dt><dd><span class="event-state warn">대기</span></dd>
+            </dl>
+            <footer class="review-actions">
+              <button class="approve" type="button">✓ 정상 처리</button>
+              <button class="field" type="button">♙ 현장 확인 요청</button>
+              <button class="hold" type="button">Ⅱ 보류</button>
+            </footer>
+          </article>
+        </section>
+
+        <article class="panel review-history-panel">
+          <div class="panel-head"><h2>최근 검수 처리 내역 <small>(최신 5건)</small></h2><button type="button">전체 내역 보기 ›</button></div>
+          <table>
+            <thead><tr><th>처리 시각</th><th>이벤트 유형</th><th>차량번호</th><th>차선</th><th>방향</th><th>GPS 판정</th><th>결제 판정</th><th>검수 결과</th><th>처리자</th><th>메모</th></tr></thead>
+            <tbody>
+              <tr><td>17:29:48</td><td>GPS 영역 이탈</td><td>98머 3344</td><td>2차선</td><td>IN</td><td><span class="event-state danger">영역 이탈</span></td><td><span class="event-state danger">결제 불가</span></td><td><span class="event-state warn">현장 확인 요청</span></td><td>operator01</td><td>현장 확인 필요</td></tr>
+              <tr><td>17:27:01</td><td>차선 경계 통과</td><td>90허 5678</td><td>2차선</td><td>OUT</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td><span class="event-state ok">정상 처리</span></td><td>operator02</td><td>-</td></tr>
+              <tr><td>17:24:33</td><td>기준 구역 외 통과</td><td>67더 9012</td><td>1차선</td><td>IN</td><td><span class="event-state danger">영역 이탈</span></td><td><span class="event-state danger">결제 불가</span></td><td><span class="event-state ok">정상 처리</span></td><td>operator01</td><td>구역 내 재진입 확인</td></tr>
+              <tr><td>17:22:15</td><td>정차 의심</td><td>12가 3456</td><td>2차선</td><td>OUT</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td><span class="event-state warn">현장 확인 요청</span></td><td>operator03</td><td>정차 8초, 현장 확인</td></tr>
+              <tr><td>17:19:12</td><td>차선 경계 통과</td><td>34다 1122</td><td>2차선</td><td>OUT</td><td><span class="event-state ok">정상</span></td><td><span class="event-state ok">결제 가능</span></td><td><span class="event-state ok">정상 처리</span></td><td>operator02</td><td>-</td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section v-else-if="activeMenu === '정산'" class="settlement-page">
+        <section class="event-title-row">
+          <h1>정산</h1>
+          <p>통행 이벤트 기반 정산 현황을 요약합니다.</p>
+        </section>
+
+        <div class="settlement-tabs">
+          <button class="active" type="button">금일</button>
+          <button type="button">주간</button>
+          <button type="button">월간</button>
+          <button type="button">사용자 지정 <span class="filter-caret">▣</span></button>
+        </div>
+
+        <section class="settlement-kpi-grid">
+          <article class="settlement-kpi fee"><i>₩</i><span>총 통행료</span><strong>₩2,450,800</strong><em>전일 대비 ▲ 6.1%</em></article>
+          <article class="settlement-kpi card"><i>▰</i><span>결제 가능 건수</span><strong>2,108 <small>건</small></strong><em>전일 대비 ▲5.7%</em></article>
+          <article class="settlement-kpi danger"><i>!</i><span>GPS 영역 이탈 건수</span><strong>214 <small>건</small></strong><em>전일 대비 ▼ 5.3%</em></article>
+          <article class="settlement-kpi hold"><i>●</i><span>검수 대기 금액</span><strong>₩231,600</strong><em>전일 대비 ▲ 7.9%</em></article>
+        </section>
+
+        <section class="settlement-mid-grid">
+          <article class="panel toll-chart-panel">
+            <div class="panel-head">
+              <h2>시간대별 통행료 (금액)</h2>
+              <div class="chart-toggle"><button class="active" type="button">금액</button><button type="button">건수</button></div>
+            </div>
+            <div class="chart-legend"><span class="in">IN 입구</span><span class="out">OUT 출구</span><strong>₩2,450,800<br /><small>합계</small></strong></div>
+            <div class="bar-chart">
+              <i style="--h:4%;--o:2%"></i><i style="--h:8%;--o:5%"></i><i style="--h:12%;--o:8%"></i><i style="--h:18%;--o:12%"></i><i style="--h:25%;--o:16%"></i><i style="--h:34%;--o:20%"></i><i style="--h:48%;--o:28%"></i><i style="--h:70%;--o:38%"></i><i style="--h:78%;--o:44%"></i><i style="--h:86%;--o:50%"></i><i style="--h:92%;--o:54%"></i><i style="--h:96%;--o:58%"></i><i style="--h:88%;--o:52%"></i><i style="--h:78%;--o:46%"></i><i style="--h:72%;--o:42%"></i><i style="--h:76%;--o:44%"></i><i style="--h:84%;--o:48%"></i><i style="--h:86%;--o:50%"></i><i style="--h:82%;--o:46%"></i><i style="--h:68%;--o:38%"></i><i style="--h:56%;--o:30%"></i><i style="--h:42%;--o:24%"></i><i style="--h:30%;--o:18%"></i><i style="--h:18%;--o:10%"></i><i style="--h:12%;--o:7%"></i>
+            </div>
+            <div class="chart-axis"><span>00</span><span>02</span><span>04</span><span>06</span><span>08</span><span>10</span><span>12</span><span>14</span><span>16</span><span>18</span><span>20</span><span>22</span><span>24</span></div>
+          </article>
+
+          <article class="panel settlement-donut-panel">
+            <div class="panel-head"><h2>정산 상태 요약</h2></div>
+            <div class="settlement-donut-wrap">
+              <div class="settlement-donut"><strong>2,470 <small>건</small></strong><span>총 통행 이벤트</span></div>
+              <dl>
+                <dt class="ok">결제 가능</dt><dd>2,108 건 (85.2%)</dd>
+                <dt class="warn">검수 필요</dt><dd>214 건 (8.7%)</dd>
+                <dt class="danger">보류</dt><dd>148 건 (6.0%)</dd>
+              </dl>
+            </div>
+          </article>
+
+          <article class="panel gps-impact-panel">
+            <div class="panel-head"><h2>GPS 판정 영향 <small>ⓘ</small></h2></div>
+            <section class="impact-card ok">
+              <header><b>정상 판정 (영역 내 통과)</b><span>정상</span></header>
+              <div><p>금액<strong>₩2,108,200</strong></p><p>건수<strong>2,108 건</strong></p><p>비율<strong>85.9%</strong></p></div>
+            </section>
+            <section class="impact-card danger">
+              <header><b>영역 이탈 (검수 필요)</b><span>검수 필요</span></header>
+              <div><p>금액<strong>₩231,600</strong></p><p>건수<strong>214 건</strong></p><p>비율<strong>8.4%</strong></p></div>
+            </section>
+            <p class="nofix-line"><i></i>미송신 / No Fix <span>건수 148 건 (6.0%)</span></p>
+          </article>
+        </section>
+
+        <article class="panel settlement-table-panel">
+          <div class="panel-head">
+            <h2>정산 후보 요약 <small>(결제 대상)</small></h2>
+            <div><button type="button">⇩ 내보내기 <span class="filter-caret">⌄</span></button><button type="button">⟳ 새로고침</button></div>
+          </div>
+          <table>
+            <thead><tr><th>No.</th><th>차량번호</th><th>방향</th><th>차선</th><th>통과시각</th><th>GPS 판정</th><th>결제 판정</th><th>금액</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>12가 3456</td><td><span class="event-pill in">IN</span></td><td>2차선</td><td>17:35:42</td><td><span class="event-state ok">정상 (영역 내)</span></td><td><span class="event-state ok">결제 가능</span></td><td>₩1,900</td><td><span class="event-state ok">결제 완료</span></td></tr>
+              <tr><td>2</td><td>45나 6721</td><td><span class="event-pill out">OUT</span></td><td>2차선</td><td>17:33:18</td><td><span class="event-state ok">정상 (영역 내)</span></td><td><span class="event-state ok">결제 가능</span></td><td>₩1,900</td><td><span class="event-state warn">대기</span></td></tr>
+              <tr><td>3</td><td>67다 9012</td><td><span class="event-pill in">IN</span></td><td>1차선</td><td>17:31:41</td><td><span class="event-state danger">영역 이탈</span></td><td><span class="event-state warn">검수 필요</span></td><td>₩1,900</td><td><span class="event-state warn">검수 대기</span></td></tr>
+              <tr><td>4</td><td>34머 1122</td><td><span class="event-pill out">OUT</span></td><td>2차선</td><td>17:26:17</td><td><span class="event-state danger">영역 이탈</span></td><td><span class="event-state warn">검수 필요</span></td><td>₩1,900</td><td><span class="event-state warn">검수 대기</span></td></tr>
+              <tr><td>5</td><td>90허 5678</td><td><span class="event-pill in">IN</span></td><td>1차선</td><td>17:19:12</td><td><span class="event-state ok">정상 (영역 내)</span></td><td><span class="event-state ok">결제 가능</span></td><td>₩1,900</td><td><span class="event-state warn">대기</span></td></tr>
+              <tr><td>6</td><td>78버 3347</td><td><span class="event-pill out">OUT</span></td><td>2차선</td><td>17:12:22</td><td><span class="event-state muted">No Fix / 미송신</span></td><td><span class="event-state danger">보류</span></td><td>₩1,900</td><td><span class="event-state danger">보류</span></td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
       <section v-else-if="activeMenu === '장비 상태'" class="equipment-page">
         <section class="title-row">
           <h1>장비 상태</h1>
@@ -520,6 +916,146 @@ onBeforeUnmount(() => {
                 <td><span class="status-ok">{{ row.status }}</span></td>
                 <td>{{ row.actor }}</td>
               </tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section v-else-if="activeMenu === '실시간 관제'" class="realtime-page">
+        <section class="event-title-row">
+          <h1>실시간 관제</h1>
+          <p>차선별 카메라, GPS, 통행 이벤트 상태를 실시간으로 모니터링합니다.</p>
+        </section>
+
+        <section class="realtime-kpi-grid">
+          <article class="realtime-kpi ok"><i>▰</i><span>CCTV 영상</span><strong>정상</strong><em>2개 레일 수신 중</em></article>
+          <article class="realtime-kpi ok"><i>⌖</i><span>GPS 수신</span><strong>정상</strong><em>최근 반영 2초 전</em></article>
+          <article class="realtime-kpi info"><i>▤</i><span>이벤트 수신</span><strong>1,248</strong><em>오늘 누적 통행</em></article>
+          <article class="realtime-kpi warn"><i>!</i><span>현장 알림</span><strong>3</strong><em>확인 필요</em></article>
+        </section>
+
+        <section class="realtime-main-grid">
+          <article class="panel realtime-camera-panel">
+            <div class="panel-head">
+              <h2>실시간 YOLO 합성 프레임</h2>
+              <span class="live-chip"><i class="dot ok"></i>LIVE</span>
+            </div>
+            <div class="realtime-frame">
+              <section class="realtime-lane green">
+                <header><b>1번 레일</b><span>960x480</span><em>FPS 29.8</em></header>
+                <div class="realtime-road">
+                  <div class="realtime-car dark"><b>31가 9829</b></div>
+                  <span class="detect-box"></span>
+                </div>
+              </section>
+              <section class="realtime-lane blue">
+                <header><b>2번 레일</b><span>960x480</span><em>FPS 29.8</em></header>
+                <div class="realtime-road">
+                  <div class="realtime-car silver"><b>46다 7720</b></div>
+                  <span class="detect-box"></span>
+                </div>
+              </section>
+            </div>
+            <footer class="frame-meta">
+              <p><span>원본 해상도</span><b>1920 x 1080</b></p>
+              <p><span>합성 해상도</span><b>960 x 960</b></p>
+              <p><span>YOLO 모델</span><b>v8.1</b></p>
+              <p><span>운영 상태</span><b>정상</b></p>
+            </footer>
+          </article>
+
+          <section class="realtime-side-grid">
+            <article class="panel realtime-status-panel">
+              <div class="panel-head"><h2>현재 수신 상태</h2></div>
+              <div class="status-grid compact">
+                <article class="ok"><i>▰</i><span>CCTV</span><strong>정상</strong></article>
+                <article class="ok"><i>⌖</i><span>GPS</span><strong>정상</strong></article>
+                <article class="info"><i>⌁</i><span>LAN</span><strong>사용 중</strong></article>
+                <article class="ok"><i>◉</i><span>DB 반영</span><strong>정상</strong></article>
+              </div>
+            </article>
+
+            <article class="panel realtime-event-panel">
+              <div class="panel-head"><h2>실시간 통행 이벤트</h2><button type="button">전체 보기 ›</button></div>
+              <table>
+                <thead><tr><th>차량번호</th><th>차선</th><th>방향</th><th>통과시각</th><th>상태</th></tr></thead>
+                <tbody>
+                  <tr><td>31가 9829</td><td>1차선</td><td><span class="event-pill in">IN</span></td><td>17:36:47</td><td><span class="event-state ok">정상 통과</span></td></tr>
+                  <tr><td>46다 7720</td><td>2차선</td><td><span class="event-pill out">OUT</span></td><td>17:36:12</td><td><span class="event-state warn">검수 권장</span></td></tr>
+                  <tr><td>12가 3456</td><td>1차선</td><td><span class="event-pill in">IN</span></td><td>17:35:41</td><td><span class="event-state danger">영역 이탈</span></td></tr>
+                </tbody>
+              </table>
+            </article>
+
+            <article class="panel realtime-alert-panel">
+              <div class="panel-head"><h2>현장 알림</h2><button type="button">조치 내역 ›</button></div>
+              <div class="alert-list">
+                <article class="alert-row warn"><i>!</i><div><b>2차선 CCTV 프레임 지연</b><span>최근 3초 이상 지연</span></div><p><span>발생 시각</span>17:35:18</p><button type="button">확인</button></article>
+                <article class="alert-row info"><i>i</i><div><b>LAN 경로 안정화</b><span>이벤트 수신 정상화</span></div><p><span>발생 시각</span>17:32:04</p><button type="button">확인</button></article>
+              </div>
+            </article>
+          </section>
+        </section>
+      </section>
+
+      <section v-else-if="activeMenu === '설정'" class="settings-page">
+        <section class="event-title-row">
+          <h1>설정</h1>
+          <p>관제센터 운영 기준, GPS 영역, 알림, 계정 및 화면 환경을 관리합니다.</p>
+        </section>
+
+        <section class="settings-grid">
+          <article class="panel settings-card">
+            <div class="panel-head"><h2>관제센터 기본 설정</h2><button type="button">편집</button></div>
+            <dl>
+              <dt>관제센터</dt><dd>서울 톨링 A</dd>
+              <dt>운영 차선</dt><dd>1차선, 2차선</dd>
+              <dt>Ingress Endpoint</dt><dd>wss://seoul-a-ingress.hi-five.kr</dd>
+              <dt>데이터 반영 주기</dt><dd>5초</dd>
+            </dl>
+          </article>
+
+          <article class="panel settings-card">
+            <div class="panel-head"><h2>GPS 결제 영역</h2><button type="button">좌표 편집</button></div>
+            <div class="settings-map">
+              <i></i><b></b>
+            </div>
+            <dl class="compact-list">
+              <dt>중심 좌표</dt><dd>37.491032, 126.725124</dd>
+              <dt>영역 폭</dt><dd>120.0 m</dd>
+              <dt>영역 높이</dt><dd>80.0 m</dd>
+            </dl>
+          </article>
+
+          <article class="panel settings-card">
+            <div class="panel-head"><h2>알림 기준</h2><button type="button">저장</button></div>
+            <div class="setting-options">
+              <label><span>CCTV 수신 지연</span><input value="3초 이상" /></label>
+              <label><span>GPS No Fix</span><input value="10초 이상" /></label>
+              <label><span>Spool 경고</span><input value="85%" /></label>
+              <label><span>정차 의심 기준</span><input value="8초 이상" /></label>
+            </div>
+          </article>
+
+          <article class="panel settings-card">
+            <div class="panel-head"><h2>화면 및 권한</h2><button type="button">적용</button></div>
+            <div class="setting-toggles">
+              <label><span>다크 테마 기본 사용</span><input type="checkbox" checked /></label>
+              <label><span>이벤트 팝업 자동 열기</span><input type="checkbox" checked /></label>
+              <label><span>검수 완료 전 결제 보류</span><input type="checkbox" checked /></label>
+              <label><span>운영자 조치 로그 필수</span><input type="checkbox" /></label>
+            </div>
+          </article>
+        </section>
+
+        <article class="panel settings-history-panel">
+          <div class="panel-head"><h2>설정 변경 이력</h2><button type="button">전체 보기 ›</button></div>
+          <table>
+            <thead><tr><th>변경시각</th><th>관리자</th><th>항목</th><th>이전 값</th><th>변경 값</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td>2026-05-11 17:32:44</td><td>operator01</td><td>GPS 영역 폭</td><td>110.0 m</td><td>120.0 m</td><td><span class="event-state ok">적용</span></td></tr>
+              <tr><td>2026-05-11 16:58:11</td><td>operator02</td><td>CCTV 지연 기준</td><td>5초</td><td>3초</td><td><span class="event-state ok">적용</span></td></tr>
+              <tr><td>2026-05-11 15:40:20</td><td>operator01</td><td>이벤트 팝업</td><td>OFF</td><td>ON</td><td><span class="event-state ok">적용</span></td></tr>
             </tbody>
           </table>
         </article>
@@ -754,5 +1290,261 @@ th{color:#9fb2cb;background:rgba(26,46,73,.54)}td{color:#dce9f8}.state,.pay,.sta
 .light-mode .status-grid i{color:#fff;background:linear-gradient(135deg,#2f8cff,#176dc0)}
 .light-mode .field-list b,
 .light-mode .alert-row b{color:#21364d}
+.event-side-stack{position:sticky;top:calc(100vh - 430px);margin-top:auto;display:grid;gap:12px}
+.event-side-stack .zone-card{position:static;margin-top:0}
+.event-filter-card,.event-stats-card{display:grid;gap:8px}
+.event-filter-card h3,.event-stats-card h3{display:flex;justify-content:space-between;align-items:center}
+.event-filter-card h3 small,.event-stats-card h3 small{color:#92a9c4;font-weight:400}
+.event-filter-card p,.event-stats-card p{min-height:38px;grid-template-columns:28px 1fr auto;padding:7px 0}
+.event-filter-card strong{display:none}
+.event-filter-card .zone-icon{width:24px;height:24px;font-size:13px}
+.event-filter-card .zone-icon.danger{background:#ef5a54}
+.event-filter-card .zone-icon.warn{background:#f5b84b;color:#061120}
+.event-stats-card p{grid-template-columns:1fr auto}
+.event-stats-card strong{grid-column:auto;color:#dce9f8!important;font-size:13px}
+.traffic-event-page{display:grid;gap:12px;align-content:start}
+.event-title-row{display:flex;align-items:flex-end;gap:16px;margin-top:18px}
+.event-title-row h1{margin:0;color:#f2f8ff;font-size:28px;letter-spacing:0}
+.event-title-row p{margin:0 0 5px;color:#9fb4ce}
+.event-filter-row{display:grid;grid-template-columns:336px 124px 124px 152px minmax(145px,1fr) 112px;gap:10px}
+.event-filter-row label,.event-filter-row button{height:36px;border:1px solid rgba(42,133,227,.32);border-radius:5px;color:#dcecff;background:rgba(5,16,33,.72)}
+.date-range{display:grid;grid-template-columns:46px 1fr 30px;align-items:center}
+.date-range span{display:grid;place-items:center;height:100%;border-right:1px solid rgba(117,151,194,.16);color:#c9d7eb}
+.date-range b{padding-left:12px;font-size:12px;font-weight:400;white-space:nowrap}
+.date-range i{font-style:normal;color:#9fc9ff;text-align:center}
+.event-filter-row button{padding:0 12px;text-align:left;white-space:nowrap}
+.event-filter-row button b{float:right;color:#f2f8ff}
+.event-search{display:grid;grid-template-columns:1fr 34px;align-items:center;min-width:0}
+.event-search input{min-width:0;border:0;outline:0;background:transparent;color:#eaf4ff;padding-left:12px}
+.event-search span{color:#c9d7eb;text-align:center}
+.reset-filter{display:grid;place-items:center;color:#58aaff!important;text-align:center!important}
+.event-main-grid{display:grid;grid-template-columns:minmax(660px,1.08fr) minmax(610px,.92fr);gap:12px;align-items:stretch}
+.event-list-panel{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.event-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.event-table th,.event-table td{height:47px;padding:0 8px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;font-weight:400;overflow:hidden;text-overflow:ellipsis}
+.event-table th{height:46px;color:#a9bad0;background:rgba(26,46,73,.54);font-weight:600}
+.event-table th:nth-child(1){width:48px}.event-table th:nth-child(2){width:104px}.event-table th:nth-child(3){width:72px}.event-table th:nth-child(4){width:64px}.event-table th:nth-child(5){width:108px}.event-table th:nth-child(6){width:82px}.event-table th:nth-child(7){width:88px}.event-table th:nth-child(8){width:96px}.event-table th:nth-child(9){width:86px}
+.event-table td:nth-child(2),.event-table th:nth-child(2){text-align:left}
+.event-table tr.selected{background:linear-gradient(90deg,rgba(22,103,219,.48),rgba(22,103,219,.22));box-shadow:inset 0 0 0 1px rgba(33,130,255,.58)}
+.event-table button{height:26px;border:1px solid rgba(42,133,227,.34);border-radius:5px;color:#dcecff;background:rgba(5,18,37,.68);padding:0 8px;white-space:nowrap}
+.event-pill,.event-state{min-width:46px;height:24px;display:inline-grid;place-items:center;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap}
+.event-pill.in{color:#5db0ff;border:1px solid rgba(47,140,255,.38);background:rgba(47,140,255,.12)}
+.event-pill.out{color:#ffba45;border:1px solid rgba(255,185,40,.42);background:rgba(255,185,40,.1)}
+.event-state.ok{color:#67df87!important;border:1px solid rgba(37,204,113,.22);background:rgba(37,204,113,.14)}
+.event-state.warn{color:#ffc24b;border:1px solid rgba(255,185,40,.42);background:rgba(255,185,40,.12)}
+.event-state.danger{color:#ff756d;border:1px solid rgba(255,91,85,.42);background:rgba(255,91,85,.12)}
+.event-pagination{display:grid;grid-template-columns:1fr auto 112px;align-items:center;padding:10px 12px;color:#c9d7eb;font-size:12px}
+.event-pagination div{display:flex;gap:8px}
+.event-pagination button{height:30px;min-width:30px;border:1px solid rgba(42,133,227,.35);border-radius:5px;color:#d9eaff;background:rgba(5,18,37,.72)}
+.event-pagination button.active{background:rgba(22,103,219,.52);border-color:#1683ff}
+.event-detail-panel{display:grid;grid-template-rows:28px 178px 252px 52px;gap:10px;overflow:hidden}
+.event-detail-head{display:flex;align-items:center;justify-content:space-between;min-width:0}
+.event-detail-head h2{margin:0;color:#f1f7ff;font-size:16px;white-space:nowrap}
+.event-detail-top{display:grid;grid-template-columns:145px 150px minmax(210px,1fr);gap:16px;align-items:start}
+.event-detail-top dl{display:grid;grid-template-columns:58px 1fr;gap:8px 8px;margin:0;min-width:0}
+.event-detail-top dt{color:#9fb4ce;font-size:12px;white-space:nowrap}
+.event-detail-top dd{margin:0;color:#f2f8ff;font-size:14px;font-weight:700;white-space:nowrap}
+.plate-crop,.event-image{min-width:0}
+.plate-crop span,.event-image span{display:block;margin-bottom:8px;color:#9fb4ce;font-size:12px;font-weight:700;white-space:nowrap}
+.plate-crop strong{height:86px;display:grid;place-items:center;border:1px solid rgba(117,151,194,.22);border-radius:5px;color:#181818;background:linear-gradient(#d8d5ca,#f4f1e7 45%,#b9b4aa);font-size:28px;letter-spacing:1px;text-shadow:0 1px #fff;white-space:nowrap}
+.event-road-shot{height:144px;position:relative;overflow:hidden;border:1px solid rgba(117,151,194,.22);border-radius:5px;background:linear-gradient(90deg,#69757d 0 12%,#a4acb1 12% 14%,#717b83 14% 100%)}
+.event-road-shot::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 64px,rgba(255,255,255,.22) 65px 67px),linear-gradient(180deg,rgba(255,255,255,.16),transparent 35%)}
+.event-car{position:relative;width:132px;height:84px;margin:42px auto 0;border-radius:38px 38px 14px 14px;background:linear-gradient(#0c1118,#202833);box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.event-car::before{content:'';position:absolute;left:20px;right:20px;top:14px;height:24px;border-radius:10px;background:#101822}
+.event-car b{position:absolute;left:29px;bottom:14px;padding:2px 8px;border-radius:2px;background:#f2f0df;color:#1b1b1b;font-size:10px}
+.gps-judge-card{display:grid;grid-template-rows:30px 1fr;padding-top:10px;border-top:1px solid rgba(117,151,194,.14);overflow:hidden}
+.gps-judge-body{display:grid;grid-template-columns:92px minmax(250px,1fr) minmax(168px,190px);gap:14px;align-items:stretch;min-height:0}
+.gps-legend{display:grid;align-content:start;gap:12px;color:#dce9f8;font-size:11px}
+.gps-legend span{white-space:nowrap}
+.gps-legend span::before{content:'';display:inline-block;width:10px;height:10px;margin-right:7px;border-radius:50%;background:#1fbf77}
+.gps-legend .zone::before{border:1px dashed #1fbf77;background:transparent;border-radius:3px}
+.gps-legend .point::before{background:#ffbd42}
+.gps-legend .lane::before{background:#2f8cff}
+.gps-map-mini{position:relative;min-height:210px;border:1px solid rgba(42,133,227,.18);border-radius:6px;background:linear-gradient(rgba(117,151,194,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(117,151,194,.08) 1px,transparent 1px),rgba(5,18,37,.56);background-size:27px 27px}
+.gps-map-mini::after{content:'';position:absolute;right:9%;top:-6%;width:42px;height:120%;border-left:4px solid rgba(47,140,255,.32);border-right:2px solid rgba(47,140,255,.16);transform:rotate(8deg)}
+.gps-map-mini i{position:absolute;left:12%;right:18%;top:31%;bottom:20%;border:2px dashed #1fc474;border-radius:5px;background:rgba(31,196,116,.08)}
+.gps-map-mini b{position:absolute;left:52%;top:54%;width:13px;height:13px;border-radius:50%;background:#ffbd42;box-shadow:0 0 12px rgba(255,189,66,.75)}
+.gps-map-mini em{position:absolute;right:10%;top:26%;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#2f8cff;color:#fff;font-style:normal;font-weight:900;z-index:1}
+.gps-judge-body dl{display:grid;grid-template-columns:78px 1fr;gap:12px 10px;margin:0;padding:12px 8px 10px 12px;align-content:center;background:rgba(5,18,37,.42);border-radius:4px}
+.gps-judge-body dt{color:#9fb4ce;white-space:nowrap}
+.gps-judge-body dd{margin:0;color:#eaf4ff;text-align:left;white-space:nowrap;font-weight:700}
+.event-detail-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-self:end}
+.event-detail-actions button{height:52px;border:1px solid rgba(42,133,227,.48);border-radius:5px;color:#e8f2ff;background:rgba(7,43,86,.72);font-weight:800;white-space:nowrap}
+.event-detail-actions .review{border-color:rgba(255,158,48,.55);background:rgba(128,74,16,.54);color:#ffc46b}
+.event-history-panel{padding:12px}
+.event-history-panel table{width:100%;border-collapse:collapse;table-layout:fixed}
+.event-history-panel th,.event-history-panel td{height:32px;padding:0 12px;border-bottom:1px solid rgba(117,151,194,.12);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-history-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}
+.event-history-panel th:nth-child(1){width:60px}.event-history-panel th:nth-child(2){width:190px}.event-history-panel th:nth-child(3){width:150px}.event-history-panel th:nth-child(4){width:150px}.event-history-panel th:nth-child(6){width:120px}
+.light-mode .event-title-row h1,.light-mode .event-detail-head h2,.light-mode .event-detail-top dd,.light-mode .gps-judge-body dd{color:#102033}
+.light-mode .event-title-row p,.light-mode .event-table th,.light-mode .event-detail-top dt,.light-mode .gps-judge-body dt,.light-mode .gps-legend{color:#53677f}
+.light-mode .event-filter-row label,.light-mode .event-filter-row button,.light-mode .event-table button,.light-mode .event-pagination button,.light-mode .gps-judge-body dl{background:rgba(255,255,255,.82);color:#21496f;border-color:rgba(58,126,204,.3)}
+.light-mode .gps-map-mini{background:linear-gradient(rgba(58,126,204,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(58,126,204,.1) 1px,transparent 1px),rgba(246,250,255,.82)}
+.gps-side-stack{top:calc(100vh - 360px)}
+.gps-guide-card p{border-top:0}
+.gps-decision-page{display:grid;gap:12px;align-content:start}
+.gps-filter-row{display:grid;grid-template-columns:360px 154px 184px 214px minmax(170px,1fr) 112px;gap:10px}
+.gps-filter-row label,.gps-filter-row button{height:36px;border:1px solid rgba(42,133,227,.32);border-radius:5px;color:#dcecff;background:rgba(5,16,33,.72)}
+.gps-filter-row button{padding:0 12px;text-align:left;white-space:nowrap}
+.gps-filter-row button b{float:right;color:#f2f8ff}
+.gps-decision-grid{display:grid;grid-template-columns:minmax(500px,.9fr) minmax(430px,.76fr) minmax(410px,.74fr);gap:12px;align-items:stretch}
+.gps-log-panel{display:grid;grid-template-rows:34px 1fr 40px;overflow:hidden}
+.gps-log-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-right:8px}
+.gps-log-actions button,.gps-log-panel footer button,.gps-history-panel .panel-head button,.selected-gps-actions button{height:30px;border:1px solid rgba(42,133,227,.42);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66);padding:0 10px;white-space:nowrap;font-size:12px}
+.gps-log-panel footer button{min-width:86px;display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-right:8px}
+.pause-icon{width:10px;height:12px;display:inline-block;position:relative}
+.pause-icon::before,.pause-icon::after{content:'';position:absolute;top:0;width:3px;height:12px;border-radius:2px;background:#7ec0ff}
+.pause-icon::before{left:1px}.pause-icon::after{right:1px}
+.gps-log-panel table,.gps-history-panel table{width:100%;border-collapse:collapse;table-layout:fixed}
+.gps-log-panel th,.gps-log-panel td{height:34px;padding:0 8px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:400}
+.gps-log-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}
+.gps-log-panel th:nth-child(1){width:86px}.gps-log-panel th:nth-child(2){width:132px}.gps-log-panel th:nth-child(3){width:166px}.gps-log-panel th:nth-child(4){width:76px}.gps-log-panel th:nth-child(5){width:70px}.gps-log-panel th:nth-child(6){width:70px}
+.fix-ok{color:#67df87;font-weight:700}.fix-bad{color:#ff756d;font-weight:700}
+.gps-log-panel footer{display:flex;align-items:center;justify-content:space-between;color:#c9d7eb;font-size:13px;padding-top:6px}
+.gps-log-panel footer button{color:#7ec0ff;font-weight:800}
+.gps-area-panel{display:grid;grid-template-rows:34px 28px 1fr 1fr;gap:8px;overflow:hidden}
+.gps-area-legend{display:flex;align-items:center;gap:28px;color:#cfe2f7;font-size:12px;white-space:nowrap}
+.gps-area-legend span::before{content:'';display:inline-block;width:10px;height:10px;margin-right:8px;border-radius:50%;vertical-align:-1px}
+.gps-area-legend .ok::before{background:#35d36d}.gps-area-legend .point::before{background:#ffbd42}.gps-area-legend .danger::before{background:#ff625c}
+.gps-case{display:grid;grid-template-columns:minmax(250px,1fr) 96px;grid-template-rows:24px 1fr;gap:8px 14px;padding:10px;border:1px solid rgba(42,133,227,.24);border-radius:6px;background:rgba(5,18,37,.36);min-height:0}
+.gps-case>b{grid-column:1/-1;color:#68ef8c;font-size:13px}
+.gps-case.danger-case>b{color:#ff6b63}
+.gps-case-map{position:relative;min-height:126px;border:1px solid rgba(42,133,227,.18);border-radius:5px;background:linear-gradient(rgba(117,151,194,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(117,151,194,.08) 1px,transparent 1px),rgba(5,18,37,.56);background-size:24px 24px}
+.gps-case-map i{position:absolute;left:15%;right:16%;top:22%;bottom:18%;border:2px dashed #1fc474;background:rgba(31,196,116,.08)}
+.gps-case-map em{position:absolute;left:52%;top:47%;width:13px;height:13px;border-radius:50%;background:#ffbd42;box-shadow:0 0 12px rgba(255,189,66,.75)}
+.danger-case .gps-case-map em{left:auto;right:14%;top:64%;background:#ff625c}
+.gps-case-map strong{position:absolute;right:10px;bottom:7px;color:#eaf4ff;font-size:12px;font-weight:700}
+.gps-case dl{display:grid;grid-template-columns:1fr;align-content:center;gap:8px;margin:0}
+.gps-case dt{color:#9fb4ce;font-size:12px}.gps-case dd{margin:0;color:#dce9f8;font-size:12px;line-height:1.35}
+.selected-gps-panel{display:grid;grid-template-rows:34px 1fr 42px 42px;gap:10px;overflow:hidden}
+.selected-gps-panel>dl{display:grid;grid-template-columns:96px 1fr;align-content:start;margin:0;border-top:1px solid rgba(117,151,194,.12)}
+.selected-gps-panel dt,.selected-gps-panel dd{min-height:31px;display:flex;align-items:center;margin:0;border-bottom:1px solid rgba(117,151,194,.12);white-space:nowrap;font-weight:400}
+.selected-gps-panel dt{color:#9fb4ce}.selected-gps-panel dd{justify-content:flex-end;color:#f2f8ff}
+.decision-run{height:42px;border:0;border-radius:5px;color:#fff;background:linear-gradient(135deg,#0b68ff,#0055d8);font-weight:900;font-size:16px}
+.selected-gps-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gps-history-panel{padding:12px;overflow:hidden}
+.gps-history-panel .panel-head{margin-bottom:8px}
+.gps-history-panel th,.gps-history-panel td{height:31px;padding:0 12px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.gps-history-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}
+.gps-history-panel th:nth-child(1){width:70px}.gps-history-panel th:nth-child(8){width:120px}
+.gps-history-panel td:nth-child(6){text-align:left;padding-left:28px}
+.gps-history-panel td:nth-child(6) .row-dot{margin-right:8px;vertical-align:1px}
+.gps-history-panel button{height:24px;min-width:58px;padding:0 8px;border:1px solid rgba(42,133,227,.42);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66);font-size:12px}
+.light-mode .gps-filter-row label,.light-mode .gps-filter-row button,.light-mode .gps-log-actions button,.light-mode .gps-log-panel footer button,.light-mode .selected-gps-actions button,.light-mode .gps-history-panel button,.light-mode .gps-case,.light-mode .gps-judge-body dl{background:rgba(255,255,255,.82);color:#21496f;border-color:rgba(58,126,204,.3)}
+.light-mode .gps-log-panel td,.light-mode .gps-history-panel td,.light-mode .selected-gps-panel dd{color:#102033}
+.light-mode .gps-case-map{background:linear-gradient(rgba(58,126,204,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(58,126,204,.1) 1px,transparent 1px),rgba(246,250,255,.82)}
+.review-side-stack{top:calc(100vh - 370px)}
+.review-page{display:grid;gap:12px;align-content:start}
+.review-tabs{display:flex;gap:0}
+.review-tabs button{height:38px;min-width:110px;border:1px solid rgba(42,133,227,.42);border-right:0;color:#e8f2ff;background:rgba(5,18,37,.72);font-weight:800}
+.review-tabs button:first-child{border-radius:5px 0 0 5px}.review-tabs button:last-child{border-right:1px solid rgba(42,133,227,.42);border-radius:0 5px 5px 0}
+.review-tabs button.active{background:linear-gradient(135deg,rgba(22,103,219,.82),rgba(5,58,125,.72))}
+.review-main-grid{display:grid;grid-template-columns:minmax(292px,.62fr) minmax(460px,.98fr) minmax(470px,1fr);gap:12px;align-items:stretch}
+.review-queue-panel{display:grid;grid-template-rows:34px 1fr 34px;gap:8px;overflow:hidden}
+.review-queue-panel .panel-head button{height:28px;border:1px solid rgba(42,133,227,.4);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66);padding:0 10px}
+.filter-caret{display:inline-grid;place-items:center;width:18px;height:18px;margin-left:5px;border:1px solid rgba(42,133,227,.42);border-radius:4px;color:#8fc7ff;background:rgba(9,50,98,.54);font-size:11px;line-height:1}
+.review-cards{display:grid;gap:10px;overflow:hidden}
+.review-cards article{min-height:94px;padding:12px 14px;border:1px solid rgba(42,133,227,.26);border-left:4px solid #2f8cff;border-radius:6px;background:linear-gradient(145deg,rgba(12,33,59,.82),rgba(5,18,37,.74))}
+.review-cards article.selected{box-shadow:inset 0 0 0 1px rgba(255,91,85,.3)}
+.review-cards article.danger{border-left-color:#ef5a54}.review-cards article.warn{border-left-color:#f5a94d}.review-cards article.info{border-left-color:#2f8cff}
+.review-cards header{display:flex;align-items:center;justify-content:space-between;color:#ff756d;font-size:13px;font-weight:800}
+.review-cards .warn header{color:#ffc24b}.review-cards .info header{color:#5db0ff}
+.review-cards header span{height:24px;display:grid;place-items:center;padding:0 8px;border-radius:5px;background:rgba(255,91,85,.12);border:1px solid rgba(255,91,85,.32)}
+.review-cards .warn header span,.review-cards .info header span{color:#ffc24b;background:rgba(255,185,40,.12);border-color:rgba(255,185,40,.32)}
+.review-cards strong{display:block;margin-top:10px;color:#fff;font-size:24px;line-height:1}
+.review-cards p{margin:10px 0 0;color:#d8e5f4;white-space:nowrap}.review-cards i{display:inline-block;width:1px;height:14px;margin:0 12px;background:rgba(117,151,194,.3);vertical-align:-2px}
+.review-more{justify-self:end;width:104px;height:34px;border:1px solid rgba(42,133,227,.4);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66)}
+.evidence-panel{display:grid;grid-template-rows:34px 18px minmax(236px,260px) 76px;gap:8px;overflow:hidden}
+.evidence-sub{margin:0;color:#9fb4ce;font-size:13px}
+.evidence-images{display:grid;grid-template-columns:minmax(270px,1fr) 162px;gap:12px;min-height:0}
+.evidence-main span,.evidence-crop span{display:block;margin-bottom:8px;color:#dce9f8;font-weight:800}
+.evidence-road{height:100%;min-height:214px;max-height:224px;position:relative;overflow:hidden;border:1px solid rgba(117,151,194,.2);border-radius:5px;background:linear-gradient(90deg,#7a858c 0 13%,#aeb5ba 13% 15%,#737e86 15% 100%)}
+.evidence-road::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 72px,rgba(255,255,255,.22) 73px 75px),linear-gradient(180deg,rgba(255,255,255,.18),transparent 42%)}
+.evidence-car{position:relative;width:156px;height:98px;margin:86px auto 0;border-radius:46px 46px 18px 18px;background:linear-gradient(#101720,#222d38);box-shadow:0 12px 26px rgba(0,0,0,.5)}
+.evidence-car::before{content:'';position:absolute;left:24px;right:24px;top:17px;height:30px;border-radius:12px;background:#111b26}
+.evidence-car b{position:absolute;left:37px;bottom:17px;padding:3px 10px;border-radius:3px;background:#f2f0df;color:#1b1b1b;font-size:12px}
+.evidence-crop strong{height:180px;display:grid;place-items:center;border:1px solid rgba(117,151,194,.22);border-radius:5px;color:#151515;background:linear-gradient(#141414 0 20%,#f2f0df 20% 78%,#151515 78%);font-size:28px;letter-spacing:1px;text-shadow:0 1px #fff;white-space:nowrap}
+.evidence-meta{display:grid;grid-template-columns:1fr 1.2fr 1.8fr;border:1px solid rgba(117,151,194,.16);border-radius:6px;overflow:hidden}
+.evidence-meta p{display:grid;gap:8px;align-content:center;margin:0;padding:0 18px;border-right:1px solid rgba(117,151,194,.14)}
+.evidence-meta p:last-child{border-right:0}.evidence-meta span{color:#9fb4ce}.evidence-meta b{color:#f2f8ff;font-size:16px}
+.review-decision-panel{display:grid;grid-template-rows:34px auto minmax(188px,1fr) auto 52px;gap:10px;overflow:hidden}
+.review-info-list,.review-result-grid{display:grid;margin:0;border-top:1px solid rgba(117,151,194,.12)}
+.review-info-list{grid-template-columns:96px 1fr}.review-info-list dt,.review-info-list dd,.review-result-grid dt,.review-result-grid dd{min-height:30px;display:flex;align-items:center;margin:0;border-bottom:1px solid rgba(117,151,194,.12);white-space:nowrap;font-weight:400}
+.review-info-list dt,.review-result-grid dt{color:#9fb4ce}.review-info-list dd,.review-result-grid dd{justify-content:flex-end;color:#f2f8ff}
+.review-gps-box{display:grid;grid-template-rows:24px 1fr;padding:10px;border:1px solid rgba(42,133,227,.22);border-radius:6px;background:rgba(5,18,37,.34);min-height:0}
+.review-gps-box h3{margin:0;color:#f2f8ff;font-size:14px}
+.review-gps-content{display:grid;grid-template-columns:minmax(250px,1fr) 128px;gap:12px;min-height:0}
+.review-gps-map{position:relative;min-height:150px;border:1px solid rgba(42,133,227,.18);border-radius:5px;background:linear-gradient(rgba(117,151,194,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(117,151,194,.08) 1px,transparent 1px),rgba(5,18,37,.56);background-size:24px 24px}
+.review-gps-map i{position:absolute;left:12%;right:10%;top:28%;bottom:20%;border:2px dashed #1fc474;background:rgba(31,196,116,.08)}
+.review-gps-map b{position:absolute;left:50%;top:52%;width:13px;height:13px;border-radius:50%;background:#ffbd42;box-shadow:0 0 12px rgba(255,189,66,.75)}
+.review-gps-legend{display:grid;align-content:center;gap:14px;color:#dce9f8;font-size:12px}
+.review-gps-legend span{white-space:nowrap}.review-gps-legend span::before{content:'';display:inline-block;width:10px;height:10px;margin-right:8px;border-radius:50%;background:#35d36d}.review-gps-legend .point::before{background:#ffbd42}.review-gps-legend .center::before{background:#2f8cff}
+.review-result-grid{grid-template-columns:94px 1fr 94px 1fr;gap:0 10px;border-top:0}
+.review-result-grid dt,.review-result-grid dd{min-height:29px}
+.review-actions{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:12px}
+.review-actions button{height:52px;border:1px solid rgba(42,133,227,.42);border-radius:5px;color:#e8f2ff;background:rgba(7,43,86,.72);font-weight:900;white-space:nowrap}.review-actions .approve{background:rgba(28,132,73,.7);border-color:rgba(62,219,119,.52)}.review-actions .field{color:#ffc46b;background:rgba(128,74,16,.54);border-color:rgba(255,158,48,.55)}
+.review-history-panel{padding:12px;overflow:hidden}.review-history-panel .panel-head{margin-bottom:8px}.review-history-panel table{width:100%;border-collapse:collapse;table-layout:fixed}.review-history-panel th,.review-history-panel td{height:31px;padding:0 10px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}.review-history-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}.review-history-panel th:nth-child(1){width:110px}.review-history-panel th:nth-child(2){width:150px}.review-history-panel th:nth-child(3){width:110px}.review-history-panel th:nth-child(10){width:180px}
+.light-mode .review-tabs button,.light-mode .review-queue-panel .panel-head button,.light-mode .review-more,.light-mode .review-gps-box,.light-mode .review-actions button{background:rgba(255,255,255,.82);color:#21496f;border-color:rgba(58,126,204,.3)}
+.light-mode .filter-caret{color:#176dc0;background:#e7f1ff;border-color:rgba(58,126,204,.32)}
+.light-mode .review-info-list dd,.light-mode .review-result-grid dd,.light-mode .evidence-meta b,.light-mode .review-history-panel td{color:#102033}
+.settlement-side-stack{top:calc(100vh - 300px)}
+.settlement-page{display:grid;gap:12px;align-content:start}
+.settlement-tabs{display:flex;width:max-content}
+.settlement-tabs button{height:38px;min-width:74px;padding:0 18px;border:1px solid rgba(42,133,227,.42);border-right:0;color:#e8f2ff;background:rgba(5,18,37,.72);font-weight:800}
+.settlement-tabs button:first-child{border-radius:5px 0 0 5px}.settlement-tabs button:last-child{border-right:1px solid rgba(42,133,227,.42);border-radius:0 5px 5px 0}
+.settlement-tabs button.active{background:linear-gradient(135deg,rgba(22,103,219,.82),rgba(5,58,125,.72))}
+.settlement-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.settlement-kpi{min-height:92px;display:grid;grid-template-columns:62px 1fr;grid-template-rows:auto auto auto;column-gap:14px;align-content:center;padding:13px 16px;border:1px solid rgba(42,133,227,.3);border-radius:7px;background:rgba(5,16,33,.72)}
+.settlement-kpi i{grid-row:1/4;width:56px;height:56px;display:grid;place-items:center;border-radius:50%;font-style:normal;color:#fff;background:linear-gradient(135deg,#2f8cff,#0c4d9f);font-size:27px;font-weight:900}
+.settlement-kpi.card i{background:linear-gradient(135deg,#3fdd83,#10713c)}.settlement-kpi.danger i{background:linear-gradient(135deg,#ff6b63,#a6202b)}.settlement-kpi.hold i{background:linear-gradient(135deg,#ffd65d,#b17600)}
+.settlement-kpi span{color:#dce9f8;font-size:13px}.settlement-kpi strong{margin-top:4px;color:#fff;font-size:24px}.settlement-kpi small{font-size:14px}.settlement-kpi em{color:#68ef8c;font-style:normal;font-size:12px}.settlement-kpi.danger em{color:#ff6b63}.settlement-kpi.hold em{color:#ffc24b}
+.settlement-mid-grid{display:grid;grid-template-columns:minmax(530px,1.24fr) minmax(310px,.7fr) minmax(360px,.8fr);gap:12px}
+.toll-chart-panel{display:grid;grid-template-rows:36px 58px minmax(174px,1fr) 24px;min-height:300px;overflow:hidden}
+.chart-toggle{display:flex}.chart-toggle button{height:30px;min-width:54px;border:1px solid rgba(42,133,227,.42);color:#dcecff;background:rgba(7,43,86,.66)}.chart-toggle .active{background:rgba(22,103,219,.7)}
+.chart-legend{display:grid;grid-template-columns:auto auto 1fr;grid-template-rows:24px 28px;align-items:center;gap:4px 22px;color:#dce9f8}.chart-legend span::before{content:'';display:inline-block;width:12px;height:12px;margin-right:8px;border-radius:50%;background:#2f8cff}.chart-legend .out::before{background:#9d62dd}.chart-legend strong{grid-column:3;grid-row:1/3;justify-self:end;align-self:end;color:#fff;font-size:20px;text-align:right;padding-bottom:4px}.chart-legend small{display:block;margin-top:7px;color:#a9bad0;font-size:12px;font-weight:400}
+.bar-chart{height:174px;display:grid;grid-template-columns:repeat(25,1fr);align-items:end;gap:5px;padding:14px 4px 0;border-left:1px solid rgba(117,151,194,.18);border-bottom:1px solid rgba(117,151,194,.18);background:repeating-linear-gradient(0deg,rgba(117,151,194,.12) 0 1px,transparent 1px 34px)}
+.bar-chart i{height:var(--h);min-height:5px;border-radius:2px 2px 0 0;background:linear-gradient(180deg,#2f8cff,#1162c7);position:relative}.bar-chart i::before{content:'';position:absolute;left:0;right:0;bottom:100%;height:var(--o);background:linear-gradient(180deg,#a66af0,#7c3ac8);border-radius:2px 2px 0 0}
+.chart-axis{display:grid;grid-template-columns:repeat(13,1fr);color:#a9bad0;font-size:12px;text-align:center}
+.settlement-donut-panel{display:grid;grid-template-rows:34px 1fr;min-height:300px}.settlement-donut-wrap{display:grid;grid-template-columns:180px 1fr;align-items:center;gap:24px}
+.settlement-donut{width:170px;height:170px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:conic-gradient(#35d36d 0 85%,#ffd13f 85% 94%,#ff625c 94% 100%);position:relative}.settlement-donut::before{content:'';position:absolute;inset:42px;border-radius:50%;background:#06172d}.settlement-donut strong,.settlement-donut span{position:relative;z-index:1;text-align:center}.settlement-donut strong{color:#fff;font-size:24px;line-height:1.1}.settlement-donut small{font-size:14px}.settlement-donut span{margin-top:5px;color:#a9bad0;font-size:12px;line-height:1.25}
+.settlement-donut-wrap dl{display:grid;grid-template-columns:18px 1fr;gap:14px 8px;margin:0}.settlement-donut-wrap dt{font-size:0}.settlement-donut-wrap dt::before{content:'';display:block;width:13px;height:13px;border-radius:50%;background:#35d36d}.settlement-donut-wrap dt.warn::before{background:#ffd13f}.settlement-donut-wrap dt.danger::before{background:#ff625c}.settlement-donut-wrap dd{margin:0;color:#f2f8ff;font-weight:800}
+.gps-impact-panel{display:grid;grid-template-rows:34px 1fr 1fr 28px;gap:10px;min-height:300px}
+.impact-card{display:grid;gap:12px;padding:14px;border:1px solid rgba(62,219,119,.26);border-radius:7px;background:rgba(18,76,45,.24)}.impact-card.danger{border-color:rgba(255,91,85,.28);background:rgba(95,33,40,.24)}
+.impact-card header{display:flex;justify-content:space-between;align-items:center;color:#68ef8c}.impact-card.danger header{color:#ff756d}.impact-card header span{height:26px;display:grid;place-items:center;padding:0 10px;border-radius:5px;background:rgba(37,204,113,.14);border:1px solid rgba(37,204,113,.22)}.impact-card.danger header span{background:rgba(255,91,85,.12);border-color:rgba(255,91,85,.28)}
+.impact-card div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.impact-card p{margin:0;color:#c9d7eb}.impact-card strong{display:block;margin-top:8px;color:#fff;font-size:18px}
+.nofix-line{margin:0;color:#dce9f8}.nofix-line i{display:inline-block;width:12px;height:12px;margin-right:8px;border-radius:50%;background:#2f8cff}.nofix-line span{float:right}
+.settlement-table-panel{padding:12px;overflow:hidden}.settlement-table-panel .panel-head{margin-bottom:8px}.settlement-table-panel .panel-head div{display:flex;gap:10px}.settlement-table-panel .panel-head button{height:34px;border:1px solid rgba(42,133,227,.42);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66);padding:0 14px}
+.settlement-table-panel table{width:100%;border-collapse:collapse;table-layout:fixed}.settlement-table-panel th,.settlement-table-panel td{height:34px;padding:0 12px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}.settlement-table-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}.settlement-table-panel th:nth-child(1){width:64px}.settlement-table-panel th:nth-child(2){width:130px}.settlement-table-panel th:nth-child(3){width:100px}.settlement-table-panel th:nth-child(8){width:120px}.event-state.muted{color:#cbd5e1;background:rgba(148,163,184,.14);border:1px solid rgba(148,163,184,.22)}
+.light-mode .settlement-tabs button,.light-mode .settlement-kpi,.light-mode .settlement-table-panel .panel-head button,.light-mode .chart-toggle button{background:rgba(255,255,255,.82);color:#21496f;border-color:rgba(58,126,204,.3)}.light-mode .settlement-kpi span,.light-mode .settlement-table-panel td,.light-mode .impact-card p{color:#21364d}.light-mode .settlement-kpi strong,.light-mode .impact-card strong,.light-mode .settlement-donut-wrap dd{color:#102033}.light-mode .settlement-donut::before{background:#f7fbff}
+.realtime-page,.settings-page{display:grid;gap:12px;align-content:start}
+.realtime-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.realtime-kpi{min-height:92px;display:grid;grid-template-columns:58px 1fr;grid-template-rows:auto auto auto;gap:2px 14px;align-content:center;padding:14px 16px;border:1px solid rgba(42,133,227,.3);border-radius:7px;background:rgba(5,16,33,.72)}
+.realtime-kpi i{grid-row:1/4;width:52px;height:52px;display:grid;place-items:center;border-radius:50%;font-style:normal;color:#fff;background:linear-gradient(135deg,#2f8cff,#0c4d9f);font-size:24px;font-weight:900}
+.realtime-kpi.ok i{background:linear-gradient(135deg,#3fdd83,#10713c)}.realtime-kpi.warn i{background:linear-gradient(135deg,#ffd65d,#b17600)}
+.realtime-kpi span{color:#dce9f8}.realtime-kpi strong{color:#fff;font-size:22px}.realtime-kpi em{color:#9fb4ce;font-style:normal;font-size:12px}
+.realtime-main-grid{display:grid;grid-template-columns:minmax(620px,1fr) minmax(540px,.85fr);gap:12px}
+.realtime-camera-panel{display:grid;grid-template-rows:34px 1fr 66px;min-height:600px;overflow:hidden}
+.realtime-frame{display:grid;grid-template-rows:1fr 1fr;gap:10px;min-height:0}
+.realtime-lane{position:relative;overflow:hidden;border:1px solid rgba(42,133,227,.24);border-radius:6px;background:rgba(5,18,37,.42)}
+.realtime-lane header{position:absolute;left:10px;right:10px;top:10px;display:flex;align-items:center;gap:10px;z-index:2}
+.realtime-lane header b,.realtime-lane header span,.realtime-lane header em{height:28px;display:grid;place-items:center;padding:0 10px;border-radius:5px;color:#fff;background:rgba(5,18,37,.75);font-style:normal}
+.realtime-lane header em{margin-left:auto}
+.realtime-road{height:100%;position:relative;background:linear-gradient(90deg,#6d7881 0 13%,#a9b0b5 13% 15%,#737d85 15% 100%)}
+.realtime-road::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 78px,rgba(255,255,255,.22) 79px 81px),linear-gradient(180deg,rgba(255,255,255,.16),transparent 40%)}
+.realtime-car{position:relative;width:154px;height:96px;margin:92px auto 0;border-radius:44px 44px 18px 18px;background:linear-gradient(#101720,#222d38);box-shadow:0 12px 26px rgba(0,0,0,.5)}
+.realtime-car.silver{background:linear-gradient(#d5d9dd,#8e969e)}
+.realtime-car::before{content:'';position:absolute;left:24px;right:24px;top:16px;height:30px;border-radius:12px;background:#111b26}
+.realtime-car b{position:absolute;left:36px;bottom:17px;padding:3px 10px;border-radius:3px;background:#f2f0df;color:#1b1b1b;font-size:12px}
+.detect-box{position:absolute;left:50%;top:48%;width:220px;height:118px;transform:translate(-50%,-50%);border:2px solid #35d36d;border-radius:4px}.realtime-lane.blue .detect-box{border-color:#2f8cff}
+.realtime-side-grid{display:grid;grid-template-rows:126px 1fr 1fr;gap:12px}
+.status-grid.compact{grid-template-columns:repeat(4,1fr)}
+.realtime-event-panel table{width:100%;border-collapse:collapse;table-layout:fixed}.realtime-event-panel th,.realtime-event-panel td{height:38px;padding:0 10px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;font-weight:400}.realtime-event-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.settings-card{display:grid;grid-template-rows:34px 1fr;gap:10px;min-height:260px;overflow:hidden}.settings-card .panel-head button{height:30px;border:1px solid rgba(42,133,227,.42);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66);padding:0 12px}
+.settings-card dl{display:grid;grid-template-columns:120px 1fr;align-content:start;margin:0;border-top:1px solid rgba(117,151,194,.12)}.settings-card dt,.settings-card dd{min-height:38px;display:flex;align-items:center;margin:0;border-bottom:1px solid rgba(117,151,194,.12);white-space:nowrap}.settings-card dt{color:#9fb4ce}.settings-card dd{justify-content:flex-end;color:#f2f8ff}
+.settings-map{position:relative;min-height:150px;border:1px solid rgba(42,133,227,.18);border-radius:6px;background:linear-gradient(rgba(117,151,194,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(117,151,194,.08) 1px,transparent 1px),rgba(5,18,37,.56);background-size:24px 24px}.settings-map i{position:absolute;left:18%;right:18%;top:28%;bottom:24%;border:2px dashed #1fc474;background:rgba(31,196,116,.08)}.settings-map b{position:absolute;left:50%;top:52%;width:14px;height:14px;border-radius:50%;background:#ffbd42;box-shadow:0 0 12px rgba(255,189,66,.75)}
+.settings-card .compact-list{margin-top:10px}.setting-options,.setting-toggles{display:grid;gap:12px;align-content:start}.setting-options label,.setting-toggles label{min-height:46px;display:grid;grid-template-columns:1fr 150px;align-items:center;padding:0 12px;border:1px solid rgba(117,151,194,.14);border-radius:6px;color:#dce9f8;background:rgba(5,18,37,.32)}.setting-options input{height:30px;border:1px solid rgba(42,133,227,.32);border-radius:5px;background:rgba(5,16,33,.72);color:#eaf4ff;text-align:right;padding:0 10px}.setting-toggles input{justify-self:end;width:18px;height:18px}
+.settings-history-panel{padding:12px}.settings-history-panel table{width:100%;border-collapse:collapse;table-layout:fixed}.settings-history-panel th,.settings-history-panel td{height:34px;padding:0 12px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;font-weight:400}.settings-history-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}
+.light-mode .realtime-kpi,.light-mode .settings-card .panel-head button,.light-mode .setting-options label,.light-mode .setting-toggles label,.light-mode .setting-options input{background:rgba(255,255,255,.82);color:#21496f;border-color:rgba(58,126,204,.3)}.light-mode .realtime-kpi strong,.light-mode .settings-card dd,.light-mode .settings-history-panel td{color:#102033}
 @media (max-width:1439px){.ops-shell{min-width:1280px}.dashboard-grid,.equipment-layout{grid-template-columns:1fr 1fr}.kpi-grid{grid-template-columns:repeat(4,minmax(220px,1fr))}}
 </style>
