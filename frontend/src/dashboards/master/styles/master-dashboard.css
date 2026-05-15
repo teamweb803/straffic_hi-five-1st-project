@@ -1,3 +1,12 @@
 @import './common.css';
-@import './pages.css';
-
+@import './pages/master-dashboard-page.css';
+@import './pages/ingress.css';
+@import './pages/system-control.css';
+@import './pages/edge-equipment.css';
+@import './pages/incident-alert.css';
+@import './pages/backend-db.css';
+@import './pages/branch-management.css';
+@import './pages/company-management.css';
+@import './pages/audit-log.css';
+@import './pages/settings.css';
+@import './pages/master-overrides.css';

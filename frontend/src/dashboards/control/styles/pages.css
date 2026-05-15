@@ -527,3 +527,41 @@ th{color:#9fb2cb;background:rgba(26,46,73,.54)}td{color:#dce9f8}.state,.pay,.sta
 }
 
 @media (max-width:1439px){.ops-shell{min-width:1280px}.dashboard-grid,.equipment-layout{grid-template-columns:1fr 1fr}.kpi-grid{grid-template-columns:repeat(4,minmax(220px,1fr))}}
+
+/* Keep the control dashboard layout isolated from master dashboard global grid rules. */
+.ops-shell .dashboard-page {
+  display: block;
+}
+
+.ops-shell .dashboard-page > .dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(620px, 0.96fr) minmax(560px, 1.04fr) !important;
+  grid-template-areas: "yolo side";
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ops-shell .dashboard-page .yolo-panel {
+  grid-area: yolo;
+  min-width: 0;
+}
+
+.ops-shell .dashboard-page .right-column {
+  grid-area: side;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 10px;
+}
+
+.ops-shell .dashboard-page .current-panel,
+.ops-shell .dashboard-page .gps-panel,
+.ops-shell .dashboard-page .field-panel {
+  min-width: 0;
+}
+
+.ops-shell .dashboard-page > .recent-panel {
+  width: 100%;
+  margin-top: 10px;
+}
