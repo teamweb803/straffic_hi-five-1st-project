@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { adminApi } from '@/api/admin'
+import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -91,9 +92,26 @@ const notices = [
 
 const topCenters = computed(() => centers.value.slice(0, 5))
 
+const dummyCompanies = [
+  { name: '하이패스 서울(주)', owner: '김서울', phone: '02-1234-5678', email: 'seoul@hipass.com', centers: 5, status: '정상' },
+  { name: '수원 하이패스(주)', owner: '이수원', phone: '031-234-5678', email: 'suwon@hipass.com', centers: 4, status: '정상' },
+  { name: '대전 하이패스(주)', owner: '박대전', phone: '042-345-6789', email: 'daejeon@hipass.com', centers: 3, status: '주의' },
+  { name: '대구 하이패스(주)', owner: '최대구', phone: '053-456-7890', email: 'daegu@hipass.com', centers: 4, status: '정상' },
+  { name: '부산 하이패스(주)', owner: '정부산', phone: '051-567-8901', email: 'busan@hipass.com', centers: 6, status: '정상' },
+  { name: '광주 스마트톨링(주)', owner: '윤광주', phone: '062-111-2200', email: 'gwangju@hipass.com', centers: 2, status: '정상' },
+  { name: '강릉 톨링서비스(주)', owner: '한강릉', phone: '033-555-1900', email: 'gangneung@hipass.com', centers: 2, status: '정상' },
+  { name: '제주 하이로드(주)', owner: '오제주', phone: '064-700-1200', email: 'jeju@hipass.com', centers: 1, status: '정상' },
+  { name: '인천 스마트패스(주)', owner: '장인천', phone: '032-810-3300', email: 'incheon@hipass.com', centers: 3, status: '주의' },
+  { name: '울산 하이패스(주)', owner: '문울산', phone: '052-420-7788', email: 'ulsan@hipass.com', centers: 2, status: '정상' },
+  { name: '전주 톨링네트워크(주)', owner: '서전주', phone: '063-230-5588', email: 'jeonju@hipass.com', centers: 2, status: '비활성' },
+  { name: '청주 교통관리(주)', owner: '남청주', phone: '043-610-4411', email: 'cheongju@hipass.com', centers: 2, status: '정상' }
+]
+
+const displayCompanies = computed(() => (companies.value.length >= 10 ? companies.value : dummyCompanies))
+
 const filteredCompanies = computed(() => {
   const keyword = search.value.trim()
-  return companies.value.filter((company) => !keyword || company.name.includes(keyword))
+  return displayCompanies.value.filter((company) => !keyword || company.name.includes(keyword))
 })
 
 const filteredMembers = computed(() => {
@@ -104,6 +122,137 @@ const filteredMembers = computed(() => {
       member.memberName?.toLowerCase().includes(keyword)
   })
 })
+
+const chartGridColor = 'rgba(140, 176, 220, 0.14)'
+const chartTextColor = '#aebfd4'
+
+function lineData(values, color = '#38d778', fill = false) {
+  return {
+    labels: values.map((_, index) => index + 1),
+    datasets: [{
+      data: values,
+      borderColor: color,
+      backgroundColor: fill ? `${color}22` : 'transparent',
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 4,
+      tension: 0.35,
+      fill
+    }]
+  }
+}
+
+function multiLineData(series) {
+  return {
+    labels: ['16:35', '16:45', '16:55', '17:05', '17:15', '17:25', '17:35'],
+    datasets: series.map((item) => ({
+      label: item.label,
+      data: item.values,
+      borderColor: item.color,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 4,
+      tension: 0.35
+    }))
+  }
+}
+
+const sparklineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: false } },
+  scales: { x: { display: false }, y: { display: false } }
+}
+
+const compactLineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { color: chartGridColor } },
+    y: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { color: chartGridColor } }
+  }
+}
+
+const doughnutOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '66%',
+  plugins: { legend: { display: false } }
+}
+
+const dashboardSparklines = [
+  lineData([16, 12, 14, 8, 10, 6, 9], '#38d778'),
+  lineData([9, 11, 8, 12, 10, 13, 12], '#38d778'),
+  lineData([15, 15, 11, 11, 8, 8, 6], '#38d778'),
+  lineData([18, 15, 13, 10, 9, 7, 5], '#38d778'),
+  lineData([17, 13, 14, 10, 8, 7, 6], '#38d778'),
+  lineData([7, 9, 8, 12, 14, 13, 17], '#ffb928'),
+  lineData([8, 9, 13, 11, 15, 14, 16], '#ffb928'),
+  lineData([11, 12, 10, 9, 11, 8, 9], '#38d778'),
+  lineData([13, 10, 12, 9, 8, 11, 7], '#38d778'),
+  lineData([17, 13, 14, 11, 10, 8, 6], '#38d778'),
+  lineData([14, 12, 13, 10, 12, 9, 10], '#38d778'),
+  lineData([16, 14, 14, 11, 10, 8, 8], '#38d778'),
+  lineData([15, 12, 13, 10, 9, 7, 8], '#38d778'),
+  lineData([7, 8, 10, 13, 14, 16, 17], '#ffb928'),
+  lineData([17, 15, 12, 14, 10, 8, 6], '#38d778')
+]
+
+const edgeFleetDoughnutData = {
+  labels: ['Normal', 'Warning', 'Stale'],
+  datasets: [{ data: [78, 7, 5], backgroundColor: ['#38d778', '#ffb928', '#ff635c'], borderWidth: 0 }]
+}
+
+const edgeMetricCharts = [
+  { title: 'FPS', subtitle: '(frame/sec)', status: '정상', color: '#2f8cff', label: '평균 FPS', values: [28, 31, 27, 29, 31, 30, 33, 29] },
+  { title: 'YOLO 처리 시간', subtitle: '(ms)', status: '정상', color: '#42d779', label: '평균 YOLO ms', values: [25, 27, 24, 29, 30, 32, 31, 28] },
+  { title: 'OCR 처리 시간', subtitle: '(ms)', status: '주의', color: '#b28cff', label: '평균 OCR ms', values: [54, 64, 59, 62, 61, 60, 58, 63], warn: true },
+  { title: 'Spool Count', subtitle: '(건)', status: '정상', color: '#ffb928', label: '현재 Spool', values: [72, 64, 70, 75, 73, 72, 69, 67] },
+  { title: 'Sent Event Count', subtitle: '(건/분)', status: '정상', color: '#26c8e8', label: '전송 이벤트', values: [45, 43, 56, 62, 51, 44, 38, 42], total: '45,672 건' }
+]
+
+const ingressCharts = [
+  { title: '수신 이벤트 (건)', data: lineData([6800, 7600, 8150, 7900, 8500, 9000, 9300], '#2f8cff') },
+  { title: 'ACK / RETRY (건)', data: multiLineData([{ label: 'ACK', values: [6700, 7400, 7800, 8250, 8800, 9050, 9200], color: '#42d779' }, { label: 'RETRY', values: [210, 230, 260, 300, 350, 410, 480], color: '#ffb928' }]) },
+  { title: 'REJECT / MALFORMED (건)', data: multiLineData([{ label: 'REJECT', values: [82, 96, 101, 112, 118, 130, 138], color: '#ff635c' }, { label: 'MALFORMED', values: [12, 13, 14, 15, 16, 17, 18], color: '#b28cff' }]) },
+  { title: '현재 연결 수 (개)', data: lineData([190, 205, 210, 208, 206, 202, 200], '#26c8e8') }
+]
+
+const incidentTimelineData = {
+  datasets: [
+    { label: '치명', data: [{ x: 72, y: 5 }, { x: 66, y: 3 }], backgroundColor: '#ff635c', pointRadius: 6 },
+    { label: '경고', data: [{ x: 28, y: 5 }, { x: 70, y: 4 }, { x: 52, y: 2 }, { x: 42, y: 1 }], backgroundColor: '#ffb928', pointRadius: 6 },
+    { label: '정보', data: [{ x: 32, y: 4 }, { x: 23, y: 3 }, { x: 69, y: 1 }], backgroundColor: '#3d8cff', pointRadius: 6 },
+    { label: '해제', data: [{ x: 92, y: 5 }, { x: 88, y: 4 }, { x: 92, y: 2 }, { x: 92, y: 1 }], backgroundColor: '#50d779', pointRadius: 6 }
+  ]
+}
+
+const incidentTimelineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { min: 0, max: 100, ticks: { display: false }, grid: { color: chartGridColor } },
+    y: { min: 0.5, max: 5.5, ticks: { display: false }, grid: { color: chartGridColor } }
+  }
+}
+
+const companyPermissionChartData = {
+  labels: ['MASTER', 'ADMIN', 'OPERATOR', 'LOCKED'],
+  datasets: [{ data: [1, 8, 26, 2], backgroundColor: ['#5ea8ff', '#38d778', '#ffb928', '#ff635c'], borderRadius: 6 }]
+}
+
+const companyPermissionChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { display: false } },
+    y: { ticks: { display: false }, grid: { color: chartGridColor } }
+  }
+}
 
 const subpageTitle = computed(() => {
   if (activeMenu.value === '회원사 관리') return '회원사 목록'
@@ -879,90 +1028,90 @@ onBeforeUnmount(() => {
                     <td rowspan="3" class="pipeline-table-name">Edge</td>
                     <td>FPS</td>
                     <td>29.8</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,16 16,12 30,14 44,8 58,10 72,6 84,9"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[0]" :options="sparklineOptions" :height="22" /></td>
                     <td rowspan="3" class="pipeline-table-state"><b>정상 장비 : 78</b><span>State 5</span></td>
                   </tr>
                   <tr>
                     <td>Spool</td>
                     <td>12</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,9 16,11 30,8 44,12 58,10 72,13 84,12"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[1]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td>Active Path</td>
                     <td>LAN</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,15 16,15 30,11 44,11 58,8 72,8 84,6"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[2]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td rowspan="3" class="pipeline-table-icon">▤</td>
                     <td rowspan="3" class="pipeline-table-name">Ingress</td>
                     <td>수신 이벤트</td>
                     <td>128,456건</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,18 16,15 30,13 44,10 58,9 72,7 84,5"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[3]" :options="sparklineOptions" :height="22" /></td>
                     <td rowspan="3" class="pipeline-table-state"><b>연결 상태 정상</b><span>RETRY 1,208</span></td>
                   </tr>
                   <tr>
                     <td>ACK</td>
                     <td>126,842건</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,17 16,13 30,14 44,10 58,8 72,7 84,6"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[4]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td>RETRY</td>
                     <td>1,208건</td>
-                    <td class="pipeline-spark warn"><svg viewBox="0 0 86 24"><polyline points="2,7 16,9 30,8 44,12 58,14 72,13 84,17"/></svg></td>
+                    <td class="pipeline-spark warn"><ChartJsPanel type="line" :data="dashboardSparklines[5]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td rowspan="3" class="pipeline-table-icon">◒</td>
                     <td rowspan="3" class="pipeline-table-name">Backend</td>
                     <td>Validation 실패</td>
                     <td>0.18%</td>
-                    <td class="pipeline-spark warn"><svg viewBox="0 0 86 24"><polyline points="2,8 16,9 30,13 44,11 58,15 72,14 84,16"/></svg></td>
+                    <td class="pipeline-spark warn"><ChartJsPanel type="line" :data="dashboardSparklines[6]" :options="sparklineOptions" :height="22" /></td>
                     <td rowspan="3" class="pipeline-table-state"><b>API 상태 정상</b><span>p95 128ms</span></td>
                   </tr>
                   <tr>
                     <td>Duplicate 차단</td>
                     <td>1,284건</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,11 16,12 30,10 44,9 58,11 72,8 84,9"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[7]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td>API Latency</td>
                     <td>128 ms</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,13 16,10 30,12 44,9 58,8 72,11 84,7"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[8]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td rowspan="3" class="pipeline-table-icon">◉</td>
                     <td rowspan="3" class="pipeline-table-name">DB</td>
                     <td>Write TPS</td>
                     <td>412</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,17 16,13 30,14 44,11 58,10 72,8 84,6"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[9]" :options="sparklineOptions" :height="22" /></td>
                     <td rowspan="3" class="pipeline-table-state"><b>복제 지연 0.2초</b><span>Backup 정상</span></td>
                   </tr>
                   <tr>
                     <td>Read TPS</td>
                     <td>256</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,14 16,12 30,13 44,10 58,12 72,9 84,10"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[10]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td>Backup 상태</td>
                     <td>정상</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,16 16,14 30,14 44,11 58,10 72,8 84,8"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[11]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td rowspan="3" class="pipeline-table-icon">V</td>
                     <td rowspan="3" class="pipeline-table-name">API</td>
                     <td>응답 시간</td>
                     <td>145 ms</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,15 16,12 30,13 44,10 58,9 72,7 84,8"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[12]" :options="sparklineOptions" :height="22" /></td>
                     <td rowspan="3" class="pipeline-table-state"><b>API 상태 정상</b><span>1,284 rpm</span></td>
                   </tr>
                   <tr>
                     <td>오류율</td>
                     <td>0.02%</td>
-                    <td class="pipeline-spark warn"><svg viewBox="0 0 86 24"><polyline points="2,7 16,8 30,10 44,13 58,14 72,16 84,17"/></svg></td>
+                    <td class="pipeline-spark warn"><ChartJsPanel type="line" :data="dashboardSparklines[13]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
                     <td>요청 처리량</td>
                     <td>1,284 rpm</td>
-                    <td class="pipeline-spark"><svg viewBox="0 0 86 24"><polyline points="2,17 16,15 30,12 44,14 58,10 72,8 84,6"/></svg></td>
+                    <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[14]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                 </tbody>
               </table>
@@ -1012,7 +1161,7 @@ onBeforeUnmount(() => {
 
           <article v-if="['회원사 관리', '회원사 목록'].includes(activeMenu)" class="company-admin-page">
             <section class="company-admin-kpi-grid">
-              <article class="company-admin-kpi"><i>▦</i><div><span>전체 회원사</span><strong>{{ companies.length || 24 }}</strong><small>전일 대비 ▲ 2</small></div></article>
+              <article class="company-admin-kpi"><i>▦</i><div><span>전체 회원사</span><strong>{{ displayCompanies.length }}</strong><small>전일 대비 ▲ 2</small></div></article>
               <article class="company-admin-kpi ok"><i>✓</i><div><span>정상 회원사</span><strong>18</strong><small>정상 비율 75.0%</small></div></article>
               <article class="company-admin-kpi warn"><i>!</i><div><span>주의 회원사</span><strong>4</strong><small>권한/정산 확인 필요</small></div></article>
               <article class="company-admin-kpi muted"><i>−</i><div><span>비활성</span><strong>2</strong><small>최근 30일 미접속</small></div></article>
@@ -1320,11 +1469,13 @@ onBeforeUnmount(() => {
             </section>
 
             <section class="edge-chart-row">
-              <article class="edge-panel metric-chart"><h3>FPS <small>(프레임/초)</small></h3><b>정상</b><div class="mini-line blue"><svg viewBox="0 0 240 110"><polyline points="8,70 36,62 64,72 92,66 120,61 148,63 176,56 204,66 232,59"/><g><circle cx="8" cy="70"/><circle cx="36" cy="62"/><circle cx="64" cy="72"/><circle cx="92" cy="66"/><circle cx="120" cy="61"/><circle cx="148" cy="63"/><circle cx="176" cy="56"/><circle cx="204" cy="66"/><circle cx="232" cy="59"/></g></svg></div><span>평균 FPS</span></article>
-              <article class="edge-panel metric-chart"><h3>YOLO 처리 시간 <small>(ms)</small></h3><b>정상</b><div class="mini-line green"><svg viewBox="0 0 240 110"><polyline points="8,78 36,74 64,69 92,76 120,66 148,67 176,61 204,64 232,70"/><g><circle cx="8" cy="78"/><circle cx="36" cy="74"/><circle cx="64" cy="69"/><circle cx="92" cy="76"/><circle cx="120" cy="66"/><circle cx="148" cy="67"/><circle cx="176" cy="61"/><circle cx="204" cy="64"/><circle cx="232" cy="70"/></g></svg></div><span>평균 YOLO ms</span></article>
-              <article class="edge-panel metric-chart"><h3>OCR 처리 시간 <small>(ms)</small></h3><b class="warn">주의</b><div class="mini-line purple"><svg viewBox="0 0 240 110"><polyline points="8,70 36,55 64,63 92,59 120,58 148,60 176,62 204,65 232,56"/><g><circle cx="8" cy="70"/><circle cx="36" cy="55"/><circle cx="64" cy="63"/><circle cx="92" cy="59"/><circle cx="120" cy="58"/><circle cx="148" cy="60"/><circle cx="176" cy="62"/><circle cx="204" cy="65"/><circle cx="232" cy="56"/></g></svg></div><span>평균 OCR ms</span></article>
-              <article class="edge-panel metric-chart"><h3>Spool Count <small>(건)</small></h3><b>정상</b><div class="mini-line orange"><svg viewBox="0 0 240 110"><polyline points="8,54 36,62 64,57 92,53 120,56 148,54 176,61 204,59 232,62"/><g><circle cx="8" cy="54"/><circle cx="36" cy="62"/><circle cx="64" cy="57"/><circle cx="92" cy="53"/><circle cx="120" cy="56"/><circle cx="148" cy="54"/><circle cx="176" cy="61"/><circle cx="204" cy="59"/><circle cx="232" cy="62"/></g></svg></div><span>현재 Spool</span></article>
-              <article class="edge-panel metric-chart"><h3>Sent Event Count <small>(건/분)</small></h3><b>정상</b><strong>45,672 건</strong><div class="mini-line cyan"><svg viewBox="0 0 240 110"><polyline points="8,76 36,78 64,62 92,54 120,47 148,62 176,72 204,86 232,74"/><g><circle cx="8" cy="76"/><circle cx="36" cy="78"/><circle cx="64" cy="62"/><circle cx="92" cy="54"/><circle cx="120" cy="47"/><circle cx="148" cy="62"/><circle cx="176" cy="72"/><circle cx="204" cy="86"/><circle cx="232" cy="74"/></g></svg></div><span>전송 이벤트</span></article>
+              <article v-for="chart in edgeMetricCharts" :key="chart.title" class="edge-panel metric-chart">
+                <h3>{{ chart.title }} <small>{{ chart.subtitle }}</small></h3>
+                <b :class="{ warn: chart.warn }">{{ chart.status }}</b>
+                <strong v-if="chart.total">{{ chart.total }}</strong>
+                <ChartJsPanel type="line" :data="lineData(chart.values, chart.color)" :options="compactLineOptions" :height="128" />
+                <span>{{ chart.label }}</span>
+              </article>
             </section>
           </article>
 
@@ -1411,7 +1562,7 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="donut-wrap">
                   <h4>Edge 상태 분포</h4>
-                  <div class="system-donut"><strong>86</strong><span>대</span></div>
+                  <div class="system-donut system-donut-chart"><ChartJsPanel type="doughnut" :data="edgeFleetDoughnutData" :options="doughnutOptions" :height="138" /><div class="system-donut-center"><strong>86</strong><span>?</span></div></div>
                   <ul>
                     <li><b class="ok"></b>정상 78 (90.7%)</li>
                     <li><b class="warn"></b>주의 7 (8.1%)</li>
@@ -1487,12 +1638,9 @@ onBeforeUnmount(() => {
               </article>
 
               <article class="ingress-panel ingress-chart-panel">
-                <div class="ingress-panel-title"><h3>Ingress 지표 추이 <small>(최근 1시간)</small></h3><button type="button">최근 1시간⌄</button></div>
+                <div class="ingress-panel-title"><h3>Ingress ?? ?? <small>(?? 1??)</small></h3><button type="button">?? 1??</button></div>
                 <div class="ingress-chart-grid">
-                  <section><h4>수신 이벤트 (건)</h4><div class="line-chart blue"><svg viewBox="0 0 260 120"><polyline points="8,84 35,72 62,61 89,65 116,58 143,57 170,50 197,44 224,38 252,36" /><g><circle cx="8" cy="84"/><circle cx="35" cy="72"/><circle cx="62" cy="61"/><circle cx="89" cy="65"/><circle cx="116" cy="58"/><circle cx="143" cy="57"/><circle cx="170" cy="50"/><circle cx="197" cy="44"/><circle cx="224" cy="38"/><circle cx="252" cy="36"/></g></svg></div></section>
-                  <section><h4>ACK / RETRY (건)</h4><div class="line-chart dual"><svg viewBox="0 0 260 120"><polyline class="ack" points="8,82 35,70 62,62 89,57 116,53 143,45 170,42 197,37 224,34 252,32" /><polyline class="retry" points="8,108 35,108 62,107 89,106 116,106 143,105 170,104 197,103 224,102 252,100" /><g class="ack-points"><circle cx="8" cy="82"/><circle cx="35" cy="70"/><circle cx="62" cy="62"/><circle cx="89" cy="57"/><circle cx="116" cy="53"/><circle cx="143" cy="45"/><circle cx="170" cy="42"/><circle cx="197" cy="37"/><circle cx="224" cy="34"/><circle cx="252" cy="32"/></g><g class="retry-points"><circle cx="8" cy="108"/><circle cx="35" cy="108"/><circle cx="62" cy="107"/><circle cx="89" cy="106"/><circle cx="116" cy="106"/><circle cx="143" cy="105"/><circle cx="170" cy="104"/><circle cx="197" cy="103"/><circle cx="224" cy="102"/><circle cx="252" cy="100"/></g></svg></div></section>
-                  <section><h4>REJECT / MALFORMED (건)</h4><div class="line-chart reject"><svg viewBox="0 0 260 120"><polyline class="reject-line" points="8,78 35,67 62,70 89,62 116,55 143,56 170,48 197,41 224,43 252,38" /><polyline class="malformed-line" points="8,105 35,104 62,103 89,103 116,102 143,102 170,101 197,101 224,100 252,99" /><g class="reject-points"><circle cx="8" cy="78"/><circle cx="35" cy="67"/><circle cx="62" cy="70"/><circle cx="89" cy="62"/><circle cx="116" cy="55"/><circle cx="143" cy="56"/><circle cx="170" cy="48"/><circle cx="197" cy="41"/><circle cx="224" cy="43"/><circle cx="252" cy="38"/></g><g class="malformed-points"><circle cx="8" cy="105"/><circle cx="35" cy="104"/><circle cx="62" cy="103"/><circle cx="89" cy="103"/><circle cx="116" cy="102"/><circle cx="143" cy="102"/><circle cx="170" cy="101"/><circle cx="197" cy="101"/><circle cx="224" cy="100"/><circle cx="252" cy="99"/></g></svg></div></section>
-                  <section><h4>현재 연결 수 (개)</h4><div class="line-chart cyan"><svg viewBox="0 0 260 120"><polyline points="8,58 35,54 62,51 89,52 116,50 143,53 170,51 197,54 224,55 252,56" /><g><circle cx="8" cy="58"/><circle cx="35" cy="54"/><circle cx="62" cy="51"/><circle cx="89" cy="52"/><circle cx="116" cy="50"/><circle cx="143" cy="53"/><circle cx="170" cy="51"/><circle cx="197" cy="54"/><circle cx="224" cy="55"/><circle cx="252" cy="56"/></g></svg></div></section>
+                  <section v-for="chart in ingressCharts" :key="chart.title"><h4>{{ chart.title }}</h4><ChartJsPanel type="line" :data="chart.data" :options="compactLineOptions" :height="128" /></section>
                 </div>
               </article>
 
@@ -1581,7 +1729,7 @@ onBeforeUnmount(() => {
                   <li><span>Slow Query (1s 이상)</span><strong>3건</strong><b>정상</b></li>
                   <li><span>Storage Usage</span><strong>42.6%</strong><b>정상</b></li>
                   <li><span>Backup Status</span><strong></strong><b>정상</b></li>
-                  <li><span>Last Backup</span><strong>2025-05-11 02:00:00</strong></li>
+                  <li class="wide-value"><span>Last Backup</span><strong>2025-05-11 02:00:00</strong></li>
                   <li><span>Replication Status</span><strong>정상 (Primary)</strong><b>정상</b></li>
                 </ul>
                 <button type="button">DB 상세 모니터링 ↗</button>
@@ -1695,13 +1843,7 @@ onBeforeUnmount(() => {
                 <div class="timeline-legend"><span class="critical">치명</span><span class="warn">경고</span><span class="info">정보</span><span class="done">해제</span></div>
                 <div class="timeline-chart">
                   <div class="timeline-labels"><span>Jetson Edge</span><span>Python Ingress</span><span>Backend (Spring)</span><span>PostgreSQL DB</span><span>Network</span></div>
-                  <div class="timeline-board">
-                    <i class="dot critical" style="left:72%;top:11%"></i><i class="dot done" style="left:92%;top:11%"></i><i class="dot warn" style="left:28%;top:11%"></i>
-                    <i class="dot info" style="left:32%;top:31%"></i><i class="dot warn" style="left:70%;top:31%"></i><i class="dot done" style="left:88%;top:31%"></i>
-                    <i class="dot info" style="left:23%;top:51%"></i><i class="dot critical" style="left:66%;top:51%"></i>
-                    <i class="dot warn" style="left:52%;top:71%"></i><i class="dot done" style="left:92%;top:71%"></i>
-                    <i class="dot warn" style="left:42%;top:91%"></i><i class="dot info" style="left:69%;top:91%"></i><i class="dot done" style="left:92%;top:91%"></i>
-                  </div>
+                  <div class="timeline-board chart-timeline"><ChartJsPanel type="scatter" :data="incidentTimelineData" :options="incidentTimelineOptions" :height="150" /></div>
                 </div>
                 <button class="timeline-btn" type="button">타임라인 범례 보기</button>
               </article>
@@ -5161,6 +5303,188 @@ select {
 
 .settings-page{display:grid;gap:12px}.settings-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.settings-kpi,.settings-panel{border:1px solid rgba(42,133,227,.28);border-radius:6px;background:rgba(5,16,33,.72);box-shadow:0 0 0 1px rgba(14,111,219,.08),0 18px 42px rgba(0,0,0,.32);backdrop-filter:blur(16px)}.settings-kpi{min-height:96px;display:grid;grid-template-columns:56px 1fr;align-items:center;gap:12px;padding:12px}.settings-kpi i{width:50px;height:50px;display:grid;place-items:center;border-radius:50%;color:#fff;font-style:normal;font-weight:900;font-size:21px;background:linear-gradient(135deg,#4da6ff,#1a67cf);box-shadow:0 0 12px rgba(34,124,230,.2)}.settings-kpi.ok i{color:#06101f;background:linear-gradient(135deg,#77f4bd,#20a966)}.settings-kpi.warn i{color:#06101f;background:linear-gradient(135deg,#ffe16e,#f1a31b)}.settings-kpi span{color:#e8f2ff;font-size:13px;font-weight:700}.settings-kpi strong{display:block;margin-top:5px;color:#fff;font-size:25px;line-height:1.08}.settings-kpi small{display:block;margin-top:7px;color:#c6d5e8;font-size:11px}.settings-main-grid{display:grid;grid-template-columns:minmax(720px,1.25fr) minmax(380px,.75fr);gap:12px;align-items:stretch}.settings-side-stack{display:grid;grid-template-rows:1fr 1fr;gap:12px;min-width:0}.settings-panel{min-width:0;padding:14px}.settings-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.settings-panel h3,.settings-panel-head h3{margin:0;color:#f2f7ff;font-size:16px}.settings-panel-head button{height:32px;border:1px solid rgba(42,133,227,.35);border-radius:5px;color:#dcecff;background:rgba(5,18,37,.72);padding:0 12px}.settings-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.settings-form-grid label{min-height:104px;display:grid;align-content:start;gap:8px;padding:12px;border:1px solid rgba(117,151,194,.13);border-radius:6px;background:rgba(6,24,50,.38)}.settings-form-grid span{color:#eaf4ff;font-size:13px;font-weight:700}.settings-form-grid select{height:34px;border:1px solid rgba(42,133,227,.28);border-radius:5px;color:#dcecff;background:rgba(5,18,37,.82);padding:0 10px}.settings-form-grid small{color:#8fa3bd;font-size:12px}.settings-security ul{display:grid;gap:9px;margin:0;padding:0;list-style:none}.settings-security li{display:grid;grid-template-columns:1fr auto 54px;align-items:center;gap:10px;min-height:38px;padding:0 10px;border:1px solid rgba(117,151,194,.12);border-radius:5px;color:#dce9f8;background:rgba(6,24,50,.38);font-size:12px}.settings-security b{font-weight:500;color:#f2f7ff}.settings-security em{height:23px;display:grid;place-items:center;border-radius:999px;color:#70ee91;background:rgba(37,204,113,.15);font-style:normal}.settings-security em.warn{color:#ffd05f;background:rgba(255,185,40,.14)}.settings-backup dl{display:grid;grid-template-columns:120px 1fr;margin:0}.settings-backup dt,.settings-backup dd{min-height:36px;margin:0;padding:7px 8px;border-bottom:1px solid rgba(117,151,194,.1);color:#dce9f8;font-size:13px}.settings-backup dt{color:#8fa3bd}.settings-backup dd{font-weight:600}.settings-bottom-grid{display:grid;grid-template-columns:420px 1fr;gap:12px}.settings-notification>div{display:grid;gap:9px}.settings-notification span{display:grid;grid-template-columns:110px 1fr 42px;align-items:center;gap:10px;min-height:42px;padding:0 10px;border:1px solid rgba(117,151,194,.13);border-radius:5px;background:rgba(6,24,50,.38)}.settings-notification b{color:#eaf4ff;font-size:13px}.settings-notification em{color:#8fa3bd;font-style:normal;font-size:12px}.settings-notification strong{height:23px;display:grid;place-items:center;border-radius:999px;color:#70ee91;background:rgba(37,204,113,.15);font-size:12px}.settings-table{width:100%;border-collapse:collapse;font-size:12px}.settings-table th,.settings-table td{height:34px;padding:0 9px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:left;white-space:nowrap;font-weight:400}.settings-table th{color:#a9bad0;background:rgba(28,49,77,.58);font-weight:600}.settings-badge{min-width:48px;height:23px;display:inline-grid;place-items:center;border-radius:999px;font-size:12px;font-weight:500}.settings-badge.ok{color:#70ee91;background:rgba(37,204,113,.15)}.settings-badge.warn{color:#ffd05f;background:rgba(255,185,40,.14)}
 .master-shell.light .settings-kpi,.master-shell.light .settings-panel{background:rgba(255,255,255,.84);border-color:rgba(58,126,204,.3);box-shadow:0 12px 30px rgba(49,91,137,.12)}.master-shell.light .settings-kpi strong,.master-shell.light .settings-panel h3,.master-shell.light .settings-panel-head h3,.master-shell.light .settings-form-grid span,.master-shell.light .settings-security b,.master-shell.light .settings-backup dd,.master-shell.light .settings-notification b,.master-shell.light .settings-table td{color:#102033}.master-shell.light .settings-kpi span,.master-shell.light .settings-kpi small,.master-shell.light .settings-form-grid small,.master-shell.light .settings-backup dt,.master-shell.light .settings-notification em,.master-shell.light .settings-table th{color:#53677f}.master-shell.light .settings-form-grid label,.master-shell.light .settings-security li,.master-shell.light .settings-notification span{background:rgba(246,250,255,.86);border-color:rgba(58,126,204,.24)}
+
+.backend-db-page .flow-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #dce9f8;
+  background: transparent;
+  box-shadow: none;
+}
+
+.backend-db-page .flow-legend span::before {
+  flex: 0 0 10px;
+  margin-right: 0;
+}
+
+.master-shell.light .backend-db-page .flow-legend span {
+  color: #50667f;
+}
+
+.postgres-status li.wide-value {
+  grid-template-columns: 1fr minmax(160px, auto);
+}
+
+.postgres-status li.wide-value strong {
+  grid-column: 2 / -1;
+  justify-self: stretch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.backend-errors .db-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: max-content;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.backend-errors .backend-db-table td:last-child {
+  text-align: center;
+}
+
+.topbar {
+  position: relative;
+}
+
+.header-tools .clock {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.dashboard-pipeline-table {
+  table-layout: fixed;
+}
+
+.dashboard-pipeline-table td {
+  padding: 0 8px;
+  text-align: center;
+}
+
+.pipeline-table-icon {
+  width: 46px;
+}
+
+.pipeline-table-name {
+  width: 72px;
+}
+
+.dashboard-pipeline-table td:nth-child(4),
+.dashboard-pipeline-table tr:not(:first-child) td:nth-child(2):not(.pipeline-table-name) {
+  text-align: center;
+}
+
+.pipeline-spark {
+  width: 72px;
+  min-width: 72px;
+}
+
+.pipeline-spark .chart-js-panel {
+  width: 64px;
+  margin: 0 auto;
+}
+
+.pipeline-table-state {
+  width: 132px;
+}
+
+.pipeline-table-state b {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.pipeline-table-state span {
+  font-size: 13px;
+}
+
+.alert-list li {
+  grid-template-columns: 68px minmax(0, 1fr) 62px;
+  min-height: 34px;
+}
+
+.alert-list b {
+  width: 50px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.alert-list span {
+  font-size: 12px;
+}
+
+.alert-list time {
+  font-size: 11px;
+}
+
+.system-donut-chart {
+  position: relative;
+  width: 138px;
+  height: 138px;
+  background: transparent;
+}
+
+.system-donut-chart .chart-js-panel {
+  position: absolute;
+  inset: 0;
+}
+
+.system-donut-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.system-donut-center strong,
+.system-donut-center span {
+  position: static;
+}
+
+.metric-chart .chart-js-panel,
+.ingress-chart-grid .chart-js-panel,
+.timeline-board .chart-js-panel,
+.company-permission-summary .chart-js-panel {
+  width: 100%;
+}
+
+.metric-chart > .chart-js-panel {
+  margin-top: 24px;
+}
+
+.timeline-board.chart-timeline {
+  padding: 0 8px;
+}
+
+.company-permission-summary .permission-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.company-permission-summary .permission-stat-cards span {
+  min-height: 52px;
+}
+
+.company-permission-summary .permission-stat-cards strong {
+  font-size: 20px;
+}
 
 @media (max-width: 1439px) {
   .master-shell {
