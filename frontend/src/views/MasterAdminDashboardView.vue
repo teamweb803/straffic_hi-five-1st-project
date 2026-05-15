@@ -142,6 +142,22 @@ function lineData(values, color = '#38d778', fill = false) {
   }
 }
 
+function heartbeatData(values, color = '#38d778') {
+  return {
+    labels: values.map((_, index) => index + 1),
+    datasets: [{
+      data: values,
+      borderColor: color,
+      backgroundColor: 'transparent',
+      borderWidth: 2.4,
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      tension: 0,
+      fill: false
+    }]
+  }
+}
+
 function multiLineData(series) {
   return {
     labels: ['16:35', '16:45', '16:55', '17:05', '17:15', '17:25', '17:35'],
@@ -161,6 +177,7 @@ function multiLineData(series) {
 const sparklineOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: { duration: 650, easing: 'easeOutQuart' },
   plugins: { legend: { display: false }, tooltip: { enabled: false } },
   scales: { x: { display: false }, y: { display: false } }
 }
@@ -168,6 +185,7 @@ const sparklineOptions = {
 const compactLineOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: { duration: 750, easing: 'easeOutQuart' },
   plugins: { legend: { display: false } },
   scales: {
     x: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { color: chartGridColor } },
@@ -178,26 +196,28 @@ const compactLineOptions = {
 const doughnutOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: { duration: 700, easing: 'easeOutQuart' },
   cutout: '66%',
-  plugins: { legend: { display: false } }
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: { x: { display: false }, y: { display: false } }
 }
 
 const dashboardSparklines = [
-  lineData([16, 12, 14, 8, 10, 6, 9], '#38d778'),
-  lineData([9, 11, 8, 12, 10, 13, 12], '#38d778'),
-  lineData([15, 15, 11, 11, 8, 8, 6], '#38d778'),
-  lineData([18, 15, 13, 10, 9, 7, 5], '#38d778'),
-  lineData([17, 13, 14, 10, 8, 7, 6], '#38d778'),
-  lineData([7, 9, 8, 12, 14, 13, 17], '#ffb928'),
-  lineData([8, 9, 13, 11, 15, 14, 16], '#ffb928'),
-  lineData([11, 12, 10, 9, 11, 8, 9], '#38d778'),
-  lineData([13, 10, 12, 9, 8, 11, 7], '#38d778'),
-  lineData([17, 13, 14, 11, 10, 8, 6], '#38d778'),
-  lineData([14, 12, 13, 10, 12, 9, 10], '#38d778'),
-  lineData([16, 14, 14, 11, 10, 8, 8], '#38d778'),
-  lineData([15, 12, 13, 10, 9, 7, 8], '#38d778'),
-  lineData([7, 8, 10, 13, 14, 16, 17], '#ffb928'),
-  lineData([17, 15, 12, 14, 10, 8, 6], '#38d778')
+  heartbeatData([12, 12, 7, 20, 8, 12, 12, 12], '#38d778'),
+  heartbeatData([11, 11, 6, 18, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([10, 10, 5, 17, 7, 10, 10, 10], '#38d778'),
+  heartbeatData([12, 12, 6, 21, 9, 12, 12, 12], '#38d778'),
+  heartbeatData([11, 11, 6, 19, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([8, 8, 15, 5, 18, 9, 16, 8], '#ffb928'),
+  heartbeatData([8, 8, 14, 6, 17, 10, 16, 8], '#ffb928'),
+  heartbeatData([11, 11, 6, 18, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([10, 10, 5, 17, 7, 10, 10, 10], '#38d778'),
+  heartbeatData([12, 12, 6, 20, 8, 12, 12, 12], '#38d778'),
+  heartbeatData([11, 11, 6, 18, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([10, 10, 5, 17, 7, 10, 10, 10], '#38d778'),
+  heartbeatData([11, 11, 6, 19, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([8, 8, 15, 5, 18, 9, 16, 8], '#ffb928'),
+  heartbeatData([12, 12, 7, 20, 8, 12, 12, 12], '#38d778')
 ]
 
 const edgeFleetDoughnutData = {
@@ -206,11 +226,11 @@ const edgeFleetDoughnutData = {
 }
 
 const edgeMetricCharts = [
-  { title: 'FPS', subtitle: '(frame/sec)', status: '정상', color: '#2f8cff', label: '평균 FPS', values: [28, 31, 27, 29, 31, 30, 33, 29] },
-  { title: 'YOLO 처리 시간', subtitle: '(ms)', status: '정상', color: '#42d779', label: '평균 YOLO ms', values: [25, 27, 24, 29, 30, 32, 31, 28] },
-  { title: 'OCR 처리 시간', subtitle: '(ms)', status: '주의', color: '#b28cff', label: '평균 OCR ms', values: [54, 64, 59, 62, 61, 60, 58, 63], warn: true },
-  { title: 'Spool Count', subtitle: '(건)', status: '정상', color: '#ffb928', label: '현재 Spool', values: [72, 64, 70, 75, 73, 72, 69, 67] },
-  { title: 'Sent Event Count', subtitle: '(건/분)', status: '정상', color: '#26c8e8', label: '전송 이벤트', values: [45, 43, 56, 62, 51, 44, 38, 42], total: '45,672 건' }
+  { title: 'FPS', subtitle: '(frame/sec)', status: '정상', color: '#2f8cff', label: '평균 FPS', data: lineData([28, 31, 27, 29, 31, 30, 33, 29], '#2f8cff') },
+  { title: 'YOLO 처리 시간', subtitle: '(ms)', status: '정상', color: '#42d779', label: '평균 YOLO ms', data: lineData([25, 27, 24, 29, 30, 32, 31, 28], '#42d779') },
+  { title: 'OCR 처리 시간', subtitle: '(ms)', status: '주의', color: '#b28cff', label: '평균 OCR ms', data: lineData([54, 64, 59, 62, 61, 60, 58, 63], '#b28cff'), warn: true },
+  { title: 'Spool Count', subtitle: '(건)', status: '정상', color: '#ffb928', label: '현재 Spool', data: lineData([72, 64, 70, 75, 73, 72, 69, 67], '#ffb928') },
+  { title: 'Sent Event Count', subtitle: '(건/분)', status: '정상', color: '#26c8e8', label: '전송 이벤트', data: lineData([45, 43, 56, 62, 51, 44, 38, 42], '#26c8e8'), total: '45,672 건' }
 ]
 
 const ingressCharts = [
@@ -417,6 +437,69 @@ const selectedCenterDetail = computed(() => {
   const metric = meta.metrics[centerMetricPeriod.value] ?? meta.metrics.daily
   return { ...center, ...meta, metric }
 })
+
+function expandCenterMetricValues(pattern, total, count) {
+  const source = pattern.length ? pattern : [1]
+  const weights = Array.from({ length: count }, (_, index) => source[index % source.length])
+  const sum = weights.reduce((acc, value) => acc + value, 0) || 1
+  return weights.map((value) => Math.round((total * value) / sum))
+}
+
+const centerMetricChartLabels = computed(() => {
+  if (centerMetricPeriod.value === 'daily') {
+    return Array.from({ length: 24 }, (_, index) => String(index + 1) + '\uc2dc')
+  }
+  if (centerMetricPeriod.value === 'weekly') {
+    return ['\uc6d4', '\ud654', '\uc218', '\ubaa9', '\uae08', '\ud1a0', '\uc77c']
+  }
+  return Array.from({ length: 12 }, (_, index) => String(index + 1) + '\uc6d4')
+})
+
+const centerMetricChartValues = computed(() => {
+  return expandCenterMetricValues(
+    selectedCenterDetail.value.metric.bars,
+    selectedCenterDetail.value.metric.settlement,
+    centerMetricChartLabels.value.length
+  )
+})
+
+const centerMetricChartData = computed(() => ({
+  labels: centerMetricChartLabels.value,
+  datasets: [{
+    label: '\uc815\uc0b0 \uae08\uc561',
+    data: centerMetricChartValues.value,
+    backgroundColor: 'rgba(47, 140, 255, 0.72)',
+    borderColor: '#66b7ff',
+    borderWidth: 1,
+    borderRadius: 5,
+    maxBarThickness: 26
+  }]
+}))
+
+const centerMetricChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 650, easing: 'easeOutQuart' },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context) => '\uc815\uc0b0 \uae08\uc561: \u20a9' + Number(context.parsed.y).toLocaleString()
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: { color: chartTextColor, font: { size: 10 }, maxRotation: 0, autoSkip: true },
+      grid: { display: false }
+    },
+    y: {
+      min: 0,
+      ticks: { display: false },
+      grid: { color: chartGridColor }
+    }
+  }
+}
 
 function centerOwner(centerName) {
   return companyByCenter[centerName] ?? '담당 회원사'
@@ -1231,11 +1314,14 @@ onBeforeUnmount(() => {
             <section class="company-admin-bottom-grid">
               <article class="company-admin-panel company-permission-summary">
                 <h3>권한/계정 요약</h3>
-                <div>
+                <div class="permission-stat-cards">
                   <span><b>MASTER</b><strong>1</strong></span>
                   <span><b>ADMIN</b><strong>8</strong></span>
                   <span><b>OPERATOR</b><strong>26</strong></span>
                   <span><b>LOCKED</b><strong>2</strong></span>
+                </div>
+                <div class="permission-mini-chart">
+                  <ChartJsPanel type="bar" :data="companyPermissionChartData" :options="companyPermissionChartOptions" :height="76" />
                 </div>
               </article>
               <article class="company-admin-panel company-audit-card">
@@ -1473,7 +1559,7 @@ onBeforeUnmount(() => {
                 <h3>{{ chart.title }} <small>{{ chart.subtitle }}</small></h3>
                 <b :class="{ warn: chart.warn }">{{ chart.status }}</b>
                 <strong v-if="chart.total">{{ chart.total }}</strong>
-                <ChartJsPanel type="line" :data="lineData(chart.values, chart.color)" :options="compactLineOptions" :height="128" />
+                <ChartJsPanel type="line" :data="chart.data" :options="compactLineOptions" :height="128" />
                 <span>{{ chart.label }}</span>
               </article>
             </section>
@@ -1562,7 +1648,7 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="donut-wrap">
                   <h4>Edge 상태 분포</h4>
-                  <div class="system-donut system-donut-chart"><ChartJsPanel type="doughnut" :data="edgeFleetDoughnutData" :options="doughnutOptions" :height="138" /><div class="system-donut-center"><strong>86</strong><span>?</span></div></div>
+                  <div class="system-donut system-donut-chart"><ChartJsPanel type="doughnut" :data="edgeFleetDoughnutData" :options="doughnutOptions" :height="138" /><div class="system-donut-center"><strong>86</strong><span>대</span></div></div>
                   <ul>
                     <li><b class="ok"></b>정상 78 (90.7%)</li>
                     <li><b class="warn"></b>주의 7 (8.1%)</li>
@@ -1638,7 +1724,7 @@ onBeforeUnmount(() => {
               </article>
 
               <article class="ingress-panel ingress-chart-panel">
-                <div class="ingress-panel-title"><h3>Ingress ?? ?? <small>(?? 1??)</small></h3><button type="button">?? 1??</button></div>
+                <div class="ingress-panel-title"><h3>Ingress \uc9c0\ud45c \ucd94\uc774 <small>(\ucd5c\uadfc 1\uc2dc\uac04)</small></h3><button type="button">\ucd5c\uadfc 1\uc2dc\uac04</button></div>
                 <div class="ingress-chart-grid">
                   <section v-for="chart in ingressCharts" :key="chart.title"><h4>{{ chart.title }}</h4><ChartJsPanel type="line" :data="chart.data" :options="compactLineOptions" :height="128" /></section>
                 </div>
@@ -2115,13 +2201,12 @@ onBeforeUnmount(() => {
               </div>
 
               <div class="center-bar-chart">
-                <span
-                  v-for="(height, index) in selectedCenterDetail.metric.bars"
-                  :key="`${selectedCenterDetail.name}-${centerMetricPeriod}-${index}`"
-                  :style="{ height: `${height}%` }"
-                >
-                  <i></i>
-                </span>
+                <ChartJsPanel
+                  type="bar"
+                  :data="centerMetricChartData"
+                  :options="centerMetricChartOptions"
+                  :height="132"
+                />
               </div>
             </section>
           </article>
@@ -3465,11 +3550,7 @@ main {
 
 .center-bar-chart {
   height: 150px;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  align-items: end;
-  gap: 12px;
-  padding: 18px 18px 12px;
+  padding: 10px 12px 8px;
   border: 1px solid rgba(117, 151, 194, 0.13);
   border-radius: 6px;
   background:
@@ -3478,20 +3559,9 @@ main {
   background-size: 100% 30px;
 }
 
-.center-bar-chart span {
-  min-height: 18px;
-  display: block;
-  border-radius: 5px 5px 2px 2px;
-  background: linear-gradient(180deg, #53d98a, #1778ef);
-  box-shadow: 0 0 12px rgba(22, 131, 255, 0.22);
-}
-
-.center-bar-chart i {
-  display: block;
+.center-bar-chart .chart-js-panel {
   width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.22), transparent);
+  height: 132px !important;
 }
 
 .modal-grid {
@@ -4749,6 +4819,11 @@ select {
   padding-bottom: 8px;
 }
 
+.ingress-error-panel .ingress-table td,
+.ingress-error-panel .ingress-table td * {
+  font-weight: 400;
+}
+
 .ingress-badge {
   min-width: 70px;
   height: 24px;
@@ -5434,19 +5509,34 @@ select {
   position: relative;
   width: 138px;
   height: 138px;
+  display: block;
   background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-radius: 0;
 }
 
 .system-donut-chart .chart-js-panel {
   position: absolute;
   inset: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.system-donut-chart canvas {
+  background: transparent !important;
 }
 
 .system-donut-center {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   text-align: center;
   pointer-events: none;
 }
@@ -5454,6 +5544,18 @@ select {
 .system-donut-center strong,
 .system-donut-center span {
   position: static;
+  margin: 0;
+  line-height: 1.05;
+}
+
+.system-donut-center strong {
+  font-size: 28px;
+}
+
+.system-donut-center span {
+  margin-top: 1px;
+  font-size: 12px;
+  color: #b8c9de;
 }
 
 .metric-chart .chart-js-panel,
@@ -5461,6 +5563,17 @@ select {
 .timeline-board .chart-js-panel,
 .company-permission-summary .chart-js-panel {
   width: 100%;
+}
+
+.company-permission-summary {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.company-permission-summary h3 {
+  margin-bottom: 0;
+  font-size: 15px;
 }
 
 .metric-chart > .chart-js-panel {
@@ -5474,16 +5587,50 @@ select {
 .company-permission-summary .permission-stat-cards {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 5px;
+  margin: 0;
 }
 
 .company-permission-summary .permission-stat-cards span {
-  min-height: 52px;
+  min-height: 38px;
+  padding: 5px;
+  align-content: center;
+  gap: 2px;
 }
 
 .company-permission-summary .permission-stat-cards strong {
-  font-size: 20px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.company-permission-summary .permission-stat-cards b {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.permission-mini-chart {
+  height: 76px;
+  min-height: 76px;
+  padding: 2px 0 0;
+  border-top: 1px solid rgba(117, 151, 194, 0.12);
+}
+
+.audit-risk-card h3 {
+  margin-bottom: 10px;
+}
+
+.audit-risk-score {
+  min-height: 54px !important;
+  margin-bottom: 10px !important;
+  padding: 8px 10px;
+}
+
+.audit-risk-score strong {
+  font-size: 22px !important;
+}
+
+.audit-risk-score span {
+  font-size: 11px !important;
 }
 
 @media (max-width: 1439px) {
