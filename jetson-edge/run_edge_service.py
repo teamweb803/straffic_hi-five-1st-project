@@ -40,6 +40,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--status-interval-sec", type=float, default=1.0)
     parser.add_argument("--preview-datagram-fps", type=float, default=0.0)
     parser.add_argument("--preview-jpeg-quality", type=int, default=45)
+    parser.add_argument("--srt-host", default="")
+    parser.add_argument("--srt-port", type=int, default=0)
+    parser.add_argument("--srt-bitrate-kbps", type=int, default=2500)
+    parser.add_argument("--srt-latency-ms", type=int, default=120)
+    parser.add_argument("--srt-iframe-interval", type=int, default=30)
     parser.add_argument("--evidence-upload", action="store_true")
     parser.add_argument("--evidence-jpeg-quality", type=int, default=85)
     parser.add_argument("--parser-lib", default="/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so")
@@ -85,6 +90,11 @@ def main() -> None:
         status_interval_sec=args.status_interval_sec,
         preview_datagram_fps=args.preview_datagram_fps,
         preview_jpeg_quality=args.preview_jpeg_quality,
+        srt_host=args.srt_host,
+        srt_port=args.srt_port,
+        srt_bitrate_kbps=args.srt_bitrate_kbps,
+        srt_latency_ms=args.srt_latency_ms,
+        srt_iframe_interval=args.srt_iframe_interval,
         evidence_upload=args.evidence_upload,
         evidence_jpeg_quality=args.evidence_jpeg_quality,
         parser_lib=args.parser_lib,

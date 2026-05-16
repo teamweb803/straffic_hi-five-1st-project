@@ -57,6 +57,11 @@ class EdgeServiceRuntimeOptions:
     status_interval_sec: float = 1.0
     preview_datagram_fps: float = 0.0
     preview_jpeg_quality: int = 45
+    srt_host: str = ""
+    srt_port: int = 0
+    srt_bitrate_kbps: int = 2500
+    srt_latency_ms: int = 120
+    srt_iframe_interval: int = 30
     evidence_upload: bool = False
     evidence_jpeg_quality: int = 85
     parser_lib: str = "/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so"

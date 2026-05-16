@@ -44,7 +44,7 @@ Ingress PC:
 
 ```powershell
 cd "C:\Users\ez\Desktop\민진깃\straffic_hi-five-1st-project\fastapi-edge\webtransport_ingress"
-python run_webtransport_ingress.py --host 0.0.0.0 --port 4433 --cert certs\ingress.crt --key certs\ingress.key --spring-url http://127.0.0.1:8585/api/ingest/passage-events --ops-host 0.0.0.0 --ops-port 8000
+python run_webtransport_ingress.py --host 0.0.0.0 --port 4433 --cert certs\ingress.crt --key certs\ingress.key --spring-url http://127.0.0.1:8585/api/ingest/passage-events --ops-host 0.0.0.0 --ops-port 8000 --srt-listen-host 0.0.0.0 --srt-listen-port 9000 --srt-latency-ms 120
 ```
 
 Spring에 status endpoint가 준비된 뒤에는 아래 옵션을 추가한다.
@@ -71,6 +71,12 @@ pkill -f run_deepstream_nvinfer.py || true
 cd ~/hifive/app
 source ~/hifive/.venv/bin/activate
 PYTHONPATH=. python run_edge_service.py --config example_runtime_config.py --runtime-runner deepstream-nvinfer --ingress-host 192.168.10.96 --ingress-port 4433 --transport-queue-size 256 --status-interval-sec 1
+```
+
+SRT/H264 실시간 화면까지 같이 송신하려면 아래처럼 실행한다.
+
+```bash
+PYTHONPATH=. python run_edge_service.py --config example_runtime_config.py --runtime-runner deepstream-nvinfer --ingress-host 192.168.10.96 --ingress-port 4433 --transport-queue-size 256 --status-interval-sec 1 --srt-host 192.168.10.96 --srt-port 9000 --srt-bitrate-kbps 2500 --srt-latency-ms 120
 ```
 
 서비스형 실행의 기본 source 시작은 display를 켜지 않는다. 화면 확인이 필요할 때만 source 호출에 `display=true`를 붙인다.
@@ -134,4 +140,19 @@ acked_events 증가
 spring_forward.status = accepted
 edge_status_events 증가
 latest_edge_status.runtime.processed_frames 증가
+```
+
+SRT/H264 영상 수신 상태 확인:
+
+```powershell
+$s.video_receiver
+Invoke-RestMethod http://127.0.0.1:8000/video/status
+```
+
+정상 기준:
+
+```text
+video_receiver.status = LISTENING 또는 RUNNING
+video_receiver.transport = SRT/H264
+video_receiver.connected = true 이면 Jetson 영상 stream 연결됨
 ```

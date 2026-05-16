@@ -41,6 +41,8 @@ class IngressStats:
     last_unreliable_datagram: dict[str, Any] = field(default_factory=dict)
     latest_preview_frame: dict[str, Any] = field(default_factory=dict)
     latest_preview_payload: bytes = field(default=b"", repr=False)
+    video_receiver_events: int = 0
+    video_receiver: dict[str, Any] = field(default_factory=dict)
     max_recent_events: int = 20
     recent_events: list[dict[str, Any]] = field(default_factory=list)
 
@@ -283,6 +285,22 @@ class IngressStats:
                 int(payload_bytes),
             )
 
+    def mark_video_receiver(self, status: str, detail: dict[str, Any]) -> None:
+        with self._lock:
+            now_ms = int(time.time() * 1000)
+            self.video_receiver_events += 1
+            self.video_receiver = {
+                "status": status,
+                "ts_ms": now_ms,
+                **dict(detail),
+            }
+            self._append_recent_locked(
+                f"video-receiver-{now_ms}",
+                "video_receiver",
+                status,
+                0,
+            )
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             uptime_sec = max(0.0, (time.time_ns() - self.started_at_ns) / 1_000_000_000)
@@ -292,6 +310,12 @@ class IngressStats:
             if latest_edge_status:
                 latest_edge_status["status_age_ms"] = latest_age_ms
                 latest_edge_status["stale"] = latest_ts_ms <= 0 or latest_age_ms > 5000
+            video_receiver = dict(self.video_receiver)
+            video_ts_ms = int(video_receiver.get("ts_ms", 0) or 0)
+            if video_receiver:
+                video_age_ms = max(0, int(time.time() * 1000) - video_ts_ms) if video_ts_ms > 0 else 0
+                video_receiver["status_age_ms"] = video_age_ms
+                video_receiver["stale"] = video_ts_ms <= 0 or video_age_ms > 5000
             return {
                 "uptime_sec": round(uptime_sec, 3),
                 "received_events": self.received_events,
@@ -304,6 +328,7 @@ class IngressStats:
                 "preview_frame_events": self.preview_frame_events,
                 "evidence_events": self.evidence_events,
                 "unreliable_datagram_events": self.unreliable_datagram_events,
+                "video_receiver_events": self.video_receiver_events,
                 "edge_status_forward_ok": self.edge_status_forward_ok,
                 "edge_status_forward_fail": self.edge_status_forward_fail,
                 "ingress_status_forward_ok": self.ingress_status_forward_ok,
@@ -325,6 +350,7 @@ class IngressStats:
                 "last_evidence": dict(self.last_evidence),
                 "last_unreliable_datagram": dict(self.last_unreliable_datagram),
                 "latest_preview_frame": dict(self.latest_preview_frame),
+                "video_receiver": video_receiver,
                 "latest_edge_status": latest_edge_status,
                 "recent_events": list(self.recent_events),
             }

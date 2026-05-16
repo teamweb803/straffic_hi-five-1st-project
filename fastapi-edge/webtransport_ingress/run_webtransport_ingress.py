@@ -8,6 +8,7 @@ import time
 
 from hifive_jetson_py.ingress_state import IngressStats
 from hifive_jetson_py.spring_forwarder import SpringEvidenceForwarder, SpringForwarder, SpringJsonForwarder
+from hifive_jetson_py.srt_video_receiver import SrtVideoReceiver, SrtVideoReceiverOptions
 from hifive_jetson_py.webtransport_ingress import WebTransportIngressFactory
 
 
@@ -28,6 +29,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run-spring", action="store_true")
     parser.add_argument("--ops-host", default="0.0.0.0")
     parser.add_argument("--ops-port", type=int, default=8000)
+    parser.add_argument("--srt-listen-host", default="0.0.0.0")
+    parser.add_argument("--srt-listen-port", type=int, default=0)
+    parser.add_argument("--srt-latency-ms", type=int, default=120)
+    parser.add_argument("--srt-receiver-command", default="ffmpeg")
     return parser.parse_args()
 
 
@@ -44,6 +49,10 @@ def build_ops_app(stats: IngressStats):
     @app.get("/status")
     async def status() -> dict:
         return stats.snapshot()
+
+    @app.get("/video/status")
+    async def video_status() -> dict:
+        return stats.snapshot().get("video_receiver", {})
 
     @app.get("/preview/latest.jpg")
     async def latest_preview() -> Response:
@@ -114,6 +123,16 @@ async def async_main() -> None:
     from aioquic.quic.configuration import QuicConfiguration
 
     stats = IngressStats()
+    srt_receiver = SrtVideoReceiver(
+        SrtVideoReceiverOptions(
+            host=args.srt_listen_host,
+            port=args.srt_listen_port,
+            latency_ms=args.srt_latency_ms,
+            command=args.srt_receiver_command,
+        ),
+        stats,
+    )
+    srt_receiver.start()
     forwarder = SpringForwarder(
         endpoint=args.spring_url,
         timeout_sec=args.spring_timeout_sec,
