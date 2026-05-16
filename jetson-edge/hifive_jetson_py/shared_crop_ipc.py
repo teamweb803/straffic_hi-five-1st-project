@@ -92,3 +92,14 @@ def open_shared_plate_crop(task: SharedPlateCropTask, unlink: bool = True):
                 shm.unlink()
             except FileNotFoundError:
                 pass
+
+
+def discard_shared_plate_crop(task: SharedPlateCropTask) -> None:
+    try:
+        shm = shared_memory.SharedMemory(name=task.shm_name)
+    except FileNotFoundError:
+        return
+    try:
+        shm.unlink()
+    finally:
+        shm.close()

@@ -6,19 +6,20 @@ from hifive_jetson_py.config import RuntimeConfig
 from hifive_jetson_py.edge_service.runtime import EdgeServiceRuntime, EdgeServiceRuntimeOptions
 
 
-DEFAULT_YOLO_ENGINE = "/home/jetson/hifive/models/yolo11s_fp16.engine"
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="HI-FIVE Jetson realtime YOLO/OCR edge runtime")
     parser.add_argument("--config", default="example_runtime_config.py")
     parser.add_argument("--check-config", action="store_true")
     parser.add_argument("--camera-index", type=int, default=0)
     parser.add_argument("--video", default="", help="Optional MP4 path for demo instead of configured camera source")
-    parser.add_argument("--yolo-engine", default=DEFAULT_YOLO_ENGINE, help="Override YOLO TensorRT engine path")
+    parser.add_argument("--yolo-engine", default="", help="Override YOLO TensorRT engine path")
     parser.add_argument("--ocr-engine", default="", help="Override OCR TensorRT engine path")
     parser.add_argument("--host", default="", help="Override WebTransport ingress host")
     parser.add_argument("--port", type=int, default=0, help="Override WebTransport ingress port")
+    parser.add_argument("--standby-host", default="", help="LTE/backup WebTransport ingress host")
+    parser.add_argument("--standby-port", type=int, default=0, help="LTE/backup WebTransport ingress port")
+    parser.add_argument("--failover-recheck-sec", type=float, default=0.5)
+    parser.add_argument("--input-backend", choices=("deepstream", "gstreamer", "opencv"), default="deepstream")
     parser.add_argument("--display", action="store_true")
     parser.add_argument("--display-scale", type=float, default=0.75)
     parser.add_argument("--start-sec", type=float, default=0.0)
@@ -29,11 +30,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--reid-sec", type=float, default=10.0)
     parser.add_argument("--queue-size", type=int, default=8)
     parser.add_argument("--transport-queue-size", type=int, default=128)
-    parser.add_argument("--transport-timeout-sec", type=float, default=1.0)
+    parser.add_argument("--transport-timeout-sec", type=float, default=0.3)
     parser.add_argument("--retry-initial-sec", type=float, default=0.2)
     parser.add_argument("--retry-max-sec", type=float, default=2.0)
     parser.add_argument("--output-dir", default="/home/jetson/hifive/output/edge_service")
     parser.add_argument("--no-save-event-images", action="store_true")
+    parser.add_argument("--status-interval-sec", type=float, default=1.0)
     return parser.parse_args()
 
 
@@ -56,6 +58,10 @@ def main() -> None:
         video_override=args.video,
         host_override=args.host,
         port_override=args.port,
+        standby_host_override=args.standby_host,
+        standby_port_override=args.standby_port,
+        failover_recheck_sec=args.failover_recheck_sec,
+        input_backend=args.input_backend,
         display=args.display,
         display_scale=args.display_scale,
         start_sec=args.start_sec,
@@ -73,6 +79,7 @@ def main() -> None:
         ocr_engine_override=args.ocr_engine,
         output_dir=args.output_dir,
         save_event_images=not args.no_save_event_images,
+        status_interval_sec=args.status_interval_sec,
     )
     EdgeServiceRuntime(runtime_options).run()
 

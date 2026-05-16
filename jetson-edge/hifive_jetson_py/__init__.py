@@ -3,6 +3,7 @@ __all__ = [
     "models",
     "deepstream_runtime",
     "deepstream_config_templates",
+    "deepstream_nvinfer_pipeline",
     "crnn_ocr",
     "pipeline",
     "event_builder",
