@@ -1,5 +1,15 @@
 frontend/dist/
+frontend/dist-ssr/
+frontend/node_modules/
+frontend/.vite/
+frontend/.cache/
+frontend/coverage/
 frontend/src/videos/*.mp4
+
+# Local project-only workspaces / references
+pico/
+reference/
+termux/
 
 # Python cache
 __pycache__/
@@ -16,6 +26,10 @@ logs/
 spool/
 .local/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Model, engine, and media artifacts
 *.pt

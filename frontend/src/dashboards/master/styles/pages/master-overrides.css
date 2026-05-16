@@ -1,0 +1,259 @@
+.backend-db-page .flow-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #dce9f8;
+  background: transparent;
+  box-shadow: none;
+}
+
+.backend-db-page .flow-legend span::before {
+  flex: 0 0 10px;
+  margin-right: 0;
+}
+
+.master-shell.light .backend-db-page .flow-legend span {
+  color: #50667f;
+}
+
+.postgres-status li.wide-value {
+  grid-template-columns: 1fr minmax(160px, auto);
+}
+
+.postgres-status li.wide-value strong {
+  grid-column: 2 / -1;
+  justify-self: stretch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.backend-errors .db-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: max-content;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.backend-errors .backend-db-table td:last-child {
+  text-align: center;
+}
+
+.topbar {
+  position: relative;
+}
+
+.header-tools .clock {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.dashboard-pipeline-table {
+  table-layout: fixed;
+}
+
+.dashboard-pipeline-table td {
+  padding: 0 8px;
+  text-align: center;
+}
+
+.pipeline-table-icon {
+  width: 46px;
+}
+
+.pipeline-table-name {
+  width: 72px;
+}
+
+.dashboard-pipeline-table td:nth-child(4),
+.dashboard-pipeline-table tr:not(:first-child) td:nth-child(2):not(.pipeline-table-name) {
+  text-align: center;
+}
+
+.pipeline-spark {
+  width: 72px;
+  min-width: 72px;
+}
+
+.pipeline-spark .chart-js-panel {
+  width: 64px;
+  margin: 0 auto;
+}
+
+.pipeline-table-state {
+  width: 132px;
+}
+
+.pipeline-table-state b {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.pipeline-table-state span {
+  font-size: 13px;
+}
+
+.alert-list li {
+  grid-template-columns: 68px minmax(0, 1fr) 62px;
+  min-height: 34px;
+}
+
+.alert-list b {
+  width: 50px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.alert-list span {
+  font-size: 12px;
+}
+
+.alert-list time {
+  font-size: 11px;
+}
+
+.system-donut-chart {
+  position: relative;
+  width: 138px;
+  height: 138px;
+  display: block;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.system-donut-chart .chart-js-panel {
+  position: absolute;
+  inset: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.system-donut-chart canvas {
+  background: transparent !important;
+}
+
+.system-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.system-donut-center strong,
+.system-donut-center span {
+  position: static;
+  margin: 0;
+  line-height: 1.05;
+}
+
+.system-donut-center strong {
+  font-size: 28px;
+}
+
+.system-donut-center span {
+  margin-top: 1px;
+  font-size: 12px;
+  color: #b8c9de;
+}
+
+.metric-chart .chart-js-panel,
+.ingress-chart-grid .chart-js-panel,
+.timeline-board .chart-js-panel,
+.company-permission-summary .chart-js-panel {
+  width: 100%;
+}
+
+.company-permission-summary {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.company-permission-summary h3 {
+  margin-bottom: 0;
+  font-size: 15px;
+}
+
+.metric-chart > .chart-js-panel {
+  margin-top: 24px;
+}
+
+.timeline-board.chart-timeline {
+  padding: 0 8px;
+}
+
+.company-permission-summary .permission-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+}
+
+.company-permission-summary .permission-stat-cards span {
+  min-height: 38px;
+  padding: 5px;
+  align-content: center;
+  gap: 2px;
+}
+
+.company-permission-summary .permission-stat-cards strong {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.company-permission-summary .permission-stat-cards b {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.permission-mini-chart {
+  height: 76px;
+  min-height: 76px;
+  padding: 2px 0 0;
+  border-top: 1px solid rgba(117, 151, 194, 0.12);
+}
+
+.audit-risk-card h3 {
+  margin-bottom: 10px;
+}
+
+.audit-risk-score {
+  min-height: 54px !important;
+  margin-bottom: 10px !important;
+  padding: 8px 10px;
+}
+
+.audit-risk-score strong {
+  font-size: 22px !important;
+}
+
+.audit-risk-score span {
+  font-size: 11px !important;
+}
+
+@media (max-width: 1439px) {
+  .master-shell {
+    min-width: 1280px;
+  }
+}
