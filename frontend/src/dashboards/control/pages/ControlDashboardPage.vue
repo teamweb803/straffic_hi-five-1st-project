@@ -7,6 +7,8 @@ const {
   selectedLaneText,
   selectedLane,
   dashboardKpis,
+  getKpiIcon,
+  getAdminIcon,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -23,7 +25,7 @@ const {
 <section class="dashboard-page">
         <section class="kpi-grid">
           <article v-for="card in dashboardKpis" :key="card.title" class="kpi-card" :class="card.tone">
-            <i>{{ card.icon }}</i>
+            <i><img :src="getKpiIcon(card.icon)" :alt="card.title" /></i>
             <div>
               <span>{{ card.title }}</span>
               <strong>{{ card.value }} <small>{{ card.unit }}</small></strong>
@@ -47,21 +49,8 @@ const {
               >
                 <div class="dash-lane-title">
                   <b>{{ lane.title }}</b>
-                  <span>{{ lane.size }}</span>
                 </div>
                 <span class="fps-chip">{{ lane.fps }}</span>
-                <div class="road-scene">
-                  <span class="road-line left"></span>
-                  <span class="road-line right"></span>
-                  <div class="dash-car" :class="lane.vehicle">
-                    <i></i>
-                    <em></em>
-                  </div>
-                  <div class="plate-box">
-                    <strong>{{ lane.plate }}</strong>
-                    <small>{{ lane.distance }}</small>
-                  </div>
-                </div>
               </section>
             </div>
             <footer class="frame-meta">
@@ -79,7 +68,7 @@ const {
               <div class="panel-head"><h2>현재 상태</h2></div>
               <div class="status-grid">
                 <article v-for="item in statusCards" :key="item.label" :class="item.tone">
-                  <i>{{ item.icon }}</i>
+                  <i><img :src="getKpiIcon(item.icon)" :alt="item.label" /></i>
                   <span>{{ item.label }}</span>
                   <strong>{{ item.value }}</strong>
                 </article>
@@ -115,7 +104,7 @@ const {
               </div>
               <div class="field-list">
                 <article v-for="alert in fieldAlerts" :key="alert.title" :class="alert.level">
-                  <i>{{ alert.level === 'info' ? 'i' : '!' }}</i>
+                  <i><img :src="getAdminIcon(alert.icon)" :alt="alert.title" /></i>
                   <b>{{ alert.title }}</b>
                   <span>{{ alert.target }}</span>
                   <time>{{ alert.time }}</time>

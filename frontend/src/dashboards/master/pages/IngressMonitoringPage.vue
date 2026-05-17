@@ -157,12 +157,12 @@ const {
 <template>
           <article class="ingress-page">
             <section class="ingress-kpi-grid">
-              <article class="ingress-kpi alive"><i>⌁</i><div><span>Ingress Alive</span><strong>정상</strong><small>Uptime 12일 04:32:11</small></div></article>
-              <article class="ingress-kpi"><i>▣</i><div><span>수신 이벤트</span><strong>8,742,318 <em>건</em></strong><small>오늘 128,456건 ▲ +10.4%</small></div></article>
-              <article class="ingress-kpi"><i>✓</i><div><span>ACK</span><strong>8,698,214 <em>건</em></strong><small>성공률 99.50%</small></div></article>
-              <article class="ingress-kpi caution"><i>↻</i><div><span>RETRY</span><strong>31,245 <em>건</em></strong><small>비율 0.36%</small></div></article>
-              <article class="ingress-kpi danger"><i>×</i><div><span>REJECT</span><strong>8,214 <em>건</em></strong><small>비율 0.09%</small></div></article>
-              <article class="ingress-kpi malformed"><i>{ }</i><div><span>Malformed</span><strong>4,645 <em>건</em></strong><small>비율 0.05%</small></div></article>
+              <article class="ingress-kpi alive"><i><img src="../../icons/admin/alive.png" alt="Ingress Alive" /></i><div><span>Ingress Alive</span><strong>정상</strong><small>Uptime 12일 04:32:11</small></div></article>
+              <article class="ingress-kpi"><i><img src="../../icons/admin/message.png" alt="수신 이벤트" /></i><div><span>수신 이벤트</span><strong>8,742,318 <em>건</em></strong><small>오늘 128,456건 ▲ +10.4%</small></div></article>
+              <article class="ingress-kpi"><i><img src="../../icons/admin/check_button.png" alt="ACK" /></i><div><span>ACK</span><strong>8,698,214 <em>건</em></strong><small>성공률 99.50%</small></div></article>
+              <article class="ingress-kpi caution"><i><img src="../../icons/admin/retry.png" alt="RETRY" /></i><div><span>RETRY</span><strong>31,245 <em>건</em></strong><small>비율 0.36%</small></div></article>
+              <article class="ingress-kpi danger"><i><img src="../../icons/admin/reject.png" alt="REJECT" /></i><div><span>REJECT</span><strong>8,214 <em>건</em></strong><small>비율 0.09%</small></div></article>
+              <article class="ingress-kpi malformed"><i><img src="../../icons/admin/parentheses.png" alt="Malformed" /></i><div><span>Malformed</span><strong>4,645 <em>건</em></strong><small>비율 0.05%</small></div></article>
             </section>
 
             <section class="ingress-main-grid">

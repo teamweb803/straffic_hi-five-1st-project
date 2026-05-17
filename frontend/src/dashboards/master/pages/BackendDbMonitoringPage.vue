@@ -157,12 +157,12 @@ const {
 <template>
           <article class="backend-db-page">
             <section class="backend-db-kpi-grid">
-              <article class="backend-db-kpi ok"><i>✓</i><div><span>Backend 상태</span><strong>정상</strong><small>Uptime 12일 04:32:11</small></div></article>
-              <article class="backend-db-kpi"><i>◷</i><div><span>API 응답 p95</span><strong>128 <em>ms</em></strong><small>p50 42 ms / p99 312 ms</small></div></article>
-              <article class="backend-db-kpi purple"><i>⌾</i><div><span>Validation 실패율</span><strong>0.18 <em>%</em></strong><small>실패 482 / 전체 267,842</small></div></article>
-              <article class="backend-db-kpi warn"><i>⇄</i><div><span>Duplicate 차단</span><strong>3,248 <em>건</em></strong><small>차단 비율 2.18%</small></div></article>
-              <article class="backend-db-kpi ok"><i>▤</i><div><span>DB 연결 상태</span><strong>정상</strong><small>Active 28 / Max 100</small></div></article>
-              <article class="backend-db-kpi"><i>↗</i><div><span>저장 성공률</span><strong>99.92 <em>%</em></strong><small>성공 267,432 / 실패 210</small></div></article>
+              <article class="backend-db-kpi ok"><i><img src="../../icons/admin/backend2.png" alt="Backend 상태" /></i><div><span>Backend 상태</span><strong>정상</strong><small>Uptime 12일 04:32:11</small></div></article>
+              <article class="backend-db-kpi"><i><img src="../../icons/admin/latency.png" alt="API 응답 p95" /></i><div><span>API 응답 p95</span><strong>128 <em>ms</em></strong><small>p50 42 ms / p99 312 ms</small></div></article>
+              <article class="backend-db-kpi purple"><i><img src="../../icons/admin/fail.png" alt="Validation 실패율" /></i><div><span>Validation 실패율</span><strong>0.18 <em>%</em></strong><small>실패 482 / 전체 267,842</small></div></article>
+              <article class="backend-db-kpi warn"><i><img src="../../icons/admin/block.png" alt="Duplicate 차단" /></i><div><span>Duplicate 차단</span><strong>3,248 <em>건</em></strong><small>차단 비율 2.18%</small></div></article>
+              <article class="backend-db-kpi ok"><i><img src="../../icons/admin/db3.png" alt="DB 연결 상태" /></i><div><span>DB 연결 상태</span><strong>정상</strong><small>Active 28 / Max 100</small></div></article>
+              <article class="backend-db-kpi"><i><img src="../../icons/admin/check_button.png" alt="저장 성공률" /></i><div><span>저장 성공률</span><strong>99.92 <em>%</em></strong><small>성공 267,432 / 실패 210</small></div></article>
             </section>
 
             <section class="backend-db-main-grid">
@@ -185,12 +185,12 @@ const {
               <article class="backend-db-panel request-flow">
                 <h3>요청/처리 흐름 <small>(실시간)</small></h3>
                 <div class="flow-chain">
-                  <div><i>▦</i><strong>Ingress<br />Forward</strong><b>●</b><span>수신 정상<br />8,742 /min</span></div>
-                  <div><i>{ }</i><strong>Protobuf<br />Decode</strong><b>●</b><span>정상<br />8,742 /min</span></div>
-                  <div><i>◈</i><strong>Validation</strong><b>●</b><span>정상<br />실패율 0.18%</span></div>
-                  <div><i>⌕</i><strong>Duplicate<br />Check</strong><b>●</b><span>정상<br />차단율 2.18%</span></div>
-                  <div><i>◎</i><strong>GPS<br />Payment Decision</strong><b>●</b><span>정상<br />정상율 97.82%</span></div>
-                  <div><i>▤</i><strong>PostgreSQL<br />Save</strong><b>●</b><span>정상<br />성공률 99.92%</span></div>
+                  <div><i><img src="../../icons/admin/edge_set.png" alt="Ingress Forward" /></i><strong>Ingress<br />Forward</strong><b>●</b><span>수신 정상<br />8,742 /min</span></div>
+                  <div><i><img src="../../icons/admin/parentheses.png" alt="Protobuf Decode" /></i><strong>Protobuf<br />Decode</strong><b>●</b><span>정상<br />8,742 /min</span></div>
+                  <div><i><img src="../../icons/admin/latency.png" alt="Validation" /></i><strong>Validation</strong><b>●</b><span>정상<br />실패율 0.18%</span></div>
+                  <div><i><img src="../../icons/admin/search.png" alt="Duplicate Check" /></i><strong>Duplicate<br />Check</strong><b>●</b><span>정상<br />차단율 2.18%</span></div>
+                  <div><i><img src="../../icons/admin/gps.png" alt="GPS Payment Decision" /></i><strong>GPS<br />Payment Decision</strong><b>●</b><span>정상<br />정상율 97.82%</span></div>
+                  <div><i><img src="../../icons/admin/db2.png" alt="PostgreSQL Save" /></i><strong>PostgreSQL<br />Save</strong><b>●</b><span>정상<br />성공률 99.92%</span></div>
                 </div>
                 <footer class="flow-legend"><span class="ok">정상</span><span class="warn">지연/주의</span><span class="error">오류</span><span class="idle">대기</span><em>자동 갱신 : 5초 ↻</em></footer>
               </article>

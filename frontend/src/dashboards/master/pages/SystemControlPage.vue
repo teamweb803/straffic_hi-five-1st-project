@@ -157,39 +157,39 @@ const {
 <template>
           <article class="system-control-page">
             <section class="system-kpi-grid">
-              <article class="system-kpi"><i>▣</i><div><span>전체 Edge</span><strong>86 <em>대</em></strong><small>전체 등록</small></div></article>
-              <article class="system-kpi ok"><i>✓</i><div><span>정상 Edge</span><strong>78 <em>대</em></strong><small>정상 비율 90.7%</small></div></article>
-              <article class="system-kpi ok"><i>▤</i><div><span>Ingress 상태</span><strong>정상</strong><small>Uptime 12일 04:32</small></div></article>
-              <article class="system-kpi ok"><i>◒</i><div><span>Backend 상태</span><strong>정상</strong><small>Uptime 8일 11:18</small></div></article>
-              <article class="system-kpi ok"><i>◉</i><div><span>DB 상태</span><strong>정상</strong><small>복제 지연 0.2초</small></div></article>
-              <article class="system-kpi danger"><i>!</i><div><span>최근 장애</span><strong>2 <em>건</em></strong><small>최근 24시간</small></div></article>
+              <article class="system-kpi"><i><img src="../../icons/admin/cpu2.png" alt="전체 Edge" /></i><div><span>전체 Edge</span><strong>86 <em>대</em></strong><small>전체 등록</small></div></article>
+              <article class="system-kpi ok"><i><img src="../../icons/admin/check_button.png" alt="정상 Edge" /></i><div><span>정상 Edge</span><strong>78 <em>대</em></strong><small>정상 비율 90.7%</small></div></article>
+              <article class="system-kpi ok"><i><img src="../../icons/admin/monitor.png" alt="Ingress 상태" /></i><div><span>Ingress 상태</span><strong>정상</strong><small>Uptime 12일 04:32</small></div></article>
+              <article class="system-kpi ok"><i><img src="../../icons/admin/backend2.png" alt="Backend 상태" /></i><div><span>Backend 상태</span><strong>정상</strong><small>Uptime 8일 11:18</small></div></article>
+              <article class="system-kpi ok"><i><img src="../../icons/admin/db2.png" alt="DB 상태" /></i><div><span>DB 상태</span><strong>정상</strong><small>복제 지연 0.2초</small></div></article>
+              <article class="system-kpi danger"><i><img src="../../icons/admin/caution.png" alt="최근 장애" /></i><div><span>최근 장애</span><strong>2 <em>건</em></strong><small>최근 24시간</small></div></article>
             </section>
 
             <article class="system-panel pipeline-panel">
               <h3>시스템 파이프라인 상태 <small>ⓘ</small></h3>
               <div class="pipeline-flow">
                 <section class="pipeline-node">
-                  <i>▣</i><h4>Jetson Edge</h4><b>정상 운영</b>
+                  <i><img src="../../icons/admin/cpu2.png" alt="Jetson Edge" /></i><h4>Jetson Edge</h4><b>정상 운영</b>
                   <dl><dt>FPS</dt><dd>29.8</dd><dt>Spool</dt><dd>12</dd><dt>Active Path</dt><dd>LAN</dd></dl>
                   <p><span></span>정상 장비 78 / Stale 5</p>
                 </section>
                 <section class="pipeline-node">
-                  <i>▤</i><h4>Python Ingress</h4><b>정상 운영</b>
+                  <i><img src="../../icons/admin/python.png" alt="Python Ingress" /></i><h4>Python Ingress</h4><b>정상 운영</b>
                   <dl><dt>수신 이벤트</dt><dd>128,456건</dd><dt>ACK</dt><dd>126,842건</dd><dt>RETRY</dt><dd>1,208건</dd></dl>
                   <p><span></span>연결 상태 정상</p>
                 </section>
                 <section class="pipeline-node">
-                  <i>◒</i><h4>Spring Boot Backend</h4><b>정상 운영</b>
+                  <i><img src="../../icons/admin/backend2.png" alt="Spring Boot Backend" /></i><h4>Spring Boot Backend</h4><b>정상 운영</b>
                   <dl><dt>Validation 실패</dt><dd>0.18%</dd><dt>Duplicate 차단</dt><dd>1,284건</dd><dt>API Latency (p95)</dt><dd>128 ms</dd></dl>
                   <p><span></span>API 상태 정상</p>
                 </section>
                 <section class="pipeline-node">
-                  <i>◉</i><h4>PostgreSQL / DB</h4><b>정상 운영</b>
+                  <i><img src="../../icons/admin/db3.png" alt="PostgreSQL / DB" /></i><h4>PostgreSQL / DB</h4><b>정상 운영</b>
                   <dl><dt>Write TPS</dt><dd>412</dd><dt>Read TPS</dt><dd>256</dd><dt>Backup 상태</dt><dd>정상</dd></dl>
                   <p><span></span>복제 지연 0.2초</p>
                 </section>
                 <section class="pipeline-node">
-                  <i>V</i><h4>Dashboard API</h4><b>정상 운영</b>
+                  <i><img src="../../icons/admin/dashboard.png" alt="Dashboard API" /></i><h4>Dashboard API</h4><b>정상 운영</b>
                   <dl><dt>응답 시간 (p95)</dt><dd>145 ms</dd><dt>오류율</dt><dd>0.02%</dd><dt>요청 처리량</dt><dd>1,284 rpm</dd></dl>
                   <p><span></span>API 상태 정상</p>
                 </section>
@@ -200,12 +200,12 @@ const {
               <article class="system-panel edge-summary">
                 <div class="system-panel-title"><h3>Edge Fleet 요약</h3><button type="button">전체 Edge 보기 ›</button></div>
                 <div class="edge-metrics">
-                  <div><i>⌛</i><span>Stale 장비</span><strong>5 <em>대</em></strong><small>5.8%</small></div>
-                  <div><i>▰</i><span>Source Running</span><strong>73 <em>대</em></strong><small>84.9%</small></div>
-                  <div><i>Ⅱ</i><span>Source Idle</span><strong>10 <em>대</em></strong><small>11.6%</small></div>
-                  <div><i>▤</i><span>OCR Drop 비</span><strong>0.12%</strong><small>정상 범위</small></div>
-                  <div><i>⌘</i><span>Active Path - LAN</span><strong>72 <em>대</em></strong><small>83.7%</small></div>
-                  <div><i>⌁</i><span>Active Path - LTE</span><strong>14 <em>대</em></strong><small>16.3%</small></div>
+                  <div><i><img src="../../icons/admin/cpu2.png" alt="Stale 장비" /></i><span>Stale 장비</span><strong>5 <em>대</em></strong><small>5.8%</small></div>
+                  <div><i><img src="../../icons/admin/cctv.png" alt="Source Running" /></i><span>Source Running</span><strong>73 <em>대</em></strong><small>84.9%</small></div>
+                  <div><i><img src="../../icons/admin/pause.png" alt="Source Idle" /></i><span>Source Idle</span><strong>10 <em>대</em></strong><small>11.6%</small></div>
+                  <div><i><img src="../../icons/admin/ocr.png" alt="OCR Drop 비" /></i><span>OCR Drop 비</span><strong>0.12%</strong><small>정상 범위</small></div>
+                  <div><i><img src="../../icons/admin/lan.png" alt="Active Path - LAN" /></i><span>Active Path - LAN</span><strong>72 <em>대</em></strong><small>83.7%</small></div>
+                  <div><i><img src="../../icons/admin/antenna.png" alt="Active Path - LTE" /></i><span>Active Path - LTE</span><strong>14 <em>대</em></strong><small>16.3%</small></div>
                 </div>
                 <div class="donut-wrap">
                   <h4>Edge 상태 분포</h4>
@@ -221,12 +221,12 @@ const {
               <article class="system-panel ingress-summary">
                 <div class="system-panel-title"><h3>Ingress 요약</h3><button type="button">상세 보기 ›</button></div>
                 <div class="ingress-mini-grid">
-                  <div><i>▥</i><span>수신 이벤트</span><strong>128,456건</strong><small>최근 1시간</small></div>
-                  <div><i>✓</i><span>ACK</span><strong>128,842건</strong><small>성공률 98.7%</small></div>
-                  <div><i>↻</i><span>RETRY</span><strong>1,208건</strong><small>0.94%</small></div>
-                  <div><i>×</i><span>REJECT</span><strong>184건</strong><small>0.14%</small></div>
-                  <div><i>{}</i><span>Malformed</span><strong>222건</strong><small>0.17%</small></div>
-                  <div><i>♟</i><span>현재 연결 수</span><strong>156개</strong><small>총 1,024개</small></div>
+                  <div><i><img src="../../icons/admin/event.png" alt="수신 이벤트" /></i><span>수신 이벤트</span><strong>128,456건</strong><small>최근 1시간</small></div>
+                  <div><i><img src="../../icons/admin/ingress_check.png" alt="ACK" /></i><span>ACK</span><strong>128,842건</strong><small>성공률 98.7%</small></div>
+                  <div><i><img src="../../icons/admin/retry.png" alt="RETRY" /></i><span>RETRY</span><strong>1,208건</strong><small>0.94%</small></div>
+                  <div><i><img src="../../icons/admin/reject.png" alt="REJECT" /></i><span>REJECT</span><strong>184건</strong><small>0.14%</small></div>
+                  <div><i><img src="../../icons/admin/parentheses.png" alt="Malformed" /></i><span>Malformed</span><strong>222건</strong><small>0.17%</small></div>
+                  <div><i><img src="../../icons/admin/people2.png" alt="현재 연결 수" /></i><span>현재 연결 수</span><strong>156개</strong><small>총 1,024개</small></div>
                 </div>
                 <p class="forward-result">Spring Forward 결과 <b>정상</b><span>최근 10분</span></p>
               </article>
@@ -234,12 +234,12 @@ const {
               <article class="system-panel backend-summary">
                 <div class="system-panel-title"><h3>Backend / DB 요약</h3><button type="button">상세 보기 ›</button></div>
                 <div class="backend-mini-grid">
-                  <div><i>▱</i><span>Validation 실패율</span><strong>0.18%</strong><small>정상</small></div>
-                  <div><i>▣</i><span>Duplicate 차단</span><strong>1,284건</strong><small>최근 1시간</small></div>
-                  <div><i>▤</i><span>저장 성공률</span><strong>99.98%</strong><small>정상</small></div>
-                  <div><i>⌁</i><span>DB 연결 상태</span><strong>정상</strong><small>활성</small></div>
-                  <div><i>⌒</i><span>Query Latency (p95)</span><strong>18 ms</strong><small>정상</small></div>
-                  <div><i>☁</i><span>백업 상태</span><strong>정상</strong><small>최근 1시간 전</small></div>
+                  <div><i><img src="../../icons/admin/fail.png" alt="Validation 실패율" /></i><span>Validation 실패율</span><strong>0.18%</strong><small>정상</small></div>
+                  <div><i><img src="../../icons/admin/block.png" alt="Duplicate 차단" /></i><span>Duplicate 차단</span><strong>1,284건</strong><small>최근 1시간</small></div>
+                  <div><i><img src="../../icons/admin/save.png" alt="저장 성공률" /></i><span>저장 성공률</span><strong>99.98%</strong><small>정상</small></div>
+                  <div><i><img src="../../icons/admin/db_link.png" alt="DB 연결 상태" /></i><span>DB 연결 상태</span><strong>정상</strong><small>활성</small></div>
+                  <div><i><img src="../../icons/admin/latency.png" alt="Query Latency (p95)" /></i><span>Query Latency (p95)</span><strong>18 ms</strong><small>정상</small></div>
+                  <div><i><img src="../../icons/admin/backup.png" alt="백업 상태" /></i><span>백업 상태</span><strong>정상</strong><small>최근 1시간 전</small></div>
                 </div>
               </article>
             </section>

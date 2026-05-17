@@ -27,10 +27,10 @@ const {
         </section>
 
         <section class="realtime-kpi-grid">
-          <article class="realtime-kpi ok"><i>▰</i><span>CCTV 영상</span><strong>정상</strong><em>2개 레일 수신 중</em></article>
-          <article class="realtime-kpi ok"><i>⌖</i><span>GPS 수신</span><strong>정상</strong><em>최근 반영 2초 전</em></article>
-          <article class="realtime-kpi info"><i>▤</i><span>이벤트 수신</span><strong>1,248</strong><em>오늘 누적 통행</em></article>
-          <article class="realtime-kpi warn"><i>!</i><span>현장 알림</span><strong>3</strong><em>확인 필요</em></article>
+          <article class="realtime-kpi ok"><i><img src="../../icons/control/cctv.png" alt="CCTV 영상" /></i><span>CCTV 영상</span><strong>정상</strong><em>2개 레일 수신 중</em></article>
+          <article class="realtime-kpi ok"><i><img src="../../icons/control/gps2.png" alt="GPS 수신" /></i><span>GPS 수신</span><strong>정상</strong><em>최근 반영 2초 전</em></article>
+          <article class="realtime-kpi info"><i><img src="../../icons/control/caution.png" alt="이벤트 수신" /></i><span>이벤트 수신</span><strong>1,248</strong><em>오늘 누적 통행</em></article>
+          <article class="realtime-kpi warn"><i><img src="../../icons/control/notification.png" alt="현장 알림" /></i><span>현장 알림</span><strong>3</strong><em>확인 필요</em></article>
         </section>
 
         <section class="realtime-main-grid">
@@ -41,18 +41,10 @@ const {
             </div>
             <div class="realtime-frame">
               <section class="realtime-lane green">
-                <header><b>1번 레일</b><span>960x480</span><em>FPS 29.8</em></header>
-                <div class="realtime-road">
-                  <div class="realtime-car dark"><b>31가 9829</b></div>
-                  <span class="detect-box"></span>
-                </div>
+                <header><b>1번 레일</b><em>FPS 29.8</em></header>
               </section>
               <section class="realtime-lane blue">
-                <header><b>2번 레일</b><span>960x480</span><em>FPS 29.8</em></header>
-                <div class="realtime-road">
-                  <div class="realtime-car silver"><b>46다 7720</b></div>
-                  <span class="detect-box"></span>
-                </div>
+                <header><b>2번 레일</b><em>FPS 29.8</em></header>
               </section>
             </div>
             <footer class="frame-meta">
@@ -67,10 +59,10 @@ const {
             <article class="panel realtime-status-panel">
               <div class="panel-head"><h2>현재 수신 상태</h2></div>
               <div class="status-grid compact">
-                <article class="ok"><i>▰</i><span>CCTV</span><strong>정상</strong></article>
-                <article class="ok"><i>⌖</i><span>GPS</span><strong>정상</strong></article>
-                <article class="info"><i>⌁</i><span>LAN</span><strong>사용 중</strong></article>
-                <article class="ok"><i>◉</i><span>DB 반영</span><strong>정상</strong></article>
+                <article class="ok"><i><img src="../../icons/control/cctv.png" alt="CCTV" /></i><span>CCTV</span><strong>정상</strong></article>
+                <article class="ok"><i><img src="../../icons/control/gps2.png" alt="GPS" /></i><span>GPS</span><strong>정상</strong></article>
+                <article class="info"><i><img src="../../icons/control/signalpng.png" alt="LAN" /></i><span>LAN</span><strong>사용 중</strong></article>
+                <article class="ok"><i><img src="../../icons/control/data.png" alt="DB 반영" /></i><span>DB 반영</span><strong>정상</strong></article>
               </div>
             </article>
 

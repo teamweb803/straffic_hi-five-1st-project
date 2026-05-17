@@ -157,12 +157,12 @@ const {
 <template>
           <article class="company-admin-page">
             <section class="company-admin-kpi-grid">
-              <article class="company-admin-kpi"><i>▦</i><div><span>전체 회원사</span><strong>{{ displayCompanies.length }}</strong><small>전일 대비 ▲ 2</small></div></article>
-              <article class="company-admin-kpi ok"><i>✓</i><div><span>정상 회원사</span><strong>18</strong><small>정상 비율 75.0%</small></div></article>
-              <article class="company-admin-kpi warn"><i>!</i><div><span>주의 회원사</span><strong>4</strong><small>권한/정산 확인 필요</small></div></article>
-              <article class="company-admin-kpi muted"><i>−</i><div><span>비활성</span><strong>2</strong><small>최근 30일 미접속</small></div></article>
-              <article class="company-admin-kpi"><i>⌖</i><div><span>연결 지점</span><strong>38</strong><small>관제센터 포함</small></div></article>
-              <article class="company-admin-kpi ok"><i>₩</i><div><span>정산 정상률</span><strong>99.2%</strong><small>미정산 1,248건</small></div></article>
+              <article class="company-admin-kpi"><i><img src="../../icons/admin/people2.png" alt="전체 회원사" /></i><div><span>전체 회원사</span><strong>{{ displayCompanies.length }}</strong><small>전일 대비 ▲ 2</small></div></article>
+              <article class="company-admin-kpi ok"><i><img src="../../icons/admin/check_button.png" alt="정상 회원사" /></i><div><span>정상 회원사</span><strong>18</strong><small>정상 비율 75.0%</small></div></article>
+              <article class="company-admin-kpi warn"><i><img src="../../icons/admin/caution.png" alt="주의 회원사" /></i><div><span>주의 회원사</span><strong>4</strong><small>권한/정산 확인 필요</small></div></article>
+              <article class="company-admin-kpi muted"><i><img src="../../icons/admin/x.png" alt="비활성" /></i><div><span>비활성</span><strong>2</strong><small>최근 30일 미접속</small></div></article>
+              <article class="company-admin-kpi"><i><img src="../../icons/admin/connect.png" alt="연결 지점" /></i><div><span>연결 지점</span><strong>38</strong><small>관제센터 포함</small></div></article>
+              <article class="company-admin-kpi ok"><i><img src="../../icons/admin/won.png" alt="정산 정상률" /></i><div><span>정산 정상률</span><strong>99.2%</strong><small>미정산 1,248건</small></div></article>
             </section>
 
             <section class="company-admin-filter-row">

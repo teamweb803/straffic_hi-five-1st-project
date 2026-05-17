@@ -49,10 +49,10 @@ const navItems = [
 ]
 
 const dashboardKpis = [
-  { title: '오늘 통행', value: '1,248', unit: '대', sub: '전일 대비 ▲ 6.8%', icon: 'car', tone: 'purple', trend: 'up' },
-  { title: 'GPS 정상 판정', value: '1,212', unit: '건', sub: '정상률 97.1%', icon: 'target', tone: 'blue', trend: 'up' },
-  { title: '검수 대기', value: '36', unit: '건', sub: '전일 대비 ▼ 5건', icon: 'warning', tone: 'yellow', trend: 'down' },
-  { title: '오늘 통행료', value: '₩2,450,800', unit: '', sub: '전일 대비 ▲ 6.1%', icon: 'won', tone: 'navy', trend: 'up' }
+  { title: '오늘 통행', value: '1,248', unit: '대', sub: '전일 대비 ▲ 6.8%', icon: 'car.png', tone: 'purple', trend: 'up' },
+  { title: 'GPS 정상 판정', value: '1,212', unit: '건', sub: '정상률 97.1%', icon: 'gps.png', tone: 'blue', trend: 'up' },
+  { title: '검수 대기', value: '36', unit: '건', sub: '전일 대비 ▼ 5건', icon: 'caution.png', tone: 'yellow', trend: 'down' },
+  { title: '오늘 통행료', value: '₩2,450,800', unit: '', sub: '전일 대비 ▲ 6.1%', icon: 'won.png', tone: 'navy', trend: 'up' }
 ]
 
 const dashboardDetections = [
@@ -79,11 +79,11 @@ const dashboardDetections = [
 ]
 
 const statusCards = [
-  { label: 'CCTV 영상', value: '정상', icon: '▰', tone: 'ok' },
-  { label: 'GPS 수신', value: '정상', icon: '⌖', tone: 'ok' },
-  { label: '이벤트 수신', value: '정상', icon: '▣', tone: 'ok' },
-  { label: '통신망', value: 'LAN 사용 중', icon: '⌁', tone: 'info' },
-  { label: '데이터 반영', value: '정상', icon: '◉', tone: 'ok' }
+  { label: 'CCTV 영상', value: '정상', icon: 'cctv.png', tone: 'ok' },
+  { label: 'GPS 수신', value: '정상', icon: 'gps2.png', tone: 'ok' },
+  { label: '이벤트 수신', value: '정상', icon: 'notification.png', tone: 'ok' },
+  { label: '통신망', value: 'LAN 사용 중', icon: 'signalpng.png', tone: 'info' },
+  { label: '데이터 반영', value: '정상', icon: 'data.png', tone: 'ok' }
 ]
 
 const gpsJudgements = [
@@ -93,9 +93,9 @@ const gpsJudgements = [
 ]
 
 const fieldAlerts = [
-  { level: 'danger', title: '정차 의심', target: '2차선 · 98머 3344', time: '17:28:55', badge: '주의' },
-  { level: 'warn', title: '2차선 CCTV 수신 지연', target: '2차선 카메라', time: '17:26:28', badge: '주의' },
-  { level: 'info', title: 'LTE 백업망 전환', target: 'LAN 연결 끊김 감지', time: '17:24:10', badge: '정보' }
+  { level: 'danger', title: '정차 의심', target: '2차선 · 98머 3344', time: '17:28:55', badge: '주의', icon: 'danger.png' },
+  { level: 'warn', title: '2차선 CCTV 수신 지연', target: '2차선 카메라', time: '17:26:28', badge: '주의', icon: 'caution3.png' },
+  { level: 'info', title: 'LTE 백업망 전환', target: 'LAN 연결 끊김 감지', time: '17:24:10', badge: '정보', icon: 'information2.png' }
 ]
 
 const notifications = [
@@ -179,12 +179,22 @@ const controlPageMap = {
 
 const controlPageComponent = computed(() => controlPageMap[activeMenu.value] ?? ControlFallbackPage)
 
+function getKpiIcon(filename) {
+  return new URL(`../dashboards/icons/control/${filename}`, import.meta.url).href
+}
+
+function getAdminIcon(filename) {
+  return new URL(`../dashboards/icons/admin/${filename}`, import.meta.url).href
+}
+
 provide('controlDashboardContext', {
   activeMenu,
   centerLabel,
   selectedLaneText,
   selectedLane,
   dashboardKpis,
+  getKpiIcon,
+  getAdminIcon,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,

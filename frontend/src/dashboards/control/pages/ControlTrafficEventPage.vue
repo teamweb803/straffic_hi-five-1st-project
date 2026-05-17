@@ -99,7 +99,7 @@ const {
         </section>
 
         <article class="panel event-history-panel">
-          <div class="panel-head"><h2>선택 이벤트 처리 내역 <small>(12가 3456)</small></h2></div>
+          <div class="panel-head"><h2>선택 이벤트 처리 내역</h2></div>
           <table>
             <thead><tr><th>순번</th><th>처리시각</th><th>처리자</th><th>처리구분</th><th>내용</th><th>결과</th></tr></thead>
             <tbody>

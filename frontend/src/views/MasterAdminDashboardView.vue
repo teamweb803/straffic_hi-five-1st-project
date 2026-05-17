@@ -74,21 +74,25 @@ let timer = null
 const MAP_MARKER_STORAGE_KEY = 'hifive.masterAdmin.mapMarkers.v1'
 
 const menuGroups = [
-  { label: '대시보드', icon: '⌂' },
+  { label: '대시보드', icon: 'dashboard2.png' },
   {
     label: '회원사 관리',
-    icon: '▦',
+    icon: 'member_set.png',
     children: ['회원사 목록', '계정 관리', '권한 관리', '요금 정산 관리']
   },
-  { label: '시스템 관제', icon: '◉' },
-  { label: 'Edge 장비', icon: '▣' },
-  { label: 'Ingress', icon: '◎' },
-  { label: '백엔드/DB', icon: '▤' },
-  { label: '장애 알림', icon: '△' },
-  { label: '지점 관리', icon: '▧' },
-  { label: '감사 로그', icon: '□' },
-  { label: '설정', icon: '⚙' }
+  { label: '시스템 관제', icon: 'system_set.png' },
+  { label: 'Edge 장비', icon: 'edge_set.png' },
+  { label: 'Ingress', icon: 'ingress.png' },
+  { label: '백엔드/DB', icon: 'be_db_set.png' },
+  { label: '장애 알림', icon: 'warning_set.png' },
+  { label: '지점 관리', icon: 'place_set.png' },
+  { label: '감사 로그', icon: 'log_set.png' },
+  { label: '설정', icon: 'setting.png' }
 ]
+
+function getNavIcon(filename) {
+  return new URL(`../dashboards/icons/admin/${filename}`, import.meta.url).href
+}
 
 const centers = ref([
   { name: '서울 톨게이트', current: 1248, today: 12456, status: '정상', x: 38.6, y: 27.6, labelX: -116, labelY: -18, dashboardId: 'SEOUL-TOLL' },
@@ -1046,7 +1050,7 @@ provide('masterDashboard', masterDashboardContext)
             type="button"
             @click="activateMenu(menu.label)"
           >
-            <span class="nav-icon">{{ menu.icon }}</span>
+            <span class="nav-icon"><img :src="getNavIcon(menu.icon)" :alt="menu.label" /></span>
             <span>{{ menu.label }}</span>
           </button>
 

@@ -157,12 +157,12 @@ const {
 <template>
           <article class="settings-page">
             <section class="settings-kpi-grid">
-              <article class="settings-kpi ok"><i>✓</i><div><span>콘솔 상태</span><strong>정상</strong><small>최근 저장 10:24</small></div></article>
-              <article class="settings-kpi"><i>↻</i><div><span>자동 새로고침</span><strong>30초</strong><small>전체 대시보드 적용</small></div></article>
-              <article class="settings-kpi warn"><i>!</i><div><span>보안 정책</span><strong>강화</strong><small>2FA 권장 3건</small></div></article>
-              <article class="settings-kpi"><i>▤</i><div><span>로그 보존</span><strong>365일</strong><small>감사 로그 기준</small></div></article>
-              <article class="settings-kpi ok"><i>☁</i><div><span>백업 정책</span><strong>활성</strong><small>매일 02:00</small></div></article>
-              <article class="settings-kpi"><i>◐</i><div><span>기본 테마</span><strong>{{ isLightMode ? 'Light' : 'Dark' }}</strong><small>사용자별 저장</small></div></article>
+              <article class="settings-kpi ok"><i><img src="../../icons/admin/dashboard.png" alt="콘솔 상태" /></i><div><span>콘솔 상태</span><strong>정상</strong><small>최근 저장 10:24</small></div></article>
+              <article class="settings-kpi"><i><img src="../../icons/admin/retry.png" alt="자동 새로고침" /></i><div><span>자동 새로고침</span><strong>30초</strong><small>전체 대시보드 적용</small></div></article>
+              <article class="settings-kpi warn"><i><img src="../../icons/admin/protection.png" alt="보안 정책" /></i><div><span>보안 정책</span><strong>강화</strong><small>2FA 권장 3건</small></div></article>
+              <article class="settings-kpi"><i><img src="../../icons/admin/log_set.png" alt="로그 보존" /></i><div><span>로그 보존</span><strong>365일</strong><small>감사 로그 기준</small></div></article>
+              <article class="settings-kpi ok"><i><img src="../../icons/admin/backup.png" alt="백업 정책" /></i><div><span>백업 정책</span><strong>활성</strong><small>매일 02:00</small></div></article>
+              <article class="settings-kpi"><i><img src="../../icons/admin/night-mode.png" alt="기본 테마" /></i><div><span>기본 테마</span><strong>{{ isLightMode ? 'Light' : 'Dark' }}</strong><small>사용자별 저장</small></div></article>
             </section>
 
             <section class="settings-main-grid">

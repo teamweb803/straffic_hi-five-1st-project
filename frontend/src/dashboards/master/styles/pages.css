@@ -1971,9 +1971,19 @@ select {
 .pipeline-table-icon {
   width: 58px;
   text-align: center;
+  vertical-align: middle;
   color: #7ec1ff !important;
   font-size: 28px !important;
   background: rgba(47, 140, 255, 0.1);
+}
+
+.pipeline-table-icon img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .pipeline-table-name {

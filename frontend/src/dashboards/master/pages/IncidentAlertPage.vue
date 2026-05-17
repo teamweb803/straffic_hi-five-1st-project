@@ -157,12 +157,12 @@ const {
 <template>
           <article class="incident-page">
             <section class="incident-kpi-grid">
-              <article class="incident-kpi critical"><i>!</i><div><span>치명</span><strong>7 <em>건</em></strong><small>전일 대비 ▲ 2</small></div></article>
-              <article class="incident-kpi warn"><i>!</i><div><span>경고</span><strong>18 <em>건</em></strong><small>전일 대비 ▼ 4</small></div></article>
-              <article class="incident-kpi info"><i>i</i><div><span>정보</span><strong>34 <em>건</em></strong><small>전일 대비 ▲ 6</small></div></article>
-              <article class="incident-kpi action"><i>✕</i><div><span>조치중</span><strong>9 <em>건</em></strong><small>전일 대비 ▲ 1</small></div></article>
-              <article class="incident-kpi done"><i>✓</i><div><span>완료 (금일)</span><strong>52 <em>건</em></strong><small>전일 대비 ▲ 8</small></div></article>
-              <article class="incident-kpi time"><i>◷</i><div><span>평균 처리시간</span><strong>1시간 32분</strong><small>전일 1시간 26분 ▲ 6분</small></div></article>
+              <article class="incident-kpi critical"><i><img src="../../icons/admin/danger.png" alt="치명" /></i><div><span>치명</span><strong>7 <em>건</em></strong><small>전일 대비 ▲ 2</small></div></article>
+              <article class="incident-kpi warn"><i><img src="../../icons/admin/caution3.png" alt="경고" /></i><div><span>경고</span><strong>18 <em>건</em></strong><small>전일 대비 ▼ 4</small></div></article>
+              <article class="incident-kpi info"><i><img src="../../icons/admin/information.png" alt="정보" /></i><div><span>정보</span><strong>34 <em>건</em></strong><small>전일 대비 ▲ 6</small></div></article>
+              <article class="incident-kpi action"><i><img src="../../icons/admin/repair.png" alt="조치중" /></i><div><span>조치중</span><strong>9 <em>건</em></strong><small>전일 대비 ▲ 1</small></div></article>
+              <article class="incident-kpi done"><i><img src="../../icons/admin/check_button.png" alt="완료" /></i><div><span>완료 (금일)</span><strong>52 <em>건</em></strong><small>전일 대비 ▲ 8</small></div></article>
+              <article class="incident-kpi time"><i><img src="../../icons/admin/latency.png" alt="평균 처리시간" /></i><div><span>평균 처리시간</span><strong>1시간 32분</strong><small>전일 1시간 26분 ▲ 6분</small></div></article>
             </section>
 
             <section class="incident-main-grid">
@@ -193,7 +193,7 @@ const {
 
               <article class="incident-panel incident-detail-panel">
                 <div class="incident-detail-head"><h3>선택 알림 상세</h3><b class="incident-badge critical">치명</b></div>
-                <h2><i>!</i> Backend Validation 실패율 증가</h2>
+                <h2><i><img src="../../icons/admin/caution3.png" alt="경고" /></i> Backend Validation 실패율 증가</h2>
                 <dl class="incident-detail-grid">
                   <dt>구성요소</dt><dd>Backend (Spring Boot)</dd><dt>발생시각</dt><dd>2025-05-11 17:35:21</dd><dt>지점/서비스</dt><dd>서울 통합센터</dd><dt>상태 지속시간</dt><dd>12분 26초</dd>
                 </dl>

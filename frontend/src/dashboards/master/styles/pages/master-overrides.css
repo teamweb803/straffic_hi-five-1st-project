@@ -282,6 +282,32 @@
   overflow-x: auto;
 }
 
+/* 요청/처리 흐름 — 카드 높이 통일 + 4등분 (아이콘/타이틀/도넛/설명) */
+.flow-chain {
+  align-items: stretch;
+}
+
+.flow-chain div {
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  align-content: stretch;
+  min-height: 0;
+  height: 100%;
+  padding: 8px;
+}
+
+.flow-chain div > i,
+.flow-chain div > strong,
+.flow-chain div > b,
+.flow-chain div > span {
+  align-self: center;
+  justify-self: center;
+}
+
+/* Spring Boot 서비스 상태 — 서비스 컬럼 내용만 좌측 정렬 */
+.spring-service .backend-db-table td:first-child {
+  text-align: left;
+}
+
 /* 회원사 목록 테이블 — 헤더·셀 전체 가운데 정렬 */
 .company-admin-table th,
 .company-admin-table td {
@@ -374,12 +400,17 @@
 .company-permission-summary > h3,
 .ingress-info-panel > h3,
 .audit-risk-card > h3,
-.audit-type-card > h3,
 .settings-security > h3,
 .settings-notification > h3,
 .settings-backup > h3 {
   padding-left: 10px;
   border-left: 2px solid #1683ff;
+}
+
+.audit-type-card > h3 {
+  padding-left: 10px;
+  border-left: 2px solid #1683ff;
+  margin-bottom: 14px;
 }
 
 /* 최근 Ingress 오류 / 시스템 알림 테이블 — 폰트 사이즈 통일(12px) */
@@ -571,4 +602,45 @@
   .incident-bottom-grid {
     grid-template-columns: minmax(0, 1.12fr) minmax(310px, 0.88fr);
   }
+}
+
+/* ============================================================
+ * 전역 KPI 아이콘 원형 — 통일 중립 다크 블루
+ * ============================================================ */
+.master-kpi-grid .kpi-icon,
+.system-kpi i,
+.ingress-kpi i,
+.company-admin-kpi i,
+.backend-db-kpi i,
+.edge-kpi i,
+.incident-kpi i,
+.settings-kpi i,
+.audit-kpi i {
+  background: rgba(28, 60, 110, 0.72) !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+/* 대시보드 KPI img 아이콘: 흰색 필터 */
+.master-kpi-grid .kpi-icon img {
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
+/* 라이트모드: 원형 배경 및 img 필터 조정 */
+.master-shell.light .master-kpi-grid .kpi-icon,
+.master-shell.light .system-kpi i,
+.master-shell.light .ingress-kpi i,
+.master-shell.light .company-admin-kpi i,
+.master-shell.light .backend-db-kpi i,
+.master-shell.light .edge-kpi i,
+.master-shell.light .incident-kpi i,
+.master-shell.light .settings-kpi i,
+.master-shell.light .audit-kpi i {
+  background: rgba(200, 220, 245, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.master-shell.light .master-kpi-grid .kpi-icon img {
+  filter: none;
 }
