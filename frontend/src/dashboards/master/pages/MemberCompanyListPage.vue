@@ -184,7 +184,7 @@ const {
                   <thead><tr><th>회원사명</th><th>대표자</th><th>연락처</th><th>이메일</th><th>지점</th><th>상태</th><th>최근 로그인</th><th>관리</th></tr></thead>
                   <tbody>
                     <tr v-for="(company, index) in filteredCompanies" :key="company.email" :class="{ selected: index === 0 }">
-                      <td><b>{{ company.name }}</b><small>{{ index === 0 ? '서울/수도권 운영사' : '스마트 톨링 회원사' }}</small></td>
+                      <td><b>{{ company.name }}</b></td>
                       <td>{{ company.owner }}</td>
                       <td>{{ company.phone }}</td>
                       <td>{{ company.email }}</td>

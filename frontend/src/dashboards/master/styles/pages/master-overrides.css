@@ -227,7 +227,8 @@
   line-height: 1;
 }
 
-.permission-mini-chart {
+.company-permission-summary .permission-mini-chart {
+  display: block;
   height: 76px;
   min-height: 76px;
   padding: 2px 0 0;
@@ -252,8 +253,322 @@
   font-size: 11px !important;
 }
 
-@media (max-width: 1439px) {
+/* ============================================================
+ * 전역: 셸 최소 너비 해제 — master-dashboard-page.css의
+ * min-width: 1440px 을 덮어써 가로 스크롤을 방지한다.
+ * master-overrides.css 가 마지막으로 import되므로 항상 우선.
+ * ============================================================ */
+.master-shell {
+  min-width: 0;
+}
+
+/* 지점/설정 변경 이력 버튼 — absolute 겹침 해소, 표 하단으로 */
+.branch-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.branch-history button {
+  position: static;
+  align-self: flex-end;
+  margin-top: 12px;
+}
+
+/* 테이블 패널은 내부 스크롤로 처리해 페이지 레이아웃을 보호 */
+.company-list-panel,
+.audit-list-panel,
+.edge-list-panel,
+.incident-list-panel {
+  overflow-x: auto;
+}
+
+/* 회원사 목록 테이블 — 헤더·셀 전체 가운데 정렬 */
+.company-admin-table th,
+.company-admin-table td {
+  text-align: center;
+}
+
+/* 마지막 열(td:last-child)은 display:flex 이므로 justify-content로 가운데 정렬 */
+.company-admin-table td:last-child {
+  justify-content: center;
+}
+
+/* ============================================================
+ * 전역 테이블 헤더 통일 — company-admin-table th 기준
+ * height:34px · color:#a9bad0 · bg:rgba(28,49,77,.58) · fw:600 · 12px
+ * ============================================================ */
+.company-admin-table th,
+.audit-log-table th,
+.backend-db-table th,
+.edge-table th,
+.incident-table th,
+.incident-history-table th,
+.ingress-table th,
+.system-alert-table th,
+.branch-table th,
+.settings-table th,
+.control-table th,
+.member-table th,
+.live-center-table th,
+.audit-mini-table th {
+  height: 34px;
+  color: #a9bad0;
+  background: rgba(28, 49, 77, 0.58);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.company-admin-table td,
+.audit-log-table td,
+.backend-db-table td,
+.edge-table td,
+.incident-table td,
+.incident-history-table td,
+.ingress-table td,
+.system-alert-table td,
+.branch-table td,
+.settings-table td,
+.control-table td,
+.member-table td,
+.live-center-table td,
+.audit-mini-table td {
+  text-align: center;
+}
+
+/* ============================================================
+ * 전역 패널 헤드 — 파란 좌측 바 통일 (대시보드 .panel-title 기준)
+ * border-left: 2px solid #1683ff  /  padding-left: 10px
+ * ============================================================ */
+
+/* 래퍼 div 형태의 패널 헤드 */
+.audit-panel-head,
+.branch-panel-head,
+.company-panel-head,
+.edge-detail-head,
+.incident-detail-head,
+.settings-panel-head,
+.system-panel-title {
+  padding-left: 10px;
+  border-left: 2px solid #1683ff;
+}
+
+/* Edge Fleet 요약 — grid stretch로 title div 높이가 늘어나는 현상 방지 */
+.edge-summary .system-panel-title {
+  align-self: start;
+}
+
+/* 래퍼 없이 article 직계 h3만 있는 패널 헤드 */
+.system-panel.pipeline-panel h3,
+.incident-timeline > h3,
+.branch-devices > h3,
+.branch-history > h3,
+.edge-list-panel > h3,
+.metric-chart > h3,
+.backend-db-panel > h3,
+.company-link-card > h3 {
+  margin-bottom: 11px;
+}
+
+.company-link-card > h3,
+.company-permission-summary > h3,
+.ingress-info-panel > h3,
+.audit-risk-card > h3,
+.audit-type-card > h3,
+.settings-security > h3,
+.settings-notification > h3,
+.settings-backup > h3 {
+  padding-left: 10px;
+  border-left: 2px solid #1683ff;
+}
+
+/* 최근 Ingress 오류 / 시스템 알림 테이블 — 폰트 사이즈 통일(12px) */
+.ingress-error-panel .ingress-table,
+.system-alert-table table {
+  font-size: 12px;
+}
+
+.ingress-error-panel .ingress-table td,
+.ingress-error-panel .ingress-table td * {
+  font-weight: 400;
+}
+
+/* 장애 알림 최근 조치 내역 — 마지막 열 right 정렬 해제 후 가운데 정렬 */
+.incident-history-table td:last-child {
+  text-align: center;
+}
+
+/* ============================================================
+ * 전역 뱃지 좌우 여백 — 텍스트 길이와 무관하게 padding 보장
+ * min-width 만으로는 긴 텍스트에 여백이 사라지므로 padding 추가
+ * (.db-badge 는 master-overrides.css 상단에서 이미 처리됨)
+ * ============================================================ */
+.edge-badge,
+.company-state,
+.sys-badge,
+.ingress-badge,
+.audit-badge,
+.branch-badge,
+.incident-badge,
+.settings-badge,
+.status,
+.center-modal-status {
+  padding: 0 8px;
+}
+
+/* ============================================================
+ * 반응형: ≤ 1440 px  (HD 14-15" 노트북, Retina 2880×1800)
+ * 모든 페이지의 2-3컬럼 그리드에서 큰 min-width 값 제거
+ * ============================================================ */
+@media (max-width: 1440px) {
   .master-shell {
-    min-width: 1280px;
+    grid-template-columns: 200px 1fr;
+  }
+
+  /* 대시보드: map(700px) + side(560px) = 1260px 최솟값 제거 */
+  .master-overview-grid.dashboard-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(440px, 0.92fr);
+  }
+
+  .master-overview-grid > .right-column {
+    min-height: 0;
+  }
+
+  .dashboard-lower-panels {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  }
+
+  /* 회원사 관리: 760px 최솟값 제거 */
+  .company-admin-main-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  }
+
+  /* 감사 로그: 760px 최솟값 제거 */
+  .audit-main-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(300px, 0.72fr);
+  }
+
+  /* 지점 관리: 670+470px = 1140px 최솟값 제거 */
+  .branch-main-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(360px, 0.72fr);
+  }
+
+  /* Edge 장비: 760px 최솟값 제거 */
+  .edge-main-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  }
+
+  /* 장애 알림: 680px 최솟값 제거 */
+  .incident-main-grid,
+  .incident-bottom-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
+  }
+
+  /* Ingress: 290+420+510px = 1220px 최솟값 제거 */
+  .ingress-main-grid {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 0.92fr) minmax(0, 1.18fr);
+  }
+
+  /* 백엔드/DB: 370+470+340px = 1180px 최솟값 제거 */
+  .backend-db-main-grid {
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) minmax(0, 0.85fr);
+  }
+}
+
+/* ============================================================
+ * 반응형: 1200 – 1279 px  (FHD 13-14" 소형 노트북)
+ * KPI 그리드 컬럼 수 축소, 사이드바/필터행 추가 압축
+ * ============================================================ */
+@media (max-width: 1279px) {
+  .master-shell {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .sidebar {
+    padding: 14px 10px 10px;
+  }
+
+  .nav-main {
+    height: 40px;
+    font-size: 13.5px;
+    padding: 0 10px;
+  }
+
+  .quick-menu button {
+    font-size: 13px;
+  }
+
+  /* 6컬럼 KPI 그리드 → 3컬럼 2행으로 전환 */
+  .company-admin-kpi-grid,
+  .system-kpi-grid,
+  .ingress-kpi-grid,
+  .edge-kpi-grid,
+  .backend-db-kpi-grid,
+  .incident-kpi-grid,
+  .audit-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* 대시보드 우측 패널 최솟값 축소 */
+  .master-overview-grid.dashboard-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
+  }
+
+  /* 회원사 관리: 필터행 및 사이드 패널 압축 */
+  .company-admin-filter-row {
+    grid-template-columns: 110px 100px 100px 130px 1fr 100px;
+    gap: 8px;
+  }
+
+  .company-admin-main-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.55fr);
+  }
+
+  .company-admin-bottom-grid {
+    grid-template-columns: minmax(220px, 310px) 1fr;
+  }
+
+  /* 감사 로그: 사이드 패널 압축 */
+  .audit-main-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  }
+
+  .audit-bottom-grid {
+    grid-template-columns: minmax(260px, 320px) 1fr;
+  }
+
+  /* 지점 관리: 필터행 압축 */
+  .branch-filter-row {
+    grid-template-columns: 150px 150px 150px 1fr 80px;
+  }
+
+  .branch-main-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.72fr);
+  }
+
+  /* Edge 장비: 필터행 압축 + 차트 5컬럼 → 3컬럼 */
+  .edge-filter-row {
+    grid-template-columns: repeat(3, 100px) 1fr 80px;
+    gap: 6px;
+  }
+
+  .edge-main-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(270px, 0.65fr);
+  }
+
+  .edge-chart-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* 시스템 관제: 파이프라인 플로우 5컬럼 → 3컬럼 */
+  .pipeline-flow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  /* 장애 알림: 사이드 패널 압축 */
+  .incident-main-grid,
+  .incident-bottom-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(310px, 0.88fr);
   }
 }
