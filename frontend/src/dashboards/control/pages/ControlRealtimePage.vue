@@ -47,11 +47,11 @@ const {
                 <header><b>2번 레일</b><em>FPS 29.8</em></header>
               </section>
             </div>
-            <footer class="frame-meta">
-              <p><span>원본 해상도</span><b>1920 x 1080</b></p>
-              <p><span>합성 해상도</span><b>960 x 960</b></p>
-              <p><span>YOLO 모델</span><b>v8.1</b></p>
-              <p><span>운영 상태</span><b>정상</b></p>
+            <footer class="realtime-meta-cards">
+              <div class="realtime-meta-card"><span>원본 해상도</span><b>1920 x 1080</b></div>
+              <div class="realtime-meta-card"><span>합성 해상도</span><b>960 x 960</b></div>
+              <div class="realtime-meta-card"><span>YOLO 모델</span><b>v8.1</b></div>
+              <div class="realtime-meta-card ok"><span>운영 상태</span><b>정상</b></div>
             </footer>
           </article>
 
@@ -67,7 +67,7 @@ const {
             </article>
 
             <article class="panel realtime-event-panel">
-              <div class="panel-head"><h2>실시간 통행 이벤트</h2><button type="button">전체 보기 ›</button></div>
+              <div class="panel-head"><h2>실시간 통행 이벤트</h2><button type="button">더 보기</button></div>
               <table>
                 <thead><tr><th>차량번호</th><th>차선</th><th>방향</th><th>통과시각</th><th>상태</th></tr></thead>
                 <tbody>
@@ -79,7 +79,7 @@ const {
             </article>
 
             <article class="panel realtime-alert-panel">
-              <div class="panel-head"><h2>현장 알림</h2><button type="button">조치 내역 ›</button></div>
+              <div class="panel-head"><h2>현장 알림</h2><button type="button">더 보기</button></div>
               <div class="alert-list">
                 <article class="alert-row warn"><i>!</i><div><b>2차선 CCTV 프레임 지연</b><span>최근 3초 이상 지연</span></div><p><span>발생 시각</span>17:35:18</p><button type="button">확인</button></article>
                 <article class="alert-row info"><i>i</i><div><b>LAN 경로 안정화</b><span>이벤트 수신 정상화</span></div><p><span>발생 시각</span>17:32:04</p><button type="button">확인</button></article>

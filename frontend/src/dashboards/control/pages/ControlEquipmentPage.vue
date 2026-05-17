@@ -15,7 +15,8 @@ const {
   equipmentCards,
   equipmentLaneRows,
   equipmentAlerts,
-  historyRows
+  historyRows,
+  getKpiIcon
 } = inject('controlDashboardContext')
 </script>
 
@@ -28,7 +29,7 @@ const {
 
         <section class="equipment-grid">
           <article v-for="card in equipmentCards" :key="card.title" class="equipment-card" :class="card.tone">
-            <i>{{ card.icon }}</i>
+            <i><img :src="getKpiIcon(card.icon)" :alt="card.title" /></i>
             <div>
               <span>{{ card.title }}</span>
               <strong>{{ card.status }}</strong>
@@ -39,54 +40,18 @@ const {
         </section>
 
         <section class="equipment-layout">
-          <article class="panel camera-panel">
-            <div class="panel-head">
-              <h2>단일 카메라 / YOLO 합성 프레임</h2>
-              <span class="live-chip"><i class="dot ok"></i>LIVE</span>
-            </div>
-            <div class="camera-note">
-              <span>단일 카메라 입력<br /><b>YOLO 합성 프레임 960x960</b></span>
-              <span>상단 : 1번 레일 영역 960x480<br />하단 : 2번 레일 영역 960x480</span>
-            </div>
-            <div class="equipment-frame">
-              <section
-                v-for="lane in dashboardDetections"
-                :key="lane.lane"
-                class="dash-lane"
-                :class="[lane.color, { selected: selectedLane === lane.lane }]"
-              >
-                <div class="dash-lane-title">
-                  <b>{{ lane.title }} 영역</b>
-                  <span>{{ lane.size }}</span>
-                </div>
-                <div class="road-scene">
-                  <span class="road-line left"></span>
-                  <span class="road-line right"></span>
-                  <div class="dash-car" :class="lane.vehicle">
-                    <i></i>
-                    <em></em>
-                  </div>
-                  <div class="plate-box">
-                    <strong>{{ lane.plate }}</strong>
-                    <small>{{ lane.distance }}</small>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </article>
-
-          <section class="right-column">
+          <section class="equipment-left-column">
             <article class="panel comm-panel">
               <div class="panel-head"><h2>장비 통신 상태</h2></div>
               <div class="comm-grid">
                 <div class="comm-card">
-                  <i>⌁</i>
+                  <i><img :src="getKpiIcon('lan2.png')" alt="현재 통신" /></i>
                   <span>현재 통신</span>
                   <strong>LAN 사용 중</strong>
                   <small>유선 네트워크 정상</small>
                 </div>
                 <div class="comm-card">
-                  <i>△</i>
+                  <i><img :src="getKpiIcon('standby.png')" alt="LTE 백업망" /></i>
                   <span>LTE 백업망</span>
                   <strong class="pending">대기</strong>
                   <small>자동 전환 대기 상태</small>
@@ -138,28 +103,28 @@ const {
               </div>
             </article>
           </section>
-        </section>
 
-        <article class="panel history-panel">
-          <div class="panel-head">
-            <h2>상태 이력 <small>(최근 5건)</small></h2>
-            <button type="button">전체 이력 보기 ›</button>
-          </div>
-          <table>
-            <thead>
-              <tr><th>발생시각</th><th>항목</th><th>영향</th><th>상세 내용</th><th>처리 상태</th><th>처리자</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in historyRows" :key="`${row.time}-${row.item}`">
-                <td>{{ row.time }}</td>
-                <td>{{ row.item }}</td>
-                <td>{{ row.impact }}</td>
-                <td>{{ row.detail }}</td>
-                <td><span class="status-ok">{{ row.status }}</span></td>
-                <td>{{ row.actor }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </article>
+          <article class="panel history-panel equipment-history">
+            <div class="panel-head">
+              <h2>상태 이력</h2>
+              <button type="button">전체 이력 보기 ›</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>발생시각</th><th>항목</th><th>영향</th><th>상세 내용</th><th>처리 상태</th><th>처리자</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in historyRows" :key="`${row.time}-${row.item}`">
+                  <td>{{ row.time }}</td>
+                  <td>{{ row.item }}</td>
+                  <td>{{ row.impact }}</td>
+                  <td>{{ row.detail }}</td>
+                  <td><span class="status-ok">{{ row.status }}</span></td>
+                  <td>{{ row.actor }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
       </section>
 </template>

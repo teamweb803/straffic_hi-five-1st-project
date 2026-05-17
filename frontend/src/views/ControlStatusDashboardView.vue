@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/auth'
 import ControlDashboardPage from '@/dashboards/control/pages/ControlDashboardPage.vue'
 import ControlTrafficEventPage from '@/dashboards/control/pages/ControlTrafficEventPage.vue'
 import ControlGpsDecisionPage from '@/dashboards/control/pages/ControlGpsDecisionPage.vue'
-import ControlReviewPage from '@/dashboards/control/pages/ControlReviewPage.vue'
 import ControlSettlementPage from '@/dashboards/control/pages/ControlSettlementPage.vue'
 import ControlEquipmentPage from '@/dashboards/control/pages/ControlEquipmentPage.vue'
 import ControlRealtimePage from '@/dashboards/control/pages/ControlRealtimePage.vue'
@@ -38,14 +37,13 @@ const centerLabel = computed(() => {
 })
 
 const navItems = [
-  { label: '대시보드', icon: '⌂' },
-  { label: '실시간 관제', icon: '▣' },
-  { label: '통행 이벤트', icon: '▤' },
-  { label: 'GPS 판정', icon: '⌖' },
-  { label: '검수', icon: '☑' },
-  { label: '정산', icon: '₩' },
-  { label: '장비 상태', icon: '⌁' },
-  { label: '설정', icon: '⚙' }
+  { label: '대시보드', icon: 'dashboard2.png' },
+  { label: '실시간 관제', icon: 'real-time.png' },
+  { label: '통행 이벤트', icon: 'list.png' },
+  { label: 'GPS 판정', icon: 'gps.png' },
+  { label: '정산', icon: 'won.png' },
+  { label: '장비 상태', icon: 'system_set.png' },
+  { label: '설정', icon: 'setting.png' }
 ]
 
 const dashboardKpis = [
@@ -112,11 +110,11 @@ const trafficRows = [
 ]
 
 const equipmentCards = [
-  { title: '카메라 입력', status: '정상', desc: 'YOLO 합성 프레임 정상 수신', impact: '운영 정상', icon: '▣', tone: 'purple' },
-  { title: 'GPS 수신', status: '정상', desc: 'GPS Fix 정상', impact: '운영 정상', icon: '⌖', tone: 'green' },
-  { title: '통행 이벤트 수신', status: '정상', desc: '실시간 이벤트 정상 수신', impact: '운영 정상', icon: '▰', tone: 'blue' },
-  { title: '통신망', status: '정상', desc: '현재 통신: LAN 사용 중', impact: '운영 정상', icon: '⌁', tone: 'teal' },
-  { title: '데이터 반영', status: '정상', desc: '서버 반영 정상', impact: '운영 정상', icon: '◉', tone: 'mint' }
+  { title: '카메라 입력', status: '정상', desc: 'YOLO 합성 프레임 정상 수신', impact: '운영 정상', icon: 'cctv.png', tone: 'purple' },
+  { title: 'GPS 수신', status: '정상', desc: 'GPS Fix 정상', impact: '운영 정상', icon: 'gps.png', tone: 'green' },
+  { title: '통행 이벤트 수신', status: '정상', desc: '실시간 이벤트 정상 수신', impact: '운영 정상', icon: 'dashboard2.png', tone: 'blue' },
+  { title: '통신망', status: '정상', desc: '현재 통신: LAN 사용 중', impact: '운영 정상', icon: 'signalpng.png', tone: 'teal' },
+  { title: '데이터 반영', status: '정상', desc: '서버 반영 정상', impact: '운영 정상', icon: 'data.png', tone: 'mint' }
 ]
 
 const equipmentLaneRows = [
@@ -170,7 +168,6 @@ const controlPageMap = {
   '대시보드': ControlDashboardPage,
   '통행 이벤트': ControlTrafficEventPage,
   'GPS 판정': ControlGpsDecisionPage,
-  '검수': ControlReviewPage,
   '정산': ControlSettlementPage,
   '장비 상태': ControlEquipmentPage,
   '실시간 관제': ControlRealtimePage,
@@ -235,7 +232,7 @@ onBeforeUnmount(() => {
           type="button"
           @click="activeMenu = item.label"
         >
-          <i>{{ item.icon }}</i>
+          <i><img :src="getKpiIcon(item.icon)" :alt="item.label" /></i>
           <span>{{ item.label }}</span>
         </button>
       </nav>
