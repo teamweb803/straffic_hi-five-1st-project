@@ -157,12 +157,12 @@ const {
 <template>
           <article class="audit-log-page">
             <section class="audit-kpi-grid">
-              <article class="audit-kpi"><i>▣</i><div><span>금일 로그</span><strong>1,284</strong><small>전일 대비 ▲ 8.4%</small></div></article>
-              <article class="audit-kpi ok"><i>✓</i><div><span>성공 작업</span><strong>1,271</strong><small>성공률 98.9%</small></div></article>
-              <article class="audit-kpi warn"><i>!</i><div><span>권한 변경</span><strong>34</strong><small>최근 24시간</small></div></article>
-              <article class="audit-kpi info"><i>⌕</i><div><span>대리조회</span><strong>18</strong><small>감사 대상 3건</small></div></article>
-              <article class="audit-kpi danger"><i>×</i><div><span>실패/거부</span><strong>13</strong><small>접근 거부 5건</small></div></article>
-              <article class="audit-kpi"><i>↗</i><div><span>내보내기</span><strong>7</strong><small>CSV/PDF 생성</small></div></article>
+              <article class="audit-kpi"><i><img src="../../icons/admin/log_set.png" alt="금일 로그" /></i><div><span>금일 로그</span><strong>1,284</strong><small>전일 대비 ▲ 8.4%</small></div></article>
+              <article class="audit-kpi ok"><i><img src="../../icons/admin/check_button.png" alt="성공 작업" /></i><div><span>성공 작업</span><strong>1,271</strong><small>성공률 98.9%</small></div></article>
+              <article class="audit-kpi warn"><i><img src="../../icons/admin/role.png" alt="권한 변경" /></i><div><span>권한 변경</span><strong>34</strong><small>최근 24시간</small></div></article>
+              <article class="audit-kpi info"><i><img src="../../icons/admin/search.png" alt="대리조회" /></i><div><span>대리조회</span><strong>18</strong><small>감사 대상 3건</small></div></article>
+              <article class="audit-kpi danger"><i><img src="../../icons/admin/reject.png" alt="실패/거부" /></i><div><span>실패/거부</span><strong>13</strong><small>접근 거부 5건</small></div></article>
+              <article class="audit-kpi"><i><img src="../../icons/admin/export.png" alt="내보내기" /></i><div><span>내보내기</span><strong>7</strong><small>CSV/PDF 생성</small></div></article>
             </section>
 
             <section class="audit-filter-row">

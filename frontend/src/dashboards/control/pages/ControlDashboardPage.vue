@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from 'vue'
+import HlsLiveVideo from '../components/HlsLiveVideo.vue'
 
 const {
   activeMenu,
@@ -7,6 +8,14 @@ const {
   selectedLaneText,
   selectedLane,
   dashboardKpis,
+  getKpiIcon,
+  getAdminIcon,
+  operatorVideoStreamUrl,
+  operatorVideoStreamKey,
+  operatorVideoIsLive,
+  operatorVideoStatusText,
+  scheduleOperatorVideoReconnect,
+  operatorVideoFpsValue,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -23,7 +32,7 @@ const {
 <section class="dashboard-page">
         <section class="kpi-grid">
           <article v-for="card in dashboardKpis" :key="card.title" class="kpi-card" :class="card.tone">
-            <i>{{ card.icon }}</i>
+            <i><img :src="getKpiIcon(card.icon)" :alt="card.title" /></i>
             <div>
               <span>{{ card.title }}</span>
               <strong>{{ card.value }} <small>{{ card.unit }}</small></strong>
@@ -36,9 +45,19 @@ const {
           <article class="panel yolo-panel">
             <div class="panel-head">
               <h2>YOLO 합성 960x960</h2>
-              <span class="live-chip"><i class="dot ok"></i>LIVE</span>
+              <span class="live-chip" :class="{ waiting: !operatorVideoIsLive }"><i class="dot ok"></i>{{ operatorVideoStatusText }}</span>
             </div>
             <div class="yolo-frame">
+              <HlsLiveVideo
+                v-if="operatorVideoStreamUrl"
+                :key="operatorVideoStreamKey"
+                class="dashboard-live-frame"
+                :src="operatorVideoStreamUrl"
+                :live="operatorVideoIsLive"
+                alt="YOLO 실시간 화면"
+                @error="scheduleOperatorVideoReconnect"
+              />
+              <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section
                 v-for="lane in dashboardDetections"
                 :key="lane.lane"
@@ -47,28 +66,15 @@ const {
               >
                 <div class="dash-lane-title">
                   <b>{{ lane.title }}</b>
-                  <span>{{ lane.size }}</span>
                 </div>
                 <span class="fps-chip">{{ lane.fps }}</span>
-                <div class="road-scene">
-                  <span class="road-line left"></span>
-                  <span class="road-line right"></span>
-                  <div class="dash-car" :class="lane.vehicle">
-                    <i></i>
-                    <em></em>
-                  </div>
-                  <div class="plate-box">
-                    <strong>{{ lane.plate }}</strong>
-                    <small>{{ lane.distance }}</small>
-                  </div>
-                </div>
               </section>
             </div>
             <footer class="frame-meta">
               <p><span>원본 해상도</span><b>1920 x 1080</b></p>
               <p><span>합성 해상도</span><b>960 x 960</b></p>
               <p><span>YOLO 모델</span><b>v8.1 (tuned)</b></p>
-              <p><span>FPS</span><b>29.8</b></p>
+              <p><span>FPS</span><b>{{ operatorVideoFpsValue }}</b></p>
               <p><span>구역</span><b>{{ centerLabel }}</b></p>
               <p><span>운영 상태</span><b>정상</b></p>
             </footer>
@@ -79,7 +85,7 @@ const {
               <div class="panel-head"><h2>현재 상태</h2></div>
               <div class="status-grid">
                 <article v-for="item in statusCards" :key="item.label" :class="item.tone">
-                  <i>{{ item.icon }}</i>
+                  <i><img :src="getKpiIcon(item.icon)" :alt="item.label" /></i>
                   <span>{{ item.label }}</span>
                   <strong>{{ item.value }}</strong>
                 </article>
@@ -115,7 +121,7 @@ const {
               </div>
               <div class="field-list">
                 <article v-for="alert in fieldAlerts" :key="alert.title" :class="alert.level">
-                  <i>{{ alert.level === 'info' ? 'i' : '!' }}</i>
+                  <i><img :src="getAdminIcon(alert.icon)" :alt="alert.title" /></i>
                   <b>{{ alert.title }}</b>
                   <span>{{ alert.target }}</span>
                   <time>{{ alert.time }}</time>

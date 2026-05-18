@@ -28,8 +28,6 @@ const {
 
         <section class="gps-filter-row">
           <label class="date-range"><span>기간</span><b>2026-05-11 00:00 ~ 2026-05-11 23:59</b><i>▣</i></label>
-          <button class="filter-toggle" type="button">차선 <b>전체</b></button>
-          <button class="filter-toggle" type="button">방향 <b>전체</b></button>
           <button class="filter-toggle" type="button">판정 상태 <b>전체</b></button>
           <label class="event-search"><input type="search" placeholder="차량번호 검색" /><span>⌕</span></label>
           <button class="reset-filter" type="button">필터 초기화</button>
@@ -41,21 +39,23 @@ const {
               <h2>GPS Telemetry 실시간 로그</h2>
               <div class="gps-log-actions"><span class="event-state ok">저장 중</span><button type="button">열 설정</button></div>
             </div>
+            <div class="gps-log-scroll">
             <table>
-              <thead><tr><th>TIME</th><th>DEVICE</th><th>LAT/LNG</th><th>SPD (km/h)</th><th>HEAD (°)</th><th>FIX</th></tr></thead>
+              <thead><tr><th>TIME</th><th>차량번호</th><th>LAT/LNG</th><th>SPD (km/h)</th><th>HEAD (°)</th><th>GPS 판정</th></tr></thead>
               <tbody>
-                <tr><td>17:36:47.120</td><td>TERMUX-GPS-01</td><td>37.491032, 126.725124</td><td>58.6</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:46.120</td><td>TERMUX-GPS-01</td><td>37.491040, 126.725083</td><td>57.9</td><td>88</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:45.120</td><td>TERMUX-GPS-01</td><td>37.490976, 126.725041</td><td>57.4</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:44.120</td><td>TERMUX-GPS-01</td><td>37.490948, 126.724999</td><td>56.8</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:43.120</td><td>TERMUX-GPS-01</td><td>37.490920, 126.724957</td><td>56.1</td><td>88</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:42.120</td><td>TERMUX-GPS-01</td><td>37.490893, 126.724915</td><td>55.6</td><td>87</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:41.120</td><td>TERMUX-GPS-01</td><td>37.490865, 126.724874</td><td>54.9</td><td>87</td><td><span class="fix-bad">No Fix</span></td></tr>
-                <tr><td>17:36:40.120</td><td>TERMUX-GPS-02</td><td>37.490837, 126.724833</td><td>54.2</td><td>86</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:39.120</td><td>TERMUX-GPS-01</td><td>37.490810, 126.724792</td><td>53.9</td><td>86</td><td><span class="fix-ok">GPS Fix</span></td></tr>
-                <tr><td>17:36:38.120</td><td>TERMUX-GPS-01</td><td>37.490783, 126.724750</td><td>52.7</td><td>85</td><td><span class="fix-ok">GPS Fix</span></td></tr>
+                <tr><td>17:36:47.120</td><td>12가 3456</td><td>37.491032, 126.725124</td><td>58.6</td><td>87</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:46.120</td><td>45나 6721</td><td>37.491040, 126.725083</td><td>57.9</td><td>88</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:45.120</td><td>67다 9012</td><td>37.490976, 126.725041</td><td>57.4</td><td>87</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:44.120</td><td>98머 3344</td><td>37.490948, 126.724999</td><td>56.8</td><td>87</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:43.120</td><td>34다 1122</td><td>37.490920, 126.724957</td><td>56.1</td><td>88</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:42.120</td><td>56라 7788</td><td>37.490893, 126.724915</td><td>55.6</td><td>87</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:41.120</td><td>12바 1234</td><td>37.490865, 126.724874</td><td>54.9</td><td>87</td><td><span class="event-state danger">수신 불가</span></td></tr>
+                <tr><td>17:36:40.120</td><td>90허 5678</td><td>37.490837, 126.724833</td><td>54.2</td><td>86</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:39.120</td><td>22거 4567</td><td>37.490810, 126.724792</td><td>53.9</td><td>86</td><td><span class="event-state ok">정상</span></td></tr>
+                <tr><td>17:36:38.120</td><td>11서 2233</td><td>37.490783, 126.724750</td><td>52.7</td><td>85</td><td><span class="event-state ok">정상</span></td></tr>
               </tbody>
             </table>
+            </div>
             <footer><span>조회 건수: 1,248건</span><button type="button"><i class="pause-icon"></i>일시정지</button></footer>
           </article>
 
@@ -89,23 +89,8 @@ const {
               <dt>결제 판정</dt><dd><span class="event-state ok">결제 가능</span></dd>
             </dl>
             <button class="decision-run" type="button">⌖ 결제 판정 실행</button>
-            <div class="selected-gps-actions"><button type="button">▤ GPS 상세 보기</button><button type="button">▦ 로그 보기</button></div>
           </article>
         </section>
 
-        <article class="panel gps-history-panel">
-          <div class="panel-head"><h2>최근 GPS 판정 이력</h2><button type="button">⇩ 내보내기 <span class="filter-caret">⌄</span></button></div>
-          <table>
-            <thead><tr><th>No.</th><th>차량번호</th><th>방향</th><th>차선</th><th>통과시각</th><th>GPS 판정</th><th>결제 판정</th><th>상세</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>12가 3456</td><td>IN (진입)</td><td>2차선</td><td>17:35:42.289</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state ok">결제 가능</span></td><td><button>보기 ›</button></td></tr>
-              <tr><td>2</td><td>45나 6721</td><td>OUT (출구)</td><td>2차선</td><td>17:33:18.102</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state ok">결제 가능</span></td><td><button>보기 ›</button></td></tr>
-              <tr><td>3</td><td>67다 9012</td><td>IN (진입)</td><td>1차선</td><td>17:31:41.552</td><td><i class="row-dot danger"></i>영역 이탈</td><td><span class="event-state danger">결제 불가</span></td><td><button>보기 ›</button></td></tr>
-              <tr><td>4</td><td>98머 3344</td><td>OUT (출구)</td><td>2차선</td><td>17:28:55.873</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state warn">검수 필요</span></td><td><button>보기 ›</button></td></tr>
-              <tr><td>5</td><td>34다 1122</td><td>IN (진입)</td><td>2차선</td><td>17:26:17.430</td><td><i class="row-dot danger"></i>영역 이탈</td><td><span class="event-state danger">결제 불가</span></td><td><button>보기 ›</button></td></tr>
-              <tr><td>6</td><td>56라 7788</td><td>OUT (출구)</td><td>1차선</td><td>17:23:50.219</td><td><i class="row-dot ok"></i>정상 (영역 안)</td><td><span class="event-state ok">결제 가능</span></td><td><button>보기 ›</button></td></tr>
-            </tbody>
-          </table>
-        </article>
       </section>
 </template>

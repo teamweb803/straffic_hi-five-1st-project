@@ -156,44 +156,44 @@ const {
 
 <template>
 <section ref="kpiSection" class="kpi-grid master-kpi-grid">
-          <article class="kpi glass violet">
-            <span class="kpi-icon">👥</span>
+          <article class="kpi glass">
+            <span class="kpi-icon"><img src="../../icons/admin/people2.png" alt="전체 회원사" style="width:28px;height:28px;object-fit:contain;" /></span>
             <div>
               <p>전체 회원사</p>
               <strong>24</strong>
               <em>전일 대비 ▲ 2</em>
             </div>
           </article>
-          <article class="kpi glass blue">
-            <span class="kpi-icon">●</span>
+          <article class="kpi glass">
+            <span class="kpi-icon"><img src="../../icons/admin/map2.png" alt="전체 지점" style="width:28px;height:28px;object-fit:contain;" /></span>
             <div>
               <p>전체 지점</p>
               <strong>38</strong>
               <em>전일 대비 ▲ 1</em>
             </div>
           </article>
-          <article class="kpi glass green">
-            <span class="kpi-icon">✓</span>
+          <article class="kpi glass">
+            <span class="kpi-icon"><img src="../../icons/admin/check_button.png" alt="정상 지점" style="width:28px;height:28px;object-fit:contain;" /></span>
             <div>
               <p>정상 지점</p>
               <strong>32</strong>
               <em>정상 비율 84.2%</em>
             </div>
           </article>
-          <article class="kpi glass yellow">
-            <span class="kpi-icon">!</span>
-            <div>
-              <p>주의/장애</p>
-              <strong>6</strong>
-              <em class="down">주의 4 / 장애 2</em>
-            </div>
-          </article>
-          <article class="kpi glass cyan">
-            <span class="kpi-icon">▣</span>
+          <article class="kpi glass">
+            <span class="kpi-icon"><img src="../../icons/admin/monitor.png" alt="시스템 상태" style="width:28px;height:28px;object-fit:contain;" /></span>
             <div>
               <p>시스템 상태</p>
               <strong>정상</strong>
               <em>모든 시스템 정상 운영 중</em>
+            </div>
+          </article>
+          <article class="kpi glass">
+            <span class="kpi-icon"><img src="../../icons/admin/caution.png" alt="주의/장애" style="width:28px;height:28px;object-fit:contain;" /></span>
+            <div>
+              <p>주의/장애</p>
+              <strong>6</strong>
+              <em class="down">주의 4 / 장애 2</em>
             </div>
           </article>
         </section>
@@ -306,7 +306,7 @@ const {
               <table class="dashboard-pipeline-table">
                 <tbody>
                   <tr>
-                    <td rowspan="3" class="pipeline-table-icon">▣</td>
+                    <td rowspan="3" class="pipeline-table-icon"><img src="../../icons/admin/cpu.png" alt="Edge" /></td>
                     <td rowspan="3" class="pipeline-table-name">Edge</td>
                     <td>FPS</td>
                     <td>29.8</td>
@@ -324,7 +324,7 @@ const {
                     <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[2]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
-                    <td rowspan="3" class="pipeline-table-icon">▤</td>
+                    <td rowspan="3" class="pipeline-table-icon"><img src="../../icons/admin/ingress.png" alt="Ingress" /></td>
                     <td rowspan="3" class="pipeline-table-name">Ingress</td>
                     <td>수신 이벤트</td>
                     <td>128,456건</td>
@@ -342,7 +342,7 @@ const {
                     <td class="pipeline-spark warn"><ChartJsPanel type="line" :data="dashboardSparklines[5]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
-                    <td rowspan="3" class="pipeline-table-icon">◒</td>
+                    <td rowspan="3" class="pipeline-table-icon"><img src="../../icons/admin/be_db_set.png" alt="Backend" /></td>
                     <td rowspan="3" class="pipeline-table-name">Backend</td>
                     <td>Validation 실패</td>
                     <td>0.18%</td>
@@ -360,7 +360,7 @@ const {
                     <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[8]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
-                    <td rowspan="3" class="pipeline-table-icon">◉</td>
+                    <td rowspan="3" class="pipeline-table-icon"><img src="../../icons/admin/db.png" alt="DB" /></td>
                     <td rowspan="3" class="pipeline-table-name">DB</td>
                     <td>Write TPS</td>
                     <td>412</td>
@@ -378,7 +378,7 @@ const {
                     <td class="pipeline-spark"><ChartJsPanel type="line" :data="dashboardSparklines[11]" :options="sparklineOptions" :height="22" /></td>
                   </tr>
                   <tr>
-                    <td rowspan="3" class="pipeline-table-icon">V</td>
+                    <td rowspan="3" class="pipeline-table-icon"><img src="../../icons/admin/api.png" alt="API" /></td>
                     <td rowspan="3" class="pipeline-table-name">API</td>
                     <td>응답 시간</td>
                     <td>145 ms</td>

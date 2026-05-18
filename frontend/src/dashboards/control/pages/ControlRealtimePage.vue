@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from 'vue'
+import HlsLiveVideo from '../components/HlsLiveVideo.vue'
 
 const {
   activeMenu,
@@ -7,6 +8,12 @@ const {
   selectedLaneText,
   selectedLane,
   dashboardKpis,
+  operatorVideoStreamUrl,
+  operatorVideoStreamKey,
+  operatorVideoIsLive,
+  operatorVideoStatusText,
+  operatorVideoFpsText,
+  scheduleOperatorVideoReconnect,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -27,39 +34,41 @@ const {
         </section>
 
         <section class="realtime-kpi-grid">
-          <article class="realtime-kpi ok"><i>▰</i><span>CCTV 영상</span><strong>정상</strong><em>2개 레일 수신 중</em></article>
-          <article class="realtime-kpi ok"><i>⌖</i><span>GPS 수신</span><strong>정상</strong><em>최근 반영 2초 전</em></article>
-          <article class="realtime-kpi info"><i>▤</i><span>이벤트 수신</span><strong>1,248</strong><em>오늘 누적 통행</em></article>
-          <article class="realtime-kpi warn"><i>!</i><span>현장 알림</span><strong>3</strong><em>확인 필요</em></article>
+          <article class="realtime-kpi ok"><i><img src="../../icons/control/cctv.png" alt="CCTV 영상" /></i><span>CCTV 영상</span><strong>정상</strong><em>2개 레일 수신 중</em></article>
+          <article class="realtime-kpi ok"><i><img src="../../icons/control/gps2.png" alt="GPS 수신" /></i><span>GPS 수신</span><strong>정상</strong><em>최근 반영 2초 전</em></article>
+          <article class="realtime-kpi info"><i><img src="../../icons/control/caution.png" alt="이벤트 수신" /></i><span>이벤트 수신</span><strong>1,248</strong><em>오늘 누적 통행</em></article>
+          <article class="realtime-kpi warn"><i><img src="../../icons/control/notification.png" alt="현장 알림" /></i><span>현장 알림</span><strong>3</strong><em>확인 필요</em></article>
         </section>
 
         <section class="realtime-main-grid">
           <article class="panel realtime-camera-panel">
             <div class="panel-head">
               <h2>실시간 YOLO 합성 프레임</h2>
-              <span class="live-chip"><i class="dot ok"></i>LIVE</span>
+              <span class="live-chip" :class="{ waiting: !operatorVideoIsLive }"><i class="dot ok"></i>{{ operatorVideoStatusText }}</span>
             </div>
             <div class="realtime-frame">
+              <HlsLiveVideo
+                v-if="operatorVideoStreamUrl"
+                :key="operatorVideoStreamKey"
+                class="dashboard-live-frame"
+                :src="operatorVideoStreamUrl"
+                :live="operatorVideoIsLive"
+                alt="YOLO 실시간 화면"
+                @error="scheduleOperatorVideoReconnect"
+              />
+              <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section class="realtime-lane green">
-                <header><b>1번 레일</b><span>960x480</span><em>FPS 29.8</em></header>
-                <div class="realtime-road">
-                  <div class="realtime-car dark"><b>31가 9829</b></div>
-                  <span class="detect-box"></span>
-                </div>
+                <header><b>1번 레일</b><em>{{ operatorVideoFpsText }}</em></header>
               </section>
               <section class="realtime-lane blue">
-                <header><b>2번 레일</b><span>960x480</span><em>FPS 29.8</em></header>
-                <div class="realtime-road">
-                  <div class="realtime-car silver"><b>46다 7720</b></div>
-                  <span class="detect-box"></span>
-                </div>
+                <header><b>2번 레일</b><em>{{ operatorVideoFpsText }}</em></header>
               </section>
             </div>
-            <footer class="frame-meta">
-              <p><span>원본 해상도</span><b>1920 x 1080</b></p>
-              <p><span>합성 해상도</span><b>960 x 960</b></p>
-              <p><span>YOLO 모델</span><b>v8.1</b></p>
-              <p><span>운영 상태</span><b>정상</b></p>
+            <footer class="realtime-meta-cards">
+              <div class="realtime-meta-card"><span>원본 해상도</span><b>1920 x 1080</b></div>
+              <div class="realtime-meta-card"><span>합성 해상도</span><b>960 x 960</b></div>
+              <div class="realtime-meta-card"><span>YOLO 모델</span><b>v8.1</b></div>
+              <div class="realtime-meta-card ok"><span>운영 상태</span><b>정상</b></div>
             </footer>
           </article>
 
@@ -67,15 +76,15 @@ const {
             <article class="panel realtime-status-panel">
               <div class="panel-head"><h2>현재 수신 상태</h2></div>
               <div class="status-grid compact">
-                <article class="ok"><i>▰</i><span>CCTV</span><strong>정상</strong></article>
-                <article class="ok"><i>⌖</i><span>GPS</span><strong>정상</strong></article>
-                <article class="info"><i>⌁</i><span>LAN</span><strong>사용 중</strong></article>
-                <article class="ok"><i>◉</i><span>DB 반영</span><strong>정상</strong></article>
+                <article class="ok"><i><img src="../../icons/control/cctv.png" alt="CCTV" /></i><span>CCTV</span><strong>정상</strong></article>
+                <article class="ok"><i><img src="../../icons/control/gps2.png" alt="GPS" /></i><span>GPS</span><strong>정상</strong></article>
+                <article class="info"><i><img src="../../icons/control/signalpng.png" alt="LAN" /></i><span>LAN</span><strong>사용 중</strong></article>
+                <article class="ok"><i><img src="../../icons/control/data.png" alt="DB 반영" /></i><span>DB 반영</span><strong>정상</strong></article>
               </div>
             </article>
 
             <article class="panel realtime-event-panel">
-              <div class="panel-head"><h2>실시간 통행 이벤트</h2><button type="button">전체 보기 ›</button></div>
+              <div class="panel-head"><h2>실시간 통행 이벤트</h2><button type="button">더 보기</button></div>
               <table>
                 <thead><tr><th>차량번호</th><th>차선</th><th>방향</th><th>통과시각</th><th>상태</th></tr></thead>
                 <tbody>
@@ -87,7 +96,7 @@ const {
             </article>
 
             <article class="panel realtime-alert-panel">
-              <div class="panel-head"><h2>현장 알림</h2><button type="button">조치 내역 ›</button></div>
+              <div class="panel-head"><h2>현장 알림</h2><button type="button">더 보기</button></div>
               <div class="alert-list">
                 <article class="alert-row warn"><i>!</i><div><b>2차선 CCTV 프레임 지연</b><span>최근 3초 이상 지연</span></div><p><span>발생 시각</span>17:35:18</p><button type="button">확인</button></article>
                 <article class="alert-row info"><i>i</i><div><b>LAN 경로 안정화</b><span>이벤트 수신 정상화</span></div><p><span>발생 시각</span>17:32:04</p><button type="button">확인</button></article>

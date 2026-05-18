@@ -40,23 +40,16 @@
   box-shadow: 0 0 12px rgba(19, 120, 239, 0.24);
 }
 
-.ingress-kpi.alive i,
-.ingress-kpi:not(.danger):not(.caution):not(.malformed):nth-child(3) i {
-  background: linear-gradient(135deg, #5ff5be, #16a373);
+.ingress-kpi i img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
-.ingress-kpi.caution i {
-  background: linear-gradient(135deg, #ffe16e, #ffb928);
-}
-
-.ingress-kpi.danger i {
-  background: linear-gradient(135deg, #ff7b70, #d64640);
-  color: #fff;
-}
-
-.ingress-kpi.malformed i {
-  background: linear-gradient(135deg, #aab0ff, #7a6cff);
-  color: #fff;
+.master-shell.light .ingress-kpi i img {
+  filter: none;
 }
 
 .ingress-kpi span {
