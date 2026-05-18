@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 
 const masterDashboard = inject('masterDashboard')
@@ -74,6 +74,7 @@ const {
   lineData,
   loadMapMarkerPositions,
   logout,
+  masterApiState,
   mapChangeCount,
   mapEditSnapshot,
   mapPositionDirty,
@@ -152,10 +153,19 @@ const {
   y,
   zoomMap
 } = masterDashboard
+
+const liveEdges = computed(() => masterApiState?.adminEdges?.value ?? [])
+const liveEdge = computed(() => liveEdges.value[0] ?? {})
 </script>
 
 <template>
           <article class="edge-page">
+            <section class="api-sync-strip">
+              <article><b>Edge API</b><span>등록 {{ liveEdges.length || 0 }}대</span><span>Alive {{ liveEdges.filter((edge) => edge.alive).length || 0 }}대</span></article>
+              <article><b>선택 장비</b><span>{{ liveEdge.deviceId ?? '대기' }}</span><span>{{ liveEdge.sourceState ?? '-' }}</span></article>
+              <article><b>처리</b><span>FPS {{ liveEdge.latestFps ?? '-' }}</span><span>YOLO {{ liveEdge.latestYoloMs ?? '-' }} ms</span><span>OCR {{ liveEdge.latestOcrMs ?? '-' }} ms</span></article>
+              <article><b>전송</b><span>Spool {{ liveEdge.spoolCount ?? '-' }}</span><span>{{ liveEdge.activePath ?? 'LAN' }}</span><span>{{ liveEdge.stale ? 'Stale' : '정상' }}</span></article>
+            </section>
             <section class="edge-main-grid">
               <article class="edge-panel edge-list-panel">
                 <h3>Edge 장비 목록 <small>(42대)</small></h3>

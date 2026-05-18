@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useDashboardApi } from '@/composables/useDashboardApi'
 import ControlDashboardPage from '@/dashboards/control/pages/ControlDashboardPage.vue'
 import ControlTrafficEventPage from '@/dashboards/control/pages/ControlTrafficEventPage.vue'
 import ControlGpsDecisionPage from '@/dashboards/control/pages/ControlGpsDecisionPage.vue'
@@ -14,6 +15,7 @@ import ControlFallbackPage from '@/dashboards/control/pages/ControlFallbackPage.
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const dashboardApiState = useDashboardApi({ scope: 'operator', pollMs: 3000 })
 
 const nowText = ref('')
 const activeMenu = ref('대시보드')
@@ -46,14 +48,14 @@ const navItems = [
   { label: '설정', icon: 'setting.png' }
 ]
 
-const dashboardKpis = [
+const fallbackDashboardKpis = [
   { title: '오늘 통행', value: '1,248', unit: '대', sub: '전일 대비 ▲ 6.8%', icon: 'car.png', tone: 'purple', trend: 'up' },
   { title: 'GPS 정상 판정', value: '1,212', unit: '건', sub: '정상률 97.1%', icon: 'gps.png', tone: 'blue', trend: 'up' },
   { title: '검수 대기', value: '36', unit: '건', sub: '전일 대비 ▼ 5건', icon: 'caution.png', tone: 'yellow', trend: 'down' },
   { title: '오늘 통행료', value: '₩2,450,800', unit: '', sub: '전일 대비 ▲ 6.1%', icon: 'won.png', tone: 'navy', trend: 'up' }
 ]
 
-const dashboardDetections = [
+const fallbackDashboardDetections = [
   {
     lane: 1,
     title: '1번 레일',
@@ -76,7 +78,7 @@ const dashboardDetections = [
   }
 ]
 
-const statusCards = [
+const fallbackStatusCards = [
   { label: 'CCTV 영상', value: '정상', icon: 'cctv.png', tone: 'ok' },
   { label: 'GPS 수신', value: '정상', icon: 'gps2.png', tone: 'ok' },
   { label: '이벤트 수신', value: '정상', icon: 'notification.png', tone: 'ok' },
@@ -84,7 +86,7 @@ const statusCards = [
   { label: '데이터 반영', value: '정상', icon: 'data.png', tone: 'ok' }
 ]
 
-const gpsJudgements = [
+const fallbackGpsJudgements = [
   { lane: 1, plate: '31가 9829', direction: 'IN', laneText: 'L1', time: '17:36:47', gps: '정상', payment: '결제 가능', tone: 'ok' },
   { lane: 2, plate: '45나 6721', direction: 'OUT', laneText: 'L2', time: '17:36:12', gps: '경계 걸침', payment: '검수 권장', tone: 'boundary' },
   { lane: 1, plate: '67더 9012', direction: 'OUT', laneText: 'L1', time: '17:35:41', gps: '영역 이탈', payment: '검수 필요', tone: 'danger' }
@@ -102,7 +104,7 @@ const notifications = [
   { level: 'info', title: 'LTE 백업망 전환 기록', desc: 'LAN 연결 끊김 감지 후 복구', time: '17:24:10' }
 ]
 
-const trafficRows = [
+const fallbackTrafficRows = [
   { lane: 1, plate: '31가 9829', direction: 'IN', time: '17:36:47', gps: '정상', status: '정상 통과', tone: 'ok' },
   { lane: 2, plate: '46다 7720', direction: 'OUT', time: '17:36:12', gps: '경계 걸침', status: '검수 권장', tone: 'boundary' },
   { lane: 1, plate: '12가 3456', direction: 'IN', time: '17:35:41', gps: '영역 이탈', status: '검수 필요', tone: 'danger' },
@@ -136,10 +138,107 @@ const historyRows = [
   { time: '17:05:44', item: '데이터 반영 지연', impact: '서버 반영', detail: '데이터 반영 지연 5초 발생 후 복구', status: '완료', actor: 'system' }
 ]
 
+const numberText = (value, fallback = '0') => {
+  if (value === null || value === undefined || value === '') return fallback
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric.toLocaleString() : String(value)
+}
+
+const moneyText = (value) => {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return '₩0'
+  return `₩${numeric.toLocaleString()}`
+}
+
+const timeText = (value) => {
+  if (!value) return '--:--:--'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 12)
+  return date.toLocaleTimeString('ko-KR', { hour12: false })
+}
+
+const toneFromStatus = (value) => {
+  const status = String(value ?? '').toUpperCase()
+  if (status.includes('OUT') || status.includes('FAIL') || status.includes('REJECT')) return 'danger'
+  if (status.includes('REVIEW') || status.includes('BOUNDARY') || status.includes('WAIT')) return 'boundary'
+  return 'ok'
+}
+
+const dashboardKpis = computed(() => {
+  const summary = dashboardApiState.operatorSummary.value
+  if (!Object.keys(summary).length) return fallbackDashboardKpis
+  return [
+    { ...fallbackDashboardKpis[0], value: numberText(summary.todayPassageCount ?? summary.totalPassageCount ?? summary.passageCount), sub: 'Spring API 연결' },
+    { ...fallbackDashboardKpis[1], value: numberText(summary.gpsNormalCount ?? summary.gpsOkCount ?? summary.settlementReadyCount), sub: `정상률 ${numberText(summary.gpsNormalRate ?? summary.normalRate, '0')}%` },
+    { ...fallbackDashboardKpis[2], value: numberText(summary.reviewPendingCount ?? summary.inspectionPendingCount), sub: '검수 대기' },
+    { ...fallbackDashboardKpis[3], value: moneyText(summary.todayTollAmount ?? summary.totalTollAmount), sub: '정산 후보 합계' }
+  ]
+})
+
+const dashboardDetections = computed(() => {
+  const fpsLabel = operatorVideoFpsText.value
+  return fallbackDashboardDetections.map((lane) => ({ ...lane, fps: fpsLabel }))
+})
+
+const operatorVideoIsLive = dashboardApiState.operatorVideoIsLive
+
+const operatorVideoStatusText = computed(() => (operatorVideoIsLive.value ? 'LIVE' : 'WAIT'))
+
+const operatorVideoFpsText = computed(() => {
+  if (!operatorVideoIsLive.value) return 'FPS --'
+  const fps = Number(dashboardApiState.operatorVideoStatus.value.fps)
+  return Number.isFinite(fps) && fps > 0 ? `FPS ${fps.toFixed(1)}` : 'FPS --'
+})
+
+const operatorVideoFpsValue = computed(() => operatorVideoFpsText.value.replace('FPS ', ''))
+
+const statusCards = computed(() => {
+  const video = dashboardApiState.operatorVideoStatus.value
+  const edge = dashboardApiState.operatorDeviceStatuses.value[0] ?? {}
+  return fallbackStatusCards.map((card, index) => {
+    if (index === 0) return { ...card, value: video.connected === false ? '대기' : '정상', tone: video.connected === false ? 'info' : 'ok' }
+    if (index === 2) return { ...card, value: dashboardApiState.operatorPassages.value.length ? '수신 중' : card.value }
+    if (index === 3) return { ...card, value: edge.activePath ? `${edge.activePath} 사용 중` : card.value, tone: edge.activePath === 'lte' ? 'info' : card.tone }
+    return card
+  })
+})
+
+const trafficRows = computed(() => {
+  const passages = dashboardApiState.operatorPassages.value
+  if (!passages.length) return fallbackTrafficRows
+  return passages.map((event, index) => ({
+    lane: Number(event.laneNo ?? event.lane ?? 1),
+    plate: event.plateText ?? event.plateNumber ?? '-',
+    direction: event.direction ?? '-',
+    time: timeText(event.eventTime ?? event.passedAt),
+    gps: event.gpsJudgementStatus ?? event.gpsStatus ?? '-',
+    status: event.paymentDecision ?? event.inspectionStatus ?? '-',
+    tone: toneFromStatus(event.paymentDecision ?? event.gpsJudgementStatus),
+    eventId: event.eventId ?? `event-${index}`,
+    eventImageUrl: event.eventImageUrl,
+    cropImageUrl: event.cropImageUrl
+  }))
+})
+
+const gpsJudgements = computed(() => {
+  const rows = trafficRows.value
+  if (!rows.length) return fallbackGpsJudgements
+  return rows.slice(0, 6).map((event) => ({
+    lane: event.lane,
+    plate: event.plate,
+    direction: event.direction,
+    laneText: `L${event.lane}`,
+    time: event.time,
+    gps: event.gps,
+    payment: event.status,
+    tone: event.tone
+  }))
+})
+
 const selectedLaneText = computed(() => `${selectedLane.value}차선`)
 const topNetworkLabel = computed(() => (activeMenu.value === '대시보드' ? '이벤트 수신' : 'LAN 사용 중'))
-const filteredGpsJudgements = computed(() => gpsJudgements.filter((row) => row.lane === selectedLane.value || row.tone === 'danger'))
-const filteredTrafficRows = computed(() => trafficRows.filter((row) => row.lane === selectedLane.value))
+const filteredGpsJudgements = computed(() => gpsJudgements.value.filter((row) => row.lane === selectedLane.value || row.tone === 'danger'))
+const filteredTrafficRows = computed(() => trafficRows.value.filter((row) => row.lane === selectedLane.value))
 
 function updateTime() {
   const now = new Date()
@@ -192,6 +291,16 @@ provide('controlDashboardContext', {
   dashboardKpis,
   getKpiIcon,
   getAdminIcon,
+  dashboardApiState,
+  operatorVideoIsLive,
+  operatorVideoStatusText,
+  operatorVideoFpsText,
+  operatorVideoFpsValue,
+  operatorVideoStreamUrl: dashboardApiState.operatorVideoStreamUrl,
+  operatorVideoStreamKey: dashboardApiState.operatorVideoStreamKey,
+  scheduleOperatorVideoReconnect: dashboardApiState.scheduleOperatorVideoReconnect,
+  operatorVideoStatus: dashboardApiState.operatorVideoStatus,
+  operatorPassageEvents: trafficRows,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,

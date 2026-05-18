@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from 'vue'
+import HlsLiveVideo from '../components/HlsLiveVideo.vue'
 
 const {
   activeMenu,
@@ -7,6 +8,12 @@ const {
   selectedLaneText,
   selectedLane,
   dashboardKpis,
+  operatorVideoStreamUrl,
+  operatorVideoStreamKey,
+  operatorVideoIsLive,
+  operatorVideoStatusText,
+  operatorVideoFpsText,
+  scheduleOperatorVideoReconnect,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -37,14 +44,24 @@ const {
           <article class="panel realtime-camera-panel">
             <div class="panel-head">
               <h2>실시간 YOLO 합성 프레임</h2>
-              <span class="live-chip"><i class="dot ok"></i>LIVE</span>
+              <span class="live-chip" :class="{ waiting: !operatorVideoIsLive }"><i class="dot ok"></i>{{ operatorVideoStatusText }}</span>
             </div>
             <div class="realtime-frame">
+              <HlsLiveVideo
+                v-if="operatorVideoStreamUrl"
+                :key="operatorVideoStreamKey"
+                class="dashboard-live-frame"
+                :src="operatorVideoStreamUrl"
+                :live="operatorVideoIsLive"
+                alt="YOLO 실시간 화면"
+                @error="scheduleOperatorVideoReconnect"
+              />
+              <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section class="realtime-lane green">
-                <header><b>1번 레일</b><em>FPS 29.8</em></header>
+                <header><b>1번 레일</b><em>{{ operatorVideoFpsText }}</em></header>
               </section>
               <section class="realtime-lane blue">
-                <header><b>2번 레일</b><em>FPS 29.8</em></header>
+                <header><b>2번 레일</b><em>{{ operatorVideoFpsText }}</em></header>
               </section>
             </div>
             <footer class="realtime-meta-cards">

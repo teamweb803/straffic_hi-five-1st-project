@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { adminApi } from '@/api/admin'
+import { useDashboardApi } from '@/composables/useDashboardApi'
 import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 import '@/dashboards/master/styles/master-dashboard.css'
 import MasterDashboardHomePage from '@/dashboards/master/pages/MasterDashboardHomePage.vue'
@@ -25,6 +26,7 @@ import MasterSettingsPage from '@/dashboards/master/pages/MasterSettingsPage.vue
 
 const router = useRouter()
 const auth = useAuthStore()
+const masterApiState = useDashboardApi({ scope: 'admin', pollMs: 3000 })
 
 const THEME_STORAGE_KEY = 'hifive.dashboard.theme'
 const nowText = ref('')
@@ -969,6 +971,7 @@ const masterDashboardContext = {
   lineData,
   loadMapMarkerPositions,
   logout,
+  masterApiState,
   mapChangeCount,
   mapEditSnapshot,
   mapPositionDirty,

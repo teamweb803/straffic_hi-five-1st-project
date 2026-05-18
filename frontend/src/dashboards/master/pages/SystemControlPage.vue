@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 
 const masterDashboard = inject('masterDashboard')
@@ -74,6 +74,7 @@ const {
   lineData,
   loadMapMarkerPositions,
   logout,
+  masterApiState,
   mapChangeCount,
   mapEditSnapshot,
   mapPositionDirty,
@@ -152,10 +153,46 @@ const {
   y,
   zoomMap
 } = masterDashboard
+
+const formatNumber = (value, fallback = '-') => {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric.toLocaleString() : fallback
+}
+
+const liveEdge = computed(() => masterApiState?.adminEdges?.value?.[0] ?? {})
+const liveIngress = computed(() => masterApiState?.adminIngressStatus?.value ?? {})
+const liveBackend = computed(() => masterApiState?.adminBackendStatus?.value ?? {})
+const liveDb = computed(() => masterApiState?.adminDbStatus?.value ?? {})
 </script>
 
 <template>
           <article class="system-control-page">
+            <section class="api-sync-strip">
+              <article>
+                <b>Edge</b>
+                <span>FPS {{ formatNumber(liveEdge.latestFps) }}</span>
+                <span>Spool {{ formatNumber(liveEdge.spoolCount) }}</span>
+                <span>{{ liveEdge.activePath ?? 'LAN' }}</span>
+              </article>
+              <article>
+                <b>Ingress</b>
+                <span>수신 {{ formatNumber(liveIngress.receivedEvents) }}</span>
+                <span>ACK {{ formatNumber(liveIngress.ackedEvents) }}</span>
+                <span>RETRY {{ formatNumber(liveIngress.retryEvents) }}</span>
+              </article>
+              <article>
+                <b>Backend</b>
+                <span>Validation {{ liveBackend.validationFailureRate ?? '-' }}</span>
+                <span>Duplicate {{ formatNumber(liveBackend.duplicateBlockedCount) }}</span>
+                <span>p95 {{ liveBackend.apiLatencyP95Ms ?? '-' }} ms</span>
+              </article>
+              <article>
+                <b>DB / API</b>
+                <span>Write {{ formatNumber(liveDb.writeTps) }}</span>
+                <span>Read {{ formatNumber(liveDb.readTps) }}</span>
+                <span>{{ liveDb.backupStatus ?? '대기' }}</span>
+              </article>
+            </section>
             <section class="system-kpi-grid">
               <article class="system-kpi"><i><img src="../../icons/admin/cpu2.png" alt="전체 Edge" /></i><div><span>전체 Edge</span><strong>86 <em>대</em></strong><small>전체 등록</small></div></article>
               <article class="system-kpi ok"><i><img src="../../icons/admin/check_button.png" alt="정상 Edge" /></i><div><span>정상 Edge</span><strong>78 <em>대</em></strong><small>정상 비율 90.7%</small></div></article>

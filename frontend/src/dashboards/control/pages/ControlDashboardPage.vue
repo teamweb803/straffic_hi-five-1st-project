@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from 'vue'
+import HlsLiveVideo from '../components/HlsLiveVideo.vue'
 
 const {
   activeMenu,
@@ -9,6 +10,12 @@ const {
   dashboardKpis,
   getKpiIcon,
   getAdminIcon,
+  operatorVideoStreamUrl,
+  operatorVideoStreamKey,
+  operatorVideoIsLive,
+  operatorVideoStatusText,
+  scheduleOperatorVideoReconnect,
+  operatorVideoFpsValue,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -38,9 +45,19 @@ const {
           <article class="panel yolo-panel">
             <div class="panel-head">
               <h2>YOLO 합성 960x960</h2>
-              <span class="live-chip"><i class="dot ok"></i>LIVE</span>
+              <span class="live-chip" :class="{ waiting: !operatorVideoIsLive }"><i class="dot ok"></i>{{ operatorVideoStatusText }}</span>
             </div>
             <div class="yolo-frame">
+              <HlsLiveVideo
+                v-if="operatorVideoStreamUrl"
+                :key="operatorVideoStreamKey"
+                class="dashboard-live-frame"
+                :src="operatorVideoStreamUrl"
+                :live="operatorVideoIsLive"
+                alt="YOLO 실시간 화면"
+                @error="scheduleOperatorVideoReconnect"
+              />
+              <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section
                 v-for="lane in dashboardDetections"
                 :key="lane.lane"
@@ -57,7 +74,7 @@ const {
               <p><span>원본 해상도</span><b>1920 x 1080</b></p>
               <p><span>합성 해상도</span><b>960 x 960</b></p>
               <p><span>YOLO 모델</span><b>v8.1 (tuned)</b></p>
-              <p><span>FPS</span><b>29.8</b></p>
+              <p><span>FPS</span><b>{{ operatorVideoFpsValue }}</b></p>
               <p><span>구역</span><b>{{ centerLabel }}</b></p>
               <p><span>운영 상태</span><b>정상</b></p>
             </footer>

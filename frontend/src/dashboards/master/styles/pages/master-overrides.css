@@ -644,3 +644,16 @@
 .master-shell.light .master-kpi-grid .kpi-icon img {
   filter: none;
 }
+
+/* 라이트모드: 지도 배경 이미지 강제 적용 */
+.master-shell.light .map-panel {
+  background: url('/korea_road_backmap_light.png') center / 100% 100% no-repeat #eaf5ff !important;
+}
+.master-shell.light .map-panel::before {
+  display: none !important;
+}
+.master-shell.light .branch-map-stage {
+  background:
+    linear-gradient(rgba(246, 250, 255, 0.12), rgba(246, 250, 255, 0.22)),
+    url('/korea_road_backmap_light.png') center / cover no-repeat #eaf2fb !important;
+}

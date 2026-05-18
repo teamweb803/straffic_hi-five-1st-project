@@ -434,6 +434,10 @@ main {
   background: url('/korea_road_backmap.png') center / 100% 100% no-repeat;
 }
 
+.master-shell.light .map-panel::before {
+  background: url('/korea_road_backmap_light.png') center / 100% 100% no-repeat;
+}
+
 .map-panel::after {
   content: '';
   position: absolute;

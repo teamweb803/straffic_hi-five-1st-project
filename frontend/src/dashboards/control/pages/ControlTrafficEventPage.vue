@@ -7,6 +7,7 @@ const {
   selectedLaneText,
   selectedLane,
   dashboardKpis,
+  operatorPassageEvents,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -31,7 +32,7 @@ const selectedNo = ref(1)
 const searchInput = ref('')
 const searchQuery = ref('')
 
-const events = [
+const fallbackEvents = [
   { no:1,  plate:'12가 3456', lane:'2차선', dir:'OUT', time:'17:35:42.289', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
   { no:2,  plate:'45나 6721', lane:'2차선', dir:'IN',  time:'17:33:18.102', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
   { no:3,  plate:'67다 9012', lane:'1차선', dir:'OUT', time:'17:31:41.552', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'차선 경계',  evtS:'warn'   },
@@ -44,7 +45,26 @@ const events = [
   { no:10, plate:'11서 2233', lane:'1차선', dir:'OUT', time:'17:14:46.072', gps:'영역 이탈',gpsS:'danger', pay:'결제 불가', payS:'danger', evt:'',         evtS:''       },
 ]
 
-const selectedEvent = computed(() => events.find(r => r.no === selectedNo.value) ?? events[0])
+const events = computed(() => {
+  if (!operatorPassageEvents?.value?.length) return fallbackEvents
+  return operatorPassageEvents.value.map((event, index) => ({
+    no: index + 1,
+    plate: event.plate,
+    lane: `${event.lane}차선`,
+    dir: event.direction,
+    time: event.time,
+    gps: event.gps,
+    gpsS: event.tone === 'danger' ? 'danger' : 'ok',
+    pay: event.status,
+    payS: event.tone === 'danger' ? 'danger' : event.tone === 'boundary' ? 'warn' : 'ok',
+    evt: event.tone === 'danger' ? '검수 필요' : '',
+    evtS: event.tone === 'danger' ? 'danger' : '',
+    eventImageUrl: event.eventImageUrl,
+    cropImageUrl: event.cropImageUrl
+  }))
+})
+
+const selectedEvent = computed(() => events.value.find(r => r.no === selectedNo.value) ?? events.value[0] ?? fallbackEvents[0])
 
 const detailBadge = computed(() => {
   const r = selectedEvent.value
@@ -57,7 +77,7 @@ const detailBadge = computed(() => {
 const dirLabel = computed(() => selectedEvent.value.dir === 'IN' ? 'IN (진입)' : 'OUT (출구)')
 const gpsAreaLabel = computed(() => selectedEvent.value.gpsS === 'ok' ? '정상 (영역 안)' : selectedEvent.value.gps)
 
-const filteredEvents = computed(() => events.filter(r => {
+const filteredEvents = computed(() => events.value.filter(r => {
   if (filterLane.value !== '전체' && r.lane !== filterLane.value) return false
   if (filterDir.value  !== '전체' && r.dir  !== filterDir.value)  return false
   if (filterGps.value  !== '전체' && r.gps  !== filterGps.value)  return false
@@ -180,8 +200,16 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
                 <dt>방향</dt><dd>{{ dirLabel }}</dd>
                 <dt>통과시각</dt><dd>2025-05-11 {{ selectedEvent.time }}</dd>
               </dl>
-              <div class="plate-crop"><span>번호판 crop</span><strong>{{ selectedEvent.plate }}</strong></div>
-              <div class="event-image"><span>이벤트 이미지</span><div class="event-road-shot"><div class="event-car"><b>{{ selectedEvent.plate }}</b></div></div></div>
+              <div class="plate-crop">
+                <span>번호판 crop</span>
+                <img v-if="selectedEvent.cropImageUrl" class="event-evidence-img crop" :src="selectedEvent.cropImageUrl" :alt="`${selectedEvent.plate} crop`" />
+                <strong v-else>{{ selectedEvent.plate }}</strong>
+              </div>
+              <div class="event-image">
+                <span>이벤트 이미지</span>
+                <img v-if="selectedEvent.eventImageUrl" class="event-evidence-img" :src="selectedEvent.eventImageUrl" :alt="`${selectedEvent.plate} event`" />
+                <div v-else class="event-road-shot"><div class="event-car"><b>{{ selectedEvent.plate }}</b></div></div>
+              </div>
             </section>
 
             <section class="gps-judge-card">
@@ -239,13 +267,17 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         <div class="modal-body evidence-modal-body">
           <section class="evidence-img-section">
             <span class="evidence-label">이벤트 이미지</span>
-            <div class="event-road-shot evidence-road-shot">
+            <img v-if="selectedEvent.eventImageUrl" class="event-evidence-img modal" :src="selectedEvent.eventImageUrl" :alt="`${selectedEvent.plate} event`" />
+            <div v-else class="event-road-shot evidence-road-shot">
               <div class="event-car"><b>{{ selectedEvent.plate }}</b></div>
             </div>
           </section>
           <section class="evidence-img-section">
             <span class="evidence-label">번호판 crop</span>
-            <div class="plate-crop" style="width:100%"><strong style="height:120px;font-size:36px">{{ selectedEvent.plate }}</strong></div>
+            <div class="plate-crop" style="width:100%">
+              <img v-if="selectedEvent.cropImageUrl" class="event-evidence-img crop modal" :src="selectedEvent.cropImageUrl" :alt="`${selectedEvent.plate} crop`" />
+              <strong v-else style="height:120px;font-size:36px">{{ selectedEvent.plate }}</strong>
+            </div>
           </section>
         </div>
         <footer class="modal-footer">

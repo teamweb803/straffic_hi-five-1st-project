@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 
 const masterDashboard = inject('masterDashboard')
@@ -74,6 +74,7 @@ const {
   lineData,
   loadMapMarkerPositions,
   logout,
+  masterApiState,
   mapChangeCount,
   mapEditSnapshot,
   mapPositionDirty,
@@ -152,10 +153,19 @@ const {
   y,
   zoomMap
 } = masterDashboard
+
+const liveBackend = computed(() => masterApiState?.adminBackendStatus?.value ?? {})
+const liveDb = computed(() => masterApiState?.adminDbStatus?.value ?? {})
 </script>
 
 <template>
           <article class="backend-db-page">
+            <section class="api-sync-strip">
+              <article><b>Spring</b><span>{{ liveBackend.status ?? '대기' }}</span><span>p95 {{ liveBackend.apiLatencyP95Ms ?? '-' }} ms</span></article>
+              <article><b>검증</b><span>Validation {{ liveBackend.validationFailureRate ?? '-' }}</span><span>Duplicate {{ liveBackend.duplicateBlockedCount ?? '-' }}</span></article>
+              <article><b>PostgreSQL</b><span>{{ liveDb.connectionStatus ?? '대기' }}</span><span>Write {{ liveDb.writeTps ?? '-' }}</span><span>Read {{ liveDb.readTps ?? '-' }}</span></article>
+              <article><b>보관</b><span>Backup {{ liveDb.backupStatus ?? '대기' }}</span><span>Storage {{ liveDb.storageUsagePercent ?? '-' }}%</span></article>
+            </section>
             <section class="backend-db-kpi-grid">
               <article class="backend-db-kpi ok"><i><img src="../../icons/admin/backend2.png" alt="Backend 상태" /></i><div><span>Backend 상태</span><strong>정상</strong><small>Uptime 12일 04:32:11</small></div></article>
               <article class="backend-db-kpi"><i><img src="../../icons/admin/latency.png" alt="API 응답 p95" /></i><div><span>API 응답 p95</span><strong>128 <em>ms</em></strong><small>p50 42 ms / p99 312 ms</small></div></article>

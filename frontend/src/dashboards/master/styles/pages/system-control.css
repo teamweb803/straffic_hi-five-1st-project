@@ -482,3 +482,9 @@
 .master-shell.light .donut-wrap h4 {
   color: #102033;
 }
+.api-sync-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.api-sync-strip article{min-width:0;border:1px solid rgba(42,133,227,.28);border-radius:7px;background:rgba(6,22,42,.72);padding:12px 14px;color:#dbeafe}
+.api-sync-strip b{display:block;margin-bottom:8px;color:#7dd3fc;font-size:13px}
+.api-sync-strip span{display:inline-flex;margin:0 10px 4px 0;color:#f8fafc;font-size:13px;font-weight:700}
+@media (max-width:1200px){.api-sync-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.api-sync-strip{grid-template-columns:1fr}}
