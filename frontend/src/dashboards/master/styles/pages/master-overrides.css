@@ -1,0 +1,659 @@
+.backend-db-page .flow-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #dce9f8;
+  background: transparent;
+  box-shadow: none;
+}
+
+.backend-db-page .flow-legend span::before {
+  flex: 0 0 10px;
+  margin-right: 0;
+}
+
+.master-shell.light .backend-db-page .flow-legend span {
+  color: #50667f;
+}
+
+.postgres-status li.wide-value {
+  grid-template-columns: 1fr minmax(160px, auto);
+}
+
+.postgres-status li.wide-value strong {
+  grid-column: 2 / -1;
+  justify-self: stretch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.backend-errors .db-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: max-content;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.backend-errors .backend-db-table td:last-child {
+  text-align: center;
+}
+
+.topbar {
+  position: relative;
+}
+
+.header-tools .clock {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.dashboard-pipeline-table {
+  table-layout: fixed;
+}
+
+.dashboard-pipeline-table td {
+  padding: 0 8px;
+  text-align: center;
+}
+
+.pipeline-table-icon {
+  width: 46px;
+}
+
+.pipeline-table-name {
+  width: 72px;
+}
+
+.dashboard-pipeline-table td:nth-child(4),
+.dashboard-pipeline-table tr:not(:first-child) td:nth-child(2):not(.pipeline-table-name) {
+  text-align: center;
+}
+
+.pipeline-spark {
+  width: 72px;
+  min-width: 72px;
+}
+
+.pipeline-spark .chart-js-panel {
+  width: 64px;
+  margin: 0 auto;
+}
+
+.pipeline-table-state {
+  width: 132px;
+}
+
+.pipeline-table-state b {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.pipeline-table-state span {
+  font-size: 13px;
+}
+
+.alert-list li {
+  grid-template-columns: 68px minmax(0, 1fr) 62px;
+  min-height: 34px;
+}
+
+.alert-list b {
+  width: 50px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.alert-list span {
+  font-size: 12px;
+}
+
+.alert-list time {
+  font-size: 11px;
+}
+
+.system-donut-chart {
+  position: relative;
+  width: 138px;
+  height: 138px;
+  display: block;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.system-donut-chart .chart-js-panel {
+  position: absolute;
+  inset: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.system-donut-chart canvas {
+  background: transparent !important;
+}
+
+.system-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.system-donut-center strong,
+.system-donut-center span {
+  position: static;
+  margin: 0;
+  line-height: 1.05;
+}
+
+.system-donut-center strong {
+  font-size: 28px;
+}
+
+.system-donut-center span {
+  margin-top: 1px;
+  font-size: 12px;
+  color: #b8c9de;
+}
+
+.metric-chart .chart-js-panel,
+.ingress-chart-grid .chart-js-panel,
+.timeline-board .chart-js-panel,
+.company-permission-summary .chart-js-panel {
+  width: 100%;
+}
+
+.company-permission-summary {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.company-permission-summary h3 {
+  margin-bottom: 0;
+  font-size: 15px;
+}
+
+.metric-chart > .chart-js-panel {
+  margin-top: 24px;
+}
+
+.timeline-board.chart-timeline {
+  padding: 0 8px;
+}
+
+.company-permission-summary .permission-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+}
+
+.company-permission-summary .permission-stat-cards span {
+  min-height: 38px;
+  padding: 5px;
+  align-content: center;
+  gap: 2px;
+}
+
+.company-permission-summary .permission-stat-cards strong {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.company-permission-summary .permission-stat-cards b {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.company-permission-summary .permission-mini-chart {
+  display: block;
+  height: 76px;
+  min-height: 76px;
+  padding: 2px 0 0;
+  border-top: 1px solid rgba(117, 151, 194, 0.12);
+}
+
+.audit-risk-card h3 {
+  margin-bottom: 10px;
+}
+
+.audit-risk-score {
+  min-height: 54px !important;
+  margin-bottom: 10px !important;
+  padding: 8px 10px;
+}
+
+.audit-risk-score strong {
+  font-size: 22px !important;
+}
+
+.audit-risk-score span {
+  font-size: 11px !important;
+}
+
+/* ============================================================
+ * 전역: 셸 최소 너비 해제 — master-dashboard-page.css의
+ * min-width: 1440px 을 덮어써 가로 스크롤을 방지한다.
+ * master-overrides.css 가 마지막으로 import되므로 항상 우선.
+ * ============================================================ */
+.master-shell {
+  min-width: 0;
+}
+
+/* 지점/설정 변경 이력 버튼 — absolute 겹침 해소, 표 하단으로 */
+.branch-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.branch-history button {
+  position: static;
+  align-self: flex-end;
+  margin-top: 12px;
+}
+
+/* 테이블 패널은 내부 스크롤로 처리해 페이지 레이아웃을 보호 */
+.company-list-panel,
+.audit-list-panel,
+.edge-list-panel,
+.incident-list-panel {
+  overflow-x: auto;
+}
+
+/* 요청/처리 흐름 — 카드 높이 통일 + 4등분 (아이콘/타이틀/도넛/설명) */
+.flow-chain {
+  align-items: stretch;
+}
+
+.flow-chain div {
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  align-content: stretch;
+  min-height: 0;
+  height: 100%;
+  padding: 8px;
+}
+
+.flow-chain div > i,
+.flow-chain div > strong,
+.flow-chain div > b,
+.flow-chain div > span {
+  align-self: center;
+  justify-self: center;
+}
+
+/* Spring Boot 서비스 상태 — 서비스 컬럼 내용만 좌측 정렬 */
+.spring-service .backend-db-table td:first-child {
+  text-align: left;
+}
+
+/* 회원사 목록 테이블 — 헤더·셀 전체 가운데 정렬 */
+.company-admin-table th,
+.company-admin-table td {
+  text-align: center;
+}
+
+/* 마지막 열(td:last-child)은 display:flex 이므로 justify-content로 가운데 정렬 */
+.company-admin-table td:last-child {
+  justify-content: center;
+}
+
+/* ============================================================
+ * 전역 테이블 헤더 통일 — company-admin-table th 기준
+ * height:34px · color:#a9bad0 · bg:rgba(28,49,77,.58) · fw:600 · 12px
+ * ============================================================ */
+.company-admin-table th,
+.audit-log-table th,
+.backend-db-table th,
+.edge-table th,
+.incident-table th,
+.incident-history-table th,
+.ingress-table th,
+.system-alert-table th,
+.branch-table th,
+.settings-table th,
+.control-table th,
+.member-table th,
+.live-center-table th,
+.audit-mini-table th {
+  height: 34px;
+  color: #a9bad0;
+  background: rgba(28, 49, 77, 0.58);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.company-admin-table td,
+.audit-log-table td,
+.backend-db-table td,
+.edge-table td,
+.incident-table td,
+.incident-history-table td,
+.ingress-table td,
+.system-alert-table td,
+.branch-table td,
+.settings-table td,
+.control-table td,
+.member-table td,
+.live-center-table td,
+.audit-mini-table td {
+  text-align: center;
+}
+
+/* ============================================================
+ * 전역 패널 헤드 — 파란 좌측 바 통일 (대시보드 .panel-title 기준)
+ * border-left: 2px solid #1683ff  /  padding-left: 10px
+ * ============================================================ */
+
+/* 래퍼 div 형태의 패널 헤드 */
+.audit-panel-head,
+.branch-panel-head,
+.company-panel-head,
+.edge-detail-head,
+.incident-detail-head,
+.settings-panel-head,
+.system-panel-title {
+  padding-left: 10px;
+  border-left: 2px solid #1683ff;
+}
+
+/* Edge Fleet 요약 — grid stretch로 title div 높이가 늘어나는 현상 방지 */
+.edge-summary .system-panel-title {
+  align-self: start;
+}
+
+/* 래퍼 없이 article 직계 h3만 있는 패널 헤드 */
+.system-panel.pipeline-panel h3,
+.incident-timeline > h3,
+.branch-devices > h3,
+.branch-history > h3,
+.edge-list-panel > h3,
+.metric-chart > h3,
+.backend-db-panel > h3,
+.company-link-card > h3 {
+  margin-bottom: 11px;
+}
+
+.company-link-card > h3,
+.company-permission-summary > h3,
+.ingress-info-panel > h3,
+.audit-risk-card > h3,
+.settings-security > h3,
+.settings-notification > h3,
+.settings-backup > h3 {
+  padding-left: 10px;
+  border-left: 2px solid #1683ff;
+}
+
+.audit-type-card > h3 {
+  padding-left: 10px;
+  border-left: 2px solid #1683ff;
+  margin-bottom: 14px;
+}
+
+/* 최근 Ingress 오류 / 시스템 알림 테이블 — 폰트 사이즈 통일(12px) */
+.ingress-error-panel .ingress-table,
+.system-alert-table table {
+  font-size: 12px;
+}
+
+.ingress-error-panel .ingress-table td,
+.ingress-error-panel .ingress-table td * {
+  font-weight: 400;
+}
+
+/* 장애 알림 최근 조치 내역 — 마지막 열 right 정렬 해제 후 가운데 정렬 */
+.incident-history-table td:last-child {
+  text-align: center;
+}
+
+/* ============================================================
+ * 전역 뱃지 좌우 여백 — 텍스트 길이와 무관하게 padding 보장
+ * min-width 만으로는 긴 텍스트에 여백이 사라지므로 padding 추가
+ * (.db-badge 는 master-overrides.css 상단에서 이미 처리됨)
+ * ============================================================ */
+.edge-badge,
+.company-state,
+.sys-badge,
+.ingress-badge,
+.audit-badge,
+.branch-badge,
+.incident-badge,
+.settings-badge,
+.status,
+.center-modal-status {
+  padding: 0 8px;
+}
+
+/* ============================================================
+ * 반응형: ≤ 1440 px  (HD 14-15" 노트북, Retina 2880×1800)
+ * 모든 페이지의 2-3컬럼 그리드에서 큰 min-width 값 제거
+ * ============================================================ */
+@media (max-width: 1440px) {
+  .master-shell {
+    grid-template-columns: 200px 1fr;
+  }
+
+  /* 대시보드: map(700px) + side(560px) = 1260px 최솟값 제거 */
+  .master-overview-grid.dashboard-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(440px, 0.92fr);
+  }
+
+  .master-overview-grid > .right-column {
+    min-height: 0;
+  }
+
+  .dashboard-lower-panels {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  }
+
+  /* 회원사 관리: 760px 최솟값 제거 */
+  .company-admin-main-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  }
+
+  /* 감사 로그: 760px 최솟값 제거 */
+  .audit-main-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(300px, 0.72fr);
+  }
+
+  /* 지점 관리: 670+470px = 1140px 최솟값 제거 */
+  .branch-main-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(360px, 0.72fr);
+  }
+
+  /* Edge 장비: 760px 최솟값 제거 */
+  .edge-main-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  }
+
+  /* 장애 알림: 680px 최솟값 제거 */
+  .incident-main-grid,
+  .incident-bottom-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
+  }
+
+  /* Ingress: 290+420+510px = 1220px 최솟값 제거 */
+  .ingress-main-grid {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 0.92fr) minmax(0, 1.18fr);
+  }
+
+  /* 백엔드/DB: 370+470+340px = 1180px 최솟값 제거 */
+  .backend-db-main-grid {
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) minmax(0, 0.85fr);
+  }
+}
+
+/* ============================================================
+ * 반응형: 1200 – 1279 px  (FHD 13-14" 소형 노트북)
+ * KPI 그리드 컬럼 수 축소, 사이드바/필터행 추가 압축
+ * ============================================================ */
+@media (max-width: 1279px) {
+  .master-shell {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .sidebar {
+    padding: 14px 10px 10px;
+  }
+
+  .nav-main {
+    height: 40px;
+    font-size: 13.5px;
+    padding: 0 10px;
+  }
+
+  .quick-menu button {
+    font-size: 13px;
+  }
+
+  /* 6컬럼 KPI 그리드 → 3컬럼 2행으로 전환 */
+  .company-admin-kpi-grid,
+  .system-kpi-grid,
+  .ingress-kpi-grid,
+  .edge-kpi-grid,
+  .backend-db-kpi-grid,
+  .incident-kpi-grid,
+  .audit-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* 대시보드 우측 패널 최솟값 축소 */
+  .master-overview-grid.dashboard-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
+  }
+
+  /* 회원사 관리: 필터행 및 사이드 패널 압축 */
+  .company-admin-filter-row {
+    grid-template-columns: 110px 100px 100px 130px 1fr 100px;
+    gap: 8px;
+  }
+
+  .company-admin-main-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.55fr);
+  }
+
+  .company-admin-bottom-grid {
+    grid-template-columns: minmax(220px, 310px) 1fr;
+  }
+
+  /* 감사 로그: 사이드 패널 압축 */
+  .audit-main-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  }
+
+  .audit-bottom-grid {
+    grid-template-columns: minmax(260px, 320px) 1fr;
+  }
+
+  /* 지점 관리: 필터행 압축 */
+  .branch-filter-row {
+    grid-template-columns: 150px 150px 150px 1fr 80px;
+  }
+
+  .branch-main-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.72fr);
+  }
+
+  /* Edge 장비: 필터행 압축 + 차트 5컬럼 → 3컬럼 */
+  .edge-filter-row {
+    grid-template-columns: repeat(3, 100px) 1fr 80px;
+    gap: 6px;
+  }
+
+  .edge-main-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(270px, 0.65fr);
+  }
+
+  .edge-chart-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* 시스템 관제: 파이프라인 플로우 5컬럼 → 3컬럼 */
+  .pipeline-flow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  /* 장애 알림: 사이드 패널 압축 */
+  .incident-main-grid,
+  .incident-bottom-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(310px, 0.88fr);
+  }
+}
+
+/* ============================================================
+ * 전역 KPI 아이콘 원형 — 통일 중립 다크 블루
+ * ============================================================ */
+.master-kpi-grid .kpi-icon,
+.system-kpi i,
+.ingress-kpi i,
+.company-admin-kpi i,
+.backend-db-kpi i,
+.edge-kpi i,
+.incident-kpi i,
+.settings-kpi i,
+.audit-kpi i {
+  background: rgba(28, 60, 110, 0.72) !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+/* 대시보드 KPI img 아이콘: 흰색 필터 */
+.master-kpi-grid .kpi-icon img {
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
+/* 라이트모드: 원형 배경 및 img 필터 조정 */
+.master-shell.light .master-kpi-grid .kpi-icon,
+.master-shell.light .system-kpi i,
+.master-shell.light .ingress-kpi i,
+.master-shell.light .company-admin-kpi i,
+.master-shell.light .backend-db-kpi i,
+.master-shell.light .edge-kpi i,
+.master-shell.light .incident-kpi i,
+.master-shell.light .settings-kpi i,
+.master-shell.light .audit-kpi i {
+  background: rgba(200, 220, 245, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.master-shell.light .master-kpi-grid .kpi-icon img {
+  filter: none;
+}
+
+/* 라이트모드: 지도 배경 이미지 강제 적용 */
+.master-shell.light .map-panel {
+  background: url('/korea_road_backmap_light.png') center / 100% 100% no-repeat #eaf5ff !important;
+}
+.master-shell.light .map-panel::before {
+  display: none !important;
+}
+.master-shell.light .branch-map-stage {
+  background:
+    linear-gradient(rgba(246, 250, 255, 0.12), rgba(246, 250, 255, 0.22)),
+    url('/korea_road_backmap_light.png') center / cover no-repeat #eaf2fb !important;
+}

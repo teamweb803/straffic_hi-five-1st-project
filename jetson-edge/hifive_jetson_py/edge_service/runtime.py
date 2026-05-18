@@ -18,6 +18,7 @@ from .display import GREEN, draw_runtime_overlay, draw_text, show_frame
 from .event_dispatcher import EventDispatcher
 from .ocr_worker import OcrWorker
 from .plate_tracker import PlateBBoxTracker
+from .status_sender import EdgeStatusSender
 from .types import OcrTask, ReadyPlateEvent, SharedState
 from .video_source import FrameSource
 from .yolo_worker import YoloWorker
@@ -30,8 +31,14 @@ class EdgeServiceRuntimeOptions:
     video_override: str = ""
     host_override: str = ""
     port_override: int = 0
+    standby_host_override: str = ""
+    standby_port_override: int = 0
+    failover_recheck_sec: float = 0.5
+    runtime_runner: str = "deepstream-nvinfer"
+    input_backend: str = "deepstream"
     display: bool = False
     display_scale: float = 0.75
+    display_sink: str = "egl"
     start_sec: float = 0.0
     frame_limit: int = 0
     height_threshold: int = 20
@@ -40,13 +47,30 @@ class EdgeServiceRuntimeOptions:
     reid_sec: float = 10.0
     queue_size: int = 8
     transport_queue_size: int = 128
-    transport_timeout_sec: float = 1.0
+    transport_timeout_sec: float = 0.3
     retry_initial_sec: float = 0.2
     retry_max_sec: float = 2.0
     yolo_engine_override: str = ""
     ocr_engine_override: str = ""
     output_dir: str = "/home/jetson/hifive/output/edge_service"
     save_event_images: bool = True
+    status_interval_sec: float = 1.0
+    preview_datagram_fps: float = 0.0
+    preview_jpeg_quality: int = 45
+    srt_host: str = ""
+    srt_port: int = 0
+    srt_bitrate_kbps: int = 2500
+    srt_latency_ms: int = 120
+    srt_iframe_interval: int = 30
+    evidence_upload: bool = False
+    evidence_jpeg_quality: int = 85
+    parser_lib: str = "/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so"
+    yolo_parser_lib: str = ""
+    ocr_parser_lib: str = ""
+    yolo_parser_func: str = "NvDsInferParseCustomYoloPlate"
+    ocr_parser_func: str = "NvDsInferParseCustomCrnnPlate"
+    tracker_lib: str = "/opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttracker.so"
+    tracker_config: str = "/opt/nvidia/deepstream/deepstream/samples/configs/deepstream-app/config_tracker_NvDCF_perf.yml"
     external_stop_event: threading.Event | None = None
 
 
@@ -76,7 +100,12 @@ class EdgeServiceRuntime:
             vocab_path=config.ocr.vocab_path,
         )
 
-        source = FrameSource(camera=camera, source_override=self.options.video_override, start_sec=self.options.start_sec)
+        source = FrameSource(
+            camera=camera,
+            source_override=self.options.video_override,
+            start_sec=self.options.start_sec,
+            input_backend=self.options.input_backend,
+        )
         cap, open_mode = source.open()
         source_fps = cap.get(5) or 30.0
         tracker = PlateBBoxTracker(
@@ -86,6 +115,23 @@ class EdgeServiceRuntime:
         )
         stop_event = self.options.external_stop_event or threading.Event()
         shared = SharedState(lock=threading.Lock(), stop_event=stop_event)
+        source_mode = "video" if self.options.video_override else "camera"
+        source_value = self.options.video_override or camera.source_uri or camera.source_pipeline or str(self.options.camera_index)
+        started_at_ms = int(time.time() * 1000)
+        output_dir = Path(self.options.output_dir)
+        if self.options.status_interval_sec > 0:
+            EdgeStatusSender(
+                config=config,
+                camera=camera,
+                sender=sender,
+                shared=shared,
+                spool=spool,
+                output_dir=output_dir,
+                interval_sec=self.options.status_interval_sec,
+                source_mode=source_mode,
+                source_value=source_value,
+                started_at_ms=started_at_ms,
+            ).start()
         ocr_queue: queue.Queue[OcrTask] = queue.Queue(maxsize=self.options.queue_size)
         event_queue: queue.Queue[ReadyPlateEvent] = queue.Queue()
         OcrWorker(
@@ -112,7 +158,6 @@ class EdgeServiceRuntime:
             shared=shared,
             queue_size=self.options.transport_queue_size,
         )
-        output_dir = Path(self.options.output_dir)
         if self.options.save_event_images:
             output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -120,6 +165,7 @@ class EdgeServiceRuntime:
         print(f"yolo_engine={config.yolo.engine_path}")
         print(f"ocr_engine={config.ocr.engine_path}")
         print(f"transport={config.transport.kind} host={config.transport.ingress_host} port={config.transport.ingress_port}")
+        print(f"edge_status_interval_sec={self.options.status_interval_sec}")
 
         frame_num = int(cap.get(1) or 0)
         processed = 0
@@ -175,6 +221,16 @@ class EdgeServiceRuntime:
             transport = replace(transport, ingress_host=self.options.host_override)
         if self.options.port_override > 0:
             transport = replace(transport, ingress_port=self.options.port_override)
+        if self.options.standby_host_override:
+            transport = replace(
+                transport,
+                failover_enabled=True,
+                standby_ingress_host=self.options.standby_host_override,
+            )
+        if self.options.standby_port_override > 0:
+            transport = replace(transport, standby_ingress_port=self.options.standby_port_override)
+        if self.options.failover_recheck_sec > 0:
+            transport = replace(transport, failover_recheck_sec=self.options.failover_recheck_sec)
         if self.options.transport_timeout_sec > 0:
             transport = replace(transport, timeout_sec=self.options.transport_timeout_sec)
         if self.options.retry_initial_sec > 0:

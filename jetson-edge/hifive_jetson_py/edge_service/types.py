@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from hifive_jetson_py.models import BBox
+from hifive_jetson_py.shared_crop_ipc import SharedPlateCropTask
 
 
 @dataclass(frozen=True)
@@ -54,9 +55,10 @@ class OcrTask:
     global_lane_no: int
     confidence: float
     timestamp_ns: int
-    crop: Any
+    crop: Any | None
     readable: bool
     canvas_snapshot: Any | None = None
+    shared_crop: SharedPlateCropTask | None = None
 
 
 @dataclass(frozen=True)
@@ -77,3 +79,8 @@ class SharedState:
     processed_ocr_tasks: int = 0
     yolo_detections: int = 0
     sent_events: int = 0
+    dropped_ocr_tasks: int = 0
+    status_send_ok: int = 0
+    status_send_fail: int = 0
+    last_status_send_ms: int = 0
+    last_error: str = ""

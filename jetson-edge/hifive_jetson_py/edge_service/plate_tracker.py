@@ -20,6 +20,12 @@ class PlateBBoxTracker:
         self._next_id = 1
         self._next_display_id = 1
 
+    def reset(self) -> None:
+        self.tracks.clear()
+        self.ocr_memory.clear()
+        self._next_id = 1
+        self._next_display_id = 1
+
     def update(self, detections: list[DetectionSnapshot], frame_num: int) -> list[PlateTrack]:
         for track in self.tracks.values():
             track.visible = False

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import queue
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from hifive_jetson_py.config import CameraConfig
 from hifive_jetson_py.lane_yolo_input import TwoLaneYoloInputComposer
-from hifive_jetson_py.models import BBox, YoloInputDetection
+from hifive_jetson_py.models import BBox, YoloDetection, YoloInputDetection
+from hifive_jetson_py.shared_crop_ipc import SharedPlateCropWriter
 
 from .ocr_worker import put_latest_ocr_task
 from .plate_tracker import PlateBBoxTracker
@@ -29,6 +30,7 @@ class YoloWorker:
     ocr_queue: queue.Queue[OcrTask]
     shared: SharedState
     height_threshold: int
+    crop_writer: SharedPlateCropWriter = field(default_factory=SharedPlateCropWriter)
 
     def __post_init__(self) -> None:
         self.composer = TwoLaneYoloInputComposer(self.camera)
@@ -62,8 +64,20 @@ class YoloWorker:
             if snapshot.yolo_bbox.h < self.height_threshold:
                 self._clear_unreadable_track(track)
                 continue
-            crop = crop_bbox(frame_bgr, snapshot.original_bbox)
-            if crop is None:
+            shared_crop = self.crop_writer.write_from_frame(
+                frame_bgr,
+                YoloDetection(
+                    source_id=self.camera.source_id,
+                    frame_num=frame_num,
+                    local_track_id=track.track_id,
+                    bbox=snapshot.original_bbox,
+                    confidence=snapshot.confidence,
+                    timestamp_ns=timestamp_ns,
+                    lane_no=snapshot.lane_no,
+                    global_lane_no=snapshot.global_lane_no,
+                ),
+            )
+            if shared_crop is None:
                 continue
             task = OcrTask(
                 track_id=track.track_id,
@@ -76,9 +90,10 @@ class YoloWorker:
                 global_lane_no=snapshot.global_lane_no,
                 confidence=snapshot.confidence,
                 timestamp_ns=timestamp_ns,
-                crop=crop,
+                crop=None,
                 readable=snapshot.yolo_bbox.h >= self.height_threshold,
                 canvas_snapshot=canvas.copy(),
+                shared_crop=shared_crop,
             )
             put_latest_ocr_task(self.ocr_queue, self.shared, track.track_id, self.tracker, task)
 
@@ -104,10 +119,3 @@ class YoloWorker:
             else:
                 normalized.append(result)
         return normalized
-
-
-def crop_bbox(frame, bbox: BBox):
-    clipped = bbox.clipped(frame.shape[1], frame.shape[0])
-    if clipped.w <= 0 or clipped.h <= 0:
-        return None
-    return frame[clipped.y : clipped.y + clipped.h, clipped.x : clipped.x + clipped.w].copy()
