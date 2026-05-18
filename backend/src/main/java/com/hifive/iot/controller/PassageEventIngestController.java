@@ -33,7 +33,7 @@ public class PassageEventIngestController {
 		@RequestBody byte[] payload
 	) {
 		IngestResultResponse response = passageEventIngestService.ingest(eventId, payload);
-		HttpStatus status = response.duplicate() ? HttpStatus.OK : HttpStatus.CREATED;
+		HttpStatus status = response.duplicate() ? HttpStatus.CONFLICT : HttpStatus.OK;
 		return ResponseEntity.status(status).body(response);
 	}
 }

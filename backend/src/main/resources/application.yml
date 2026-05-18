@@ -15,3 +15,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+hifive:
+  ingress-video:
+    base-url: ${HIFIVE_INGRESS_VIDEO_BASE_URL:http://127.0.0.1:8000}
+    status-path: ${HIFIVE_INGRESS_VIDEO_STATUS_PATH:/video/status}
+    stream-path: ${HIFIVE_INGRESS_VIDEO_STREAM_PATH:/video/stream.mjpg}
+    connect-timeout-ms: ${HIFIVE_INGRESS_VIDEO_CONNECT_TIMEOUT_MS:1000}
+    read-timeout-ms: ${HIFIVE_INGRESS_VIDEO_READ_TIMEOUT_MS:3000}
