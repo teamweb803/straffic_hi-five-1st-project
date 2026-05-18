@@ -5,6 +5,7 @@ import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 const {
   activeMenu,
   centerLabel,
+  isLightMode,
   selectedLaneText,
   selectedLane,
   dashboardKpis,
@@ -77,7 +78,11 @@ const tollChartData = computed(() => ({
 
 const chartTotalLabel = computed(() => chartMode.value === '금액' ? d.value.totalAmount : d.value.totalCount)
 
-const tollChartOptions = computed(() => ({
+const tollChartOptions = computed(() => {
+  const tickColor = isLightMode.value ? '#334155' : '#9fb4ce'
+  const gridColor = isLightMode.value ? '#c7d4e3' : 'rgba(117,151,194,.1)'
+
+  return {
   responsive: true,
   maintainAspectRatio: false,
   layout: { padding: 0 },
@@ -94,10 +99,11 @@ const tollChartOptions = computed(() => ({
     }
   },
   scales: {
-    x: { stacked: true, ticks: { color: '#9fb4ce' }, grid: { color: 'rgba(117,151,194,.1)' } },
-    y: { stacked: true, grace: 0, beginAtZero: true, ticks: { color: '#9fb4ce', callback: (value) => chartMode.value === '금액' ? `${value}K` : `${value}` }, grid: { color: 'rgba(117,151,194,.1)' } }
+    x: { stacked: true, ticks: { color: tickColor, font: { weight: '700' } }, grid: { color: gridColor } },
+    y: { stacked: true, grace: 0, beginAtZero: true, ticks: { color: tickColor, font: { weight: '700' }, callback: (value) => chartMode.value === '금액' ? `${value}K` : `${value}` }, grid: { color: gridColor } }
   }
-}))
+  }
+})
 
 const settlementDonutData = computed(() => ({
   labels: ['결제 가능', '검수 필요', '보류'],

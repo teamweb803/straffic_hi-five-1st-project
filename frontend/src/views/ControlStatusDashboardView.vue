@@ -17,10 +17,11 @@ const router = useRouter()
 const auth = useAuthStore()
 const dashboardApiState = useDashboardApi({ scope: 'operator', pollMs: 3000 })
 
+const THEME_STORAGE_KEY = 'hifive.dashboard.theme'
 const nowText = ref('')
 const activeMenu = ref('대시보드')
 const selectedLane = ref(2)
-const isLightMode = ref(false)
+const isLightMode = ref(true)
 const showNotifications = ref(false)
 const showOperatorMenu = ref(false)
 
@@ -54,6 +55,21 @@ const fallbackDashboardKpis = [
   { title: '검수 대기', value: '36', unit: '건', sub: '전일 대비 ▼ 5건', icon: 'caution.png', tone: 'yellow', trend: 'down' },
   { title: '오늘 통행료', value: '₩2,450,800', unit: '', sub: '전일 대비 ▲ 6.1%', icon: 'won.png', tone: 'navy', trend: 'up' }
 ]
+
+const laneDashboardKpis = {
+  1: [
+    { title: '상행 통행', value: '684', unit: '대', sub: '전일 대비 ▲ 4.2%', icon: 'car.png', tone: 'purple', trend: 'up' },
+    { title: '상행 GPS 정상', value: '667', unit: '건', sub: '정상률 97.5%', icon: 'gps.png', tone: 'blue', trend: 'up' },
+    { title: '상행 검수 대기', value: '17', unit: '건', sub: '전일 대비 ▼ 3건', icon: 'caution.png', tone: 'yellow', trend: 'down' },
+    { title: '상행 통행료', value: '₩1,342,600', unit: '', sub: '전일 대비 ▲ 5.4%', icon: 'won.png', tone: 'navy', trend: 'up' }
+  ],
+  2: [
+    { title: '하행 통행', value: '564', unit: '대', sub: '전일 대비 ▲ 8.9%', icon: 'car.png', tone: 'purple', trend: 'up' },
+    { title: '하행 GPS 정상', value: '545', unit: '건', sub: '정상률 96.6%', icon: 'gps.png', tone: 'blue', trend: 'up' },
+    { title: '하행 검수 대기', value: '19', unit: '건', sub: '전일 대비 ▲ 2건', icon: 'caution.png', tone: 'yellow', trend: 'up' },
+    { title: '하행 통행료', value: '₩1,108,200', unit: '', sub: '전일 대비 ▲ 7.2%', icon: 'won.png', tone: 'navy', trend: 'up' }
+  ]
+}
 
 const fallbackDashboardDetections = [
   {
@@ -98,6 +114,19 @@ const fieldAlerts = [
   { level: 'info', title: 'LTE 백업망 전환', target: 'LAN 연결 끊김 감지', time: '17:24:10', badge: '정보', icon: 'information2.png' }
 ]
 
+const laneFieldAlerts = {
+  1: [
+    { level: 'warn', title: '상행 GPS 경계 접근', target: '상행 · 31가 9829', time: '17:36:47', badge: '주의', icon: 'caution3.png' },
+    { level: 'info', title: '상행 이벤트 정상 수신', target: '상행 레일', time: '17:35:22', badge: '정보', icon: 'information2.png' },
+    { level: 'info', title: '상행 LAN 상태 정상', target: '상행 Edge', time: '17:31:08', badge: '정보', icon: 'information2.png' }
+  ],
+  2: [
+    { level: 'danger', title: '하행 정차 의심', target: '하행 · 98머 3344', time: '17:28:55', badge: '주의', icon: 'danger.png' },
+    { level: 'warn', title: '하행 CCTV 수신 지연', target: '하행 카메라', time: '17:26:28', badge: '주의', icon: 'caution3.png' },
+    { level: 'info', title: '하행 LTE 백업망 전환', target: 'LAN 연결 끊김 감지', time: '17:24:10', badge: '정보', icon: 'information2.png' }
+  ]
+}
+
 const notifications = [
   { level: 'danger', title: '정차 의심 차량 확인 필요', desc: '2차선 · 98머 3344', time: '17:28:55' },
   { level: 'warn', title: '2차선 CCTV 수신 지연', desc: '카메라 프레임 지연 3초', time: '17:26:28' },
@@ -125,9 +154,9 @@ const equipmentLaneRows = [
 ]
 
 const equipmentAlerts = [
-  { tone: 'warn', title: '카메라 영상 수신 지연', desc: '카메라 영상 수신 지연 3초 발생', scope: '전체 레일', time: '17:33:12' },
-  { tone: 'info', title: 'LTE 백업망 전환 기록', desc: 'LAN 장애로 LTE 백업망 전환 후 복구', scope: '전체 장비', time: '17:24:33' },
-  { tone: 'warn', title: 'GPS 수신 지연', desc: 'GPS Fix 지연 2초 발생', scope: '전체 레일', time: '17:18:05' }
+  { tone: 'warn', title: '카메라 수신 지연', desc: '영상 지연 3초 발생', scope: '전 레일', time: '17:33:12' },
+  { tone: 'info', title: 'LTE 전환 기록', desc: 'LAN 장애 후 복구', scope: '전 장비', time: '17:24:33' },
+  { tone: 'warn', title: 'GPS 수신 지연', desc: 'Fix 지연 2초 발생', scope: '전 레일', time: '17:18:05' }
 ]
 
 const historyRows = [
@@ -135,7 +164,12 @@ const historyRows = [
   { time: '17:33:12', item: '카메라 영상 수신 지연', impact: '전체 레일', detail: '카메라 영상 수신 지연 3초 발생 후 복구', status: '완료', actor: 'operator01' },
   { time: '17:24:33', item: 'LTE 백업망 전환', impact: '전체 장비', detail: 'LAN 장애 감지로 LTE 백업망 전환, 이후 LAN 복구', status: '완료', actor: 'system' },
   { time: '17:18:05', item: 'GPS 수신 지연', impact: '전체 레일', detail: 'GPS Fix 지연 2초 발생 후 복구', status: '완료', actor: 'operator01' },
-  { time: '17:05:44', item: '데이터 반영 지연', impact: '서버 반영', detail: '데이터 반영 지연 5초 발생 후 복구', status: '완료', actor: 'system' }
+  { time: '17:05:44', item: '데이터 반영 지연', impact: '서버 반영', detail: '데이터 반영 지연 5초 발생 후 복구', status: '완료', actor: 'system' },
+  { time: '16:58:21', item: 'Edge 상태 점검', impact: '전체 장비', detail: 'Edge 헬스체크 정상 응답 확인', status: '완료', actor: 'system' },
+  { time: '16:47:09', item: 'OCR Task 재시작', impact: '2번 레일', detail: 'OCR Task Queue 지연 감지 후 자동 재시작', status: '완료', actor: 'operator02' },
+  { time: '16:35:52', item: 'Spool 적재 확인', impact: '없음', detail: '미전송 Spool 잔여 건수 정상 범위 확인', status: '완료', actor: 'system' },
+  { time: '16:22:18', item: 'GPS 영역 재검증', impact: '전체 레일', detail: '결제 영역 좌표 기준값 검증 완료', status: '완료', actor: 'operator01' },
+  { time: '16:10:03', item: '백업망 상태 확인', impact: '전체 장비', detail: 'LTE 백업망 대기 상태 및 전환 조건 정상', status: '완료', actor: 'system' }
 ]
 
 const numberText = (value, fallback = '0') => {
@@ -164,20 +198,33 @@ const toneFromStatus = (value) => {
   return 'ok'
 }
 
+const laneDisplayText = (lane) => (Number(lane) === 1 ? '상행' : '하행')
+
+const recognitionDirectionText = (direction) => {
+  const value = String(direction ?? '').toUpperCase()
+  if (value === 'IN') return 'Front'
+  if (value === 'OUT') return 'Rear'
+  return direction || '-'
+}
+
 const dashboardKpis = computed(() => {
   const summary = dashboardApiState.operatorSummary.value
-  if (!Object.keys(summary).length) return fallbackDashboardKpis
+  if (!Object.keys(summary).length) return laneDashboardKpis[selectedLane.value] ?? fallbackDashboardKpis
+  const laneText = selectedLaneText.value
   return [
-    { ...fallbackDashboardKpis[0], value: numberText(summary.todayPassageCount ?? summary.totalPassageCount ?? summary.passageCount), sub: 'Spring API 연결' },
-    { ...fallbackDashboardKpis[1], value: numberText(summary.gpsNormalCount ?? summary.gpsOkCount ?? summary.settlementReadyCount), sub: `정상률 ${numberText(summary.gpsNormalRate ?? summary.normalRate, '0')}%` },
-    { ...fallbackDashboardKpis[2], value: numberText(summary.reviewPendingCount ?? summary.inspectionPendingCount), sub: '검수 대기' },
-    { ...fallbackDashboardKpis[3], value: moneyText(summary.todayTollAmount ?? summary.totalTollAmount), sub: '정산 후보 합계' }
+    { ...fallbackDashboardKpis[0], title: `${laneText} 통행`, value: numberText(summary.todayPassageCount ?? summary.totalPassageCount ?? summary.passageCount), sub: 'Spring API 연결' },
+    { ...fallbackDashboardKpis[1], title: `${laneText} GPS 정상`, value: numberText(summary.gpsNormalCount ?? summary.gpsOkCount ?? summary.settlementReadyCount), sub: `정상률 ${numberText(summary.gpsNormalRate ?? summary.normalRate, '0')}%` },
+    { ...fallbackDashboardKpis[2], title: `${laneText} 검수 대기`, value: numberText(summary.reviewPendingCount ?? summary.inspectionPendingCount), sub: '검수 대기' },
+    { ...fallbackDashboardKpis[3], title: `${laneText} 통행료`, value: moneyText(summary.todayTollAmount ?? summary.totalTollAmount), sub: '정산 후보 합계' }
   ]
 })
 
 const dashboardDetections = computed(() => {
   const fpsLabel = operatorVideoFpsText.value
-  return fallbackDashboardDetections.map((lane) => ({ ...lane, fps: fpsLabel }))
+  return fallbackDashboardDetections.map((lane) => ({
+    ...lane,
+    fps: lane.lane === selectedLane.value ? fpsLabel : 'FPS --'
+  }))
 })
 
 const operatorVideoIsLive = dashboardApiState.operatorVideoIsLive
@@ -222,11 +269,17 @@ const trafficRows = computed(() => {
 
 const gpsJudgements = computed(() => {
   const rows = trafficRows.value
-  if (!rows.length) return fallbackGpsJudgements
+  if (!rows.length) {
+    return fallbackGpsJudgements.map((event) => ({
+      ...event,
+      direction: recognitionDirectionText(event.direction),
+      laneText: `L${event.lane}`
+    }))
+  }
   return rows.slice(0, 6).map((event) => ({
     lane: event.lane,
     plate: event.plate,
-    direction: event.direction,
+    direction: recognitionDirectionText(event.direction),
     laneText: `L${event.lane}`,
     time: event.time,
     gps: event.gps,
@@ -235,10 +288,11 @@ const gpsJudgements = computed(() => {
   }))
 })
 
-const selectedLaneText = computed(() => `${selectedLane.value}차선`)
+const selectedLaneText = computed(() => laneDisplayText(selectedLane.value))
 const topNetworkLabel = computed(() => (activeMenu.value === '대시보드' ? '이벤트 수신' : 'LAN 사용 중'))
-const filteredGpsJudgements = computed(() => gpsJudgements.value.filter((row) => row.lane === selectedLane.value || row.tone === 'danger'))
+const filteredGpsJudgements = computed(() => gpsJudgements.value.filter((row) => row.lane === selectedLane.value))
 const filteredTrafficRows = computed(() => trafficRows.value.filter((row) => row.lane === selectedLane.value))
+const selectedFieldAlerts = computed(() => laneFieldAlerts[selectedLane.value] ?? fieldAlerts)
 
 function updateTime() {
   const now = new Date()
@@ -260,6 +314,11 @@ function goHome() {
 function goMasterAdmin() {
   showOperatorMenu.value = false
   router.push('/master-admin')
+}
+
+function toggleThemeMode() {
+  isLightMode.value = !isLightMode.value
+  localStorage.setItem(THEME_STORAGE_KEY, isLightMode.value ? 'light' : 'dark')
 }
 
 
@@ -286,6 +345,7 @@ function getAdminIcon(filename) {
 provide('controlDashboardContext', {
   activeMenu,
   centerLabel,
+  isLightMode,
   selectedLaneText,
   selectedLane,
   dashboardKpis,
@@ -304,7 +364,7 @@ provide('controlDashboardContext', {
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
-  fieldAlerts,
+  fieldAlerts: selectedFieldAlerts,
   filteredTrafficRows,
   equipmentCards,
   equipmentLaneRows,
@@ -326,11 +386,8 @@ onBeforeUnmount(() => {
   <div class="ops-shell" :class="{ 'light-mode': isLightMode }">
     <aside class="sidebar">
       <div class="brand">
-        <span class="brand-mark"></span>
-        <div>
-          <strong>HI-FIVE</strong>
-          <span>OPERATOR</span>
-        </div>
+        <img src="/hifive_logo.png" alt="HI-FIVE" class="sidebar-logo" />
+        <strong>HI-FIVE</strong>
       </div>
 
       <nav class="nav">
@@ -408,9 +465,9 @@ onBeforeUnmount(() => {
       <header class="topbar">
         <div class="center-toggle">
           <span>⌖ {{ centerLabel }}</span>
-          <div class="lane-toggle" role="group" aria-label="차선 선택">
-            <button type="button" :class="{ active: selectedLane === 1 }" @click="selectedLane = 1">1차선</button>
-            <button type="button" :class="{ active: selectedLane === 2 }" @click="selectedLane = 2">2차선</button>
+          <div class="lane-toggle" role="group" aria-label="방향 선택">
+            <button type="button" :class="{ active: selectedLane === 1 }" @click="selectedLane = 1">상행</button>
+            <button type="button" :class="{ active: selectedLane === 2 }" @click="selectedLane = 2">하행</button>
           </div>
         </div>
         <time>{{ nowText }}</time>
@@ -423,7 +480,7 @@ onBeforeUnmount(() => {
           class="theme-toggle"
           type="button"
           :aria-label="isLightMode ? '다크 모드로 변경' : '라이트 모드로 변경'"
-          @click="isLightMode = !isLightMode"
+          @click="toggleThemeMode"
         >
           {{ isLightMode ? '☾' : '☀' }}
         </button>

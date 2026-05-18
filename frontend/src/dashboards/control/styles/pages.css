@@ -138,7 +138,7 @@ th{color:#a8bbd2;background:rgba(26,46,73,.62);font-weight:600}.gps-panel table,
 /* Master dashboard visual alignment: keep layout, unify tone and component language. */
 .ops-shell{background:radial-gradient(circle at 78% 0,rgba(22,131,255,.12),transparent 34%),linear-gradient(135deg,#020914 0%,#061528 54%,#020914 100%)}
 .sidebar{padding:16px 14px;border-right-color:rgba(41,129,219,.34);background:linear-gradient(180deg,rgba(4,13,28,.98),rgba(4,20,40,.96))}
-.brand{height:54px;margin-bottom:18px}.brand-mark{width:23px;height:23px;border-width:3px;box-shadow:0 0 8px rgba(22,131,255,.32)}.brand-mark::after{inset:5px}.brand strong{font-size:28px;letter-spacing:.02em}.brand span{color:#d7e6ff;font-size:14px}
+.brand{height:54px;margin-bottom:18px;align-items:center}.brand-mark{width:23px;height:23px;border-width:3px;box-shadow:0 0 8px rgba(22,131,255,.32)}.brand-mark::after{inset:5px}.brand strong{font-size:28px;letter-spacing:.02em}.brand span{color:#d7e6ff;font-size:14px}.brand .sidebar-logo{height:100%;max-height:54px;width:auto;max-width:100%;object-fit:contain;display:block}
 .nav button{height:38px;border-radius:5px;color:#c9d7eb;font-size:14px;white-space:nowrap}.nav button i{color:#d9e7ff}.nav button.active,.nav button:hover{background:linear-gradient(90deg,rgba(22,103,219,.45),rgba(17,78,153,.23));box-shadow:inset 0 0 24px rgba(22,131,255,.18),inset 0 0 0 1px rgba(33,130,255,.7)}
 .zone-card,.panel,.kpi-card,.center-toggle,.top-status span,.theme-toggle,.notification-popover{border-color:rgba(42,133,227,.28);border-radius:6px;background:rgba(5,16,33,.72);box-shadow:0 0 0 1px rgba(14,111,219,.08),0 18px 42px rgba(0,0,0,.32);backdrop-filter:blur(16px)}
 .topbar{height:56px;border-bottom-color:rgba(42,133,227,.28);background:rgba(2,9,20,.72)}
@@ -486,7 +486,55 @@ th{color:#9fb2cb;background:rgba(26,46,73,.54)}td{color:#dce9f8}.state,.pay,.sta
 .realtime-side-grid{display:grid;grid-template-rows:auto 1fr 1fr;gap:12px}
 .status-grid.compact{grid-template-columns:repeat(4,1fr);padding:8px 10px;gap:6px}
 .status-grid.compact article{min-height:58px;padding:8px}
-.realtime-alert-panel .alert-row{grid-template-columns:30px 1fr auto auto}
+.realtime-alert-panel .alert-row{
+  grid-template-columns:26px minmax(270px,1fr) 68px 50px;
+  grid-template-areas:
+    "icon title time action"
+    ". sub . .";
+  align-items:start;
+  gap:2px 8px;
+  min-height:58px;
+}
+.realtime-alert-panel .alert-row i{
+  grid-area:icon;
+  align-self:center;
+}
+.realtime-alert-panel .alert-row > b{
+  grid-area:title;
+  align-self:center;
+  justify-self:stretch;
+  width:100%;
+  min-width:0;
+  max-width:none;
+  white-space:nowrap;
+  overflow:visible;
+  text-overflow:clip;
+  font-size:13px;
+}
+.realtime-alert-panel .alert-row > p{
+  grid-area:time;
+  align-self:center;
+  justify-self:end;
+  text-align:right;
+  white-space:nowrap;
+}
+.realtime-alert-panel .alert-row > button{
+  grid-area:action;
+  align-self:center;
+  min-width:50px;
+  padding:0 8px;
+}
+.realtime-alert-panel .alert-row .alert-sub{
+  grid-area:sub;
+  display:block;
+  justify-self:stretch;
+  width:100%;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:13px;
+}
 .realtime-event-panel table{width:100%;border-collapse:collapse;table-layout:fixed}.realtime-event-panel th,.realtime-event-panel td{height:38px;padding:0 10px;border-bottom:1px solid rgba(117,151,194,.12);color:#dce9f8;text-align:center;white-space:nowrap;font-weight:400}.realtime-event-panel th{color:#9fb2cb;background:rgba(26,46,73,.54);font-weight:600}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .settings-card{display:grid;grid-template-rows:34px 1fr;gap:10px;min-height:260px;overflow:hidden}.settings-card .panel-head button{height:30px;border:1px solid rgba(42,133,227,.42);border-radius:5px;color:#dcecff;background:rgba(7,43,86,.66);padding:0 12px}
@@ -632,4 +680,1839 @@ th{color:#9fb2cb;background:rgba(26,46,73,.54)}td{color:#dce9f8}.state,.pay,.sta
 .ops-shell .dashboard-page > .recent-panel {
   width: 100%;
   margin-top: 10px;
+}
+
+/* ===== Control Dashboard — Unified Light Mode Palette ===== */
+
+.ops-shell.light-mode {
+  color: #111827;
+  background: #F3F4F6;
+}
+
+.light-mode .sidebar {
+  background: #1e293b;
+  border-right-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.12);
+}
+
+.light-mode .topbar {
+  background: #ffffff;
+  border-bottom-color: #E5E7EB;
+}
+
+.light-mode .brand strong { color: #ffffff; }
+.light-mode .brand span { color: #94a3b8; }
+
+.light-mode .sidebar .sidebar-logo { filter: brightness(0) invert(1); }
+
+.light-mode .nav button {
+  color: #94a3b8;
+  background: transparent;
+}
+.light-mode .nav button.active,
+.light-mode .nav button:hover {
+  color: #ffffff;
+  background: rgba(37, 99, 235, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.35);
+}
+
+.light-mode .nav button i img { filter: brightness(0) invert(0.6); }
+.light-mode .nav button.active i img,
+.light-mode .nav button:hover i img { filter: brightness(0) invert(1); }
+
+.light-mode .zone-card,
+.light-mode .panel,
+.light-mode .kpi-card,
+.light-mode .notification-popover {
+  background: #FAFAFA;
+  border-color: #D1D5DB;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.light-mode .topbar time { color: #374151; }
+.light-mode .center-toggle,
+.light-mode .top-status span {
+  background: #ffffff;
+  border-color: #D1D5DB;
+  color: #374151;
+}
+.light-mode .lane-toggle { background: #F3F4F6; }
+.light-mode .lane-toggle button { color: #6B7280; }
+.light-mode .lane-toggle button.active { color: #ffffff; }
+.light-mode .theme-toggle {
+  color: #374151;
+  background: #ffffff;
+  border-color: #D1D5DB;
+}
+.light-mode .bell,
+.light-mode .operator button { color: #374151; }
+
+.light-mode .operator b,
+.light-mode .title-row h1,
+.light-mode .panel-head h2,
+.light-mode .kpi-card strong,
+.light-mode .frame-meta b,
+.light-mode .empty-page h1 { color: #111827; }
+
+.light-mode .operator small,
+.light-mode .title-row p,
+.light-mode .panel-head small,
+.light-mode .frame-meta span { color: #6B7280; }
+
+.light-mode .notification-popover {
+  background: #ffffff;
+  border-color: #D1D5DB;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.light-mode .notification-popover header { border-bottom-color: #E5E7EB; }
+.light-mode .notification-popover header b,
+.light-mode .notification-popover strong { color: #111827; }
+.light-mode .notification-popover span,
+.light-mode .notification-popover time { color: #6B7280; }
+.light-mode .notification-popover header button {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.light-mode th {
+  color: #6B7280;
+  background: #E5E7EB;
+}
+.light-mode td {
+  color: #111827;
+  background: #FAFAFA;
+  border-color: #D1D5DB;
+}
+.light-mode .field-list span,
+.light-mode .field-list time { color: #374151; }
+
+.light-mode .status-grid article,
+.light-mode .field-list article {
+  background: #FAFAFA;
+  border-color: #D1D5DB;
+}
+.light-mode .status-grid span { color: #374151; }
+.light-mode .status-grid strong,
+.light-mode .zone-card strong { color: #059669; }
+.light-mode .kpi-card em { color: #059669; }
+.light-mode .kpi-card em.down { color: #DC2626; }
+.light-mode .kpi-card span { color: #374151; }
+
+.light-mode .event-filter-row label,
+.light-mode .event-filter-row button,
+.light-mode .event-table button,
+.light-mode .event-pagination button,
+.light-mode .gps-filter-row label,
+.light-mode .gps-filter-row button,
+.light-mode .gps-log-actions button,
+.light-mode .gps-log-panel footer button,
+.light-mode .selected-gps-actions button,
+.light-mode .gps-history-panel button,
+.light-mode .gps-case,
+.light-mode .gps-judge-body dl,
+.light-mode .review-tabs button,
+.light-mode .review-queue-panel .panel-head button,
+.light-mode .review-more,
+.light-mode .review-gps-box,
+.light-mode .review-actions button {
+  background: #FAFAFA;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+
+.light-mode .event-title-row h1,
+.light-mode .event-detail-head h2,
+.light-mode .event-detail-top dd,
+.light-mode .gps-judge-body dd,
+.light-mode .review-info-list dd,
+.light-mode .review-result-grid dd,
+.light-mode .evidence-meta b,
+.light-mode .review-history-panel td,
+.light-mode .gps-log-panel td,
+.light-mode .gps-history-panel td,
+.light-mode .selected-gps-panel dd { color: #111827; }
+
+.light-mode .event-title-row p,
+.light-mode .event-table th,
+.light-mode .event-detail-top dt,
+.light-mode .gps-judge-body dt,
+.light-mode .gps-legend { color: #6B7280; }
+
+.light-mode .gps-map-mini,
+.light-mode .gps-case-map {
+  background:
+    linear-gradient(rgba(209, 213, 219, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(209, 213, 219, 0.15) 1px, transparent 1px),
+    #FAFAFA;
+}
+
+.light-mode .settlement-donut-center strong,
+.light-mode .settlement-donut-center span { color: #111827; }
+
+.light-mode .realtime-kpi,
+.light-mode .settings-card .panel-head button,
+.light-mode .setting-options label,
+.light-mode .setting-toggles label,
+.light-mode .setting-options input {
+  background: #FAFAFA;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+.light-mode .realtime-kpi strong,
+.light-mode .settings-card dd,
+.light-mode .settings-history-panel td { color: #111827; }
+
+.light-mode .filter-caret {
+  color: #2563EB;
+  background: #EFF6FF;
+  border-color: #D1D5DB;
+}
+
+.light-mode .zone-icon,
+.light-mode .status-grid i {
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6, #2563EB);
+}
+
+.light-mode .field-list b,
+.light-mode .alert-row b { color: #111827; }
+
+/* ===== Professional smart-tolling light polish ===== */
+.ops-shell.light-mode {
+  --ops-bg: #eef3f8;
+  --ops-surface: #ffffff;
+  --ops-surface-soft: #f7fafc;
+  --ops-border: #d5dee9;
+  --ops-border-strong: #b9c7d8;
+  --ops-text: #142235;
+  --ops-muted: #607187;
+  --ops-accent: #1f73be;
+  --ops-teal: #0f9f8a;
+  --ops-nav: #152133;
+  --ops-nav-2: #0f1a2a;
+  color: var(--ops-text);
+  background:
+    linear-gradient(rgba(31, 115, 190, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 115, 190, 0.028) 1px, transparent 1px),
+    linear-gradient(135deg, #f7fafc 0%, #eef3f8 50%, #e7eef6 100%);
+  background-size: 38px 38px, 38px 38px, auto;
+}
+
+.ops-shell.light-mode .sidebar {
+  background: linear-gradient(180deg, var(--ops-nav), var(--ops-nav-2));
+  border-right-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 8px 0 24px rgba(20, 34, 53, 0.14);
+}
+
+.ops-shell.light-mode .topbar {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: var(--ops-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 24px rgba(36, 60, 86, 0.07);
+  backdrop-filter: blur(14px);
+}
+
+.ops-shell.light-mode .brand {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ops-shell.light-mode .brand strong {
+  color: #ffffff;
+}
+
+.ops-shell.light-mode .brand span {
+  color: #aebbd0;
+}
+
+.ops-shell.light-mode .nav button {
+  height: 46px;
+  color: #aebbd0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.ops-shell.light-mode .nav button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ops-shell.light-mode .nav button.active {
+  color: #ffffff;
+  border-color: rgba(89, 159, 230, 0.52);
+  background:
+    linear-gradient(90deg, rgba(31, 115, 190, 0.42), rgba(15, 159, 138, 0.16)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 3px 0 0 #2f9be8, inset 0 0 24px rgba(31, 115, 190, 0.18);
+}
+
+.ops-shell.light-mode .nav button i img,
+.ops-shell.light-mode .sidebar .sidebar-logo {
+  filter: brightness(0) invert(0.72);
+}
+
+.ops-shell.light-mode .nav button.active i img,
+.ops-shell.light-mode .nav button:hover i img,
+.ops-shell.light-mode .sidebar .sidebar-logo {
+  filter: brightness(0) invert(1);
+}
+
+.ops-shell.light-mode .zone-card {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.ops-shell.light-mode .zone-card h3,
+.ops-shell.light-mode .zone-card b {
+  color: #e7eef8;
+}
+
+.ops-shell.light-mode .zone-card p {
+  border-top-color: rgba(255, 255, 255, 0.09);
+}
+
+.ops-shell.light-mode .center-toggle,
+.ops-shell.light-mode .top-status span,
+.ops-shell.light-mode .theme-toggle,
+.ops-shell.light-mode .notification-popover,
+.ops-shell.light-mode .operator-menu,
+.ops-shell.light-mode .panel,
+.ops-shell.light-mode .kpi-card,
+.ops-shell.light-mode .equipment-card,
+.ops-shell.light-mode .comm-card,
+.ops-shell.light-mode .settlement-kpi,
+.ops-shell.light-mode .realtime-kpi,
+.ops-shell.light-mode .settings-card,
+.ops-shell.light-mode .event-filter-row label,
+.ops-shell.light-mode .event-filter-row button,
+.ops-shell.light-mode .gps-filter-row label,
+.ops-shell.light-mode .gps-filter-row button,
+.ops-shell.light-mode .review-tabs button,
+.ops-shell.light-mode .settlement-tabs button,
+.ops-shell.light-mode .setting-options label,
+.ops-shell.light-mode .setting-toggles label,
+.ops-shell.light-mode .gps-case,
+.ops-shell.light-mode .gps-judge-body dl,
+.ops-shell.light-mode .review-gps-box {
+  background: var(--ops-surface);
+  border-color: var(--ops-border);
+  box-shadow: 0 10px 26px rgba(36, 60, 86, 0.09);
+}
+
+.ops-shell.light-mode .panel,
+.ops-shell.light-mode .kpi-card,
+.ops-shell.light-mode .equipment-card,
+.ops-shell.light-mode .settlement-kpi,
+.ops-shell.light-mode .realtime-kpi,
+.ops-shell.light-mode .settings-card {
+  overflow: hidden;
+}
+
+.ops-shell.light-mode .panel-head {
+  border-bottom-color: #e5ebf2;
+  background: linear-gradient(180deg, #ffffff, #f8fbfe);
+}
+
+.ops-shell.light-mode .panel-head h2,
+.ops-shell.light-mode .title-row h1,
+.ops-shell.light-mode .kpi-card strong,
+.ops-shell.light-mode .operator b,
+.ops-shell.light-mode .equipment-card strong,
+.ops-shell.light-mode .settlement-kpi strong,
+.ops-shell.light-mode .impact-card strong,
+.ops-shell.light-mode .realtime-kpi strong,
+.ops-shell.light-mode .settings-card dd,
+.ops-shell.light-mode .event-title-row h1,
+.ops-shell.light-mode .event-detail-head h2,
+.ops-shell.light-mode .event-detail-top dd,
+.ops-shell.light-mode .gps-judge-body dd,
+.ops-shell.light-mode .review-info-list dd,
+.ops-shell.light-mode .review-result-grid dd,
+.ops-shell.light-mode .evidence-meta b {
+  color: var(--ops-text);
+}
+
+.ops-shell.light-mode .panel-head small,
+.ops-shell.light-mode .title-row p,
+.ops-shell.light-mode .kpi-card span,
+.ops-shell.light-mode .operator small,
+.ops-shell.light-mode .frame-meta span,
+.ops-shell.light-mode .equipment-card p,
+.ops-shell.light-mode .event-title-row p,
+.ops-shell.light-mode .event-detail-top dt,
+.ops-shell.light-mode .gps-judge-body dt,
+.ops-shell.light-mode .gps-legend,
+.ops-shell.light-mode th {
+  color: var(--ops-muted);
+}
+
+.ops-shell.light-mode .center-toggle,
+.ops-shell.light-mode .top-status span,
+.ops-shell.light-mode .topbar time,
+.ops-shell.light-mode .theme-toggle,
+.ops-shell.light-mode .bell,
+.ops-shell.light-mode .operator button {
+  color: #244461;
+}
+
+.ops-shell.light-mode .lane-toggle {
+  background: #edf3f8;
+}
+
+.ops-shell.light-mode .lane-toggle button {
+  color: var(--ops-muted);
+}
+
+.ops-shell.light-mode .lane-toggle button.active {
+  background: linear-gradient(180deg, #237cc6, #155a99);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(31, 115, 190, 0.25);
+}
+
+.ops-shell.light-mode .theme-toggle {
+  box-shadow: none;
+}
+
+.ops-shell.light-mode .status-grid article,
+.ops-shell.light-mode .field-list article,
+.ops-shell.light-mode .alert-row,
+.ops-shell.light-mode .comm-card,
+.ops-shell.light-mode .realtime-meta-card,
+.ops-shell.light-mode .setting-options input,
+.ops-shell.light-mode .settings-map {
+  background: var(--ops-surface-soft);
+  border-color: var(--ops-border);
+}
+
+.ops-shell.light-mode table {
+  background: var(--ops-surface);
+}
+
+.ops-shell.light-mode th {
+  background: #edf3f8;
+  border-color: #dfe7f0;
+}
+
+.ops-shell.light-mode td {
+  color: var(--ops-text);
+  background: #ffffff;
+  border-color: #e5ebf2;
+}
+
+.ops-shell.light-mode .status-grid span,
+.ops-shell.light-mode .field-list span,
+.ops-shell.light-mode .field-list time,
+.ops-shell.light-mode .camera-note,
+.ops-shell.light-mode .comm-card small,
+.ops-shell.light-mode .settlement-table-panel td,
+.ops-shell.light-mode .impact-card p,
+.ops-shell.light-mode .gps-log-panel td,
+.ops-shell.light-mode .gps-history-panel td,
+.ops-shell.light-mode .review-history-panel td,
+.ops-shell.light-mode .settings-history-panel td {
+  color: #2d4157;
+}
+
+.ops-shell.light-mode .status-grid strong,
+.ops-shell.light-mode .kpi-card em,
+.ops-shell.light-mode .zone-card strong {
+  color: #047857;
+}
+
+.ops-shell.light-mode .kpi-card em.down {
+  color: #c2410c;
+}
+
+.ops-shell.light-mode .zone-icon,
+.ops-shell.light-mode .status-grid i,
+.ops-shell.light-mode .realtime-kpi i,
+.ops-shell.light-mode .kpi-card i {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--ops-accent), #155a99);
+}
+
+.ops-shell.light-mode .kpi-card i img,
+.ops-shell.light-mode .status-grid i img,
+.ops-shell.light-mode .realtime-kpi i img,
+.ops-shell.light-mode .equipment-card i img,
+.ops-shell.light-mode .comm-card i img {
+  filter: brightness(0) invert(1);
+}
+
+.ops-shell.light-mode .filter-caret,
+.ops-shell.light-mode .pill {
+  color: #155a99;
+  background: #edf6ff;
+  border-color: var(--ops-border);
+}
+
+.ops-shell.light-mode .gps-map-mini,
+.ops-shell.light-mode .gps-case-map,
+.ops-shell.light-mode .settings-map {
+  background:
+    linear-gradient(rgba(31, 115, 190, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 115, 190, 0.08) 1px, transparent 1px),
+    #f7fafc;
+}
+
+.ops-shell.light-mode .modal-panel {
+  background: #ffffff;
+  border-color: var(--ops-border);
+  box-shadow: 0 28px 60px rgba(20, 34, 53, 0.22);
+}
+
+.ops-shell.light-mode .modal-header,
+.ops-shell.light-mode .modal-footer {
+  border-color: #e5ebf2;
+}
+
+.ops-shell.light-mode .modal-header h2,
+.ops-shell.light-mode .modal-event-dl dd,
+.ops-shell.light-mode .modal-gps-meta b,
+.ops-shell.light-mode .modal-history-table td {
+  color: var(--ops-text);
+}
+
+.ops-shell.light-mode .modal-event-dl dt,
+.ops-shell.light-mode .modal-gps-meta span,
+.ops-shell.light-mode .evidence-label,
+.ops-shell.light-mode .modal-history-table th {
+  color: var(--ops-muted);
+}
+
+/* Remove exposed page gutters around full-screen dashboards. */
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+}
+
+.ops-shell {
+  width: 100%;
+  min-width: 1440px;
+  min-height: 100%;
+  margin: 0;
+}
+
+/* Keep the operator account menu above dashboard panels. */
+.ops-shell .topbar {
+  position: relative;
+  z-index: 120;
+  overflow: visible;
+}
+
+.ops-shell .operator-wrap {
+  position: relative;
+  z-index: 130;
+}
+
+.ops-shell .operator-menu {
+  z-index: 300;
+}
+
+/* Control dashboard sidebar: align navigation styling with the master admin dashboard. */
+.ops-shell {
+  grid-template-columns: 220px 1fr;
+}
+
+.ops-shell .sidebar {
+  padding: 18px 12px 12px;
+  background: linear-gradient(180deg, rgba(4, 13, 28, 0.98), rgba(4, 20, 40, 0.96));
+  border-right-color: rgba(41, 129, 219, 0.34);
+}
+
+.ops-shell .brand {
+  height: 68px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ops-shell .brand .sidebar-logo {
+  height: 100%;
+  max-height: 68px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.ops-shell .brand strong {
+  color: #ffffff;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.ops-shell .nav {
+  display: grid;
+  gap: 8px;
+}
+
+.ops-shell .nav button {
+  height: 44px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  align-items: center;
+  gap: 13px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #aebbd0;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.ops-shell .nav button i {
+  width: 26px;
+  display: grid;
+  place-items: center;
+}
+
+.ops-shell .nav button i img {
+  width: 18px;
+  height: 18px;
+  filter: brightness(0) invert(0.72);
+}
+
+.ops-shell .nav button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+}
+
+.ops-shell .nav button.active {
+  color: #ffffff;
+  border-color: rgba(89, 159, 230, 0.52);
+  background:
+    linear-gradient(90deg, rgba(31, 115, 190, 0.42), rgba(15, 159, 138, 0.16)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 3px 0 0 #2f9be8, inset 0 0 24px rgba(31, 115, 190, 0.18);
+}
+
+.ops-shell .nav button.active i img,
+.ops-shell .nav button:hover i img {
+  filter: brightness(0) invert(1);
+}
+
+.ops-shell.light-mode .sidebar {
+  background: linear-gradient(180deg, var(--ops-nav), var(--ops-nav-2));
+  border-right-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 8px 0 24px rgba(20, 34, 53, 0.14);
+}
+
+.ops-shell.light-mode .brand {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.ops-shell.light-mode .brand strong,
+.ops-shell.light-mode .nav button,
+.ops-shell.light-mode .nav button span,
+.ops-shell.light-mode .nav button:hover,
+.ops-shell.light-mode .nav button:hover span,
+.ops-shell.light-mode .nav button.active,
+.ops-shell.light-mode .nav button.active span {
+  color: #ffffff;
+}
+
+.ops-shell.light-mode .nav button:not(:hover):not(.active),
+.ops-shell.light-mode .nav button:not(:hover):not(.active) span {
+  color: #aebbd0;
+}
+
+.ops-shell.light-mode .nav button i img {
+  filter: brightness(0) invert(0.72);
+}
+
+.ops-shell.light-mode .nav button:hover i img,
+.ops-shell.light-mode .nav button.active i img,
+.ops-shell.light-mode .sidebar .sidebar-logo {
+  filter: brightness(0) invert(1);
+}
+
+/* Control dashboard KPI cards: match the master admin KPI card language. */
+.ops-shell.light-mode .kpi-grid > .kpi-card,
+.ops-shell.light-mode .equipment-grid > .equipment-card,
+.ops-shell.light-mode .settlement-kpi-grid > .settlement-kpi,
+.ops-shell.light-mode .realtime-kpi-grid > .realtime-kpi {
+  min-height: 96px;
+  border: 1px solid var(--ops-kpi-border, #9fc3ee) !important;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #eaf3ff 0%, #dbeafe 100%) !important;
+  box-shadow: 0 8px 20px rgba(31, 115, 190, 0.16) !important;
+  backdrop-filter: none;
+  overflow: hidden;
+}
+
+.ops-shell.light-mode .kpi-grid > .kpi-card:nth-child(1),
+.ops-shell.light-mode .equipment-grid > .equipment-card:nth-child(1),
+.ops-shell.light-mode .settlement-kpi-grid > .settlement-kpi:nth-child(1),
+.ops-shell.light-mode .realtime-kpi-grid > .realtime-kpi:nth-child(1) {
+  --ops-kpi-icon-start: #3b82f6;
+  --ops-kpi-icon-end: #1d4ed8;
+  --ops-kpi-accent: #2563eb;
+  --ops-kpi-shadow: rgba(29, 78, 216, 0.28);
+}
+
+.ops-shell.light-mode .kpi-grid > .kpi-card:nth-child(2),
+.ops-shell.light-mode .equipment-grid > .equipment-card:nth-child(2),
+.ops-shell.light-mode .settlement-kpi-grid > .settlement-kpi:nth-child(2),
+.ops-shell.light-mode .realtime-kpi-grid > .realtime-kpi:nth-child(2) {
+  --ops-kpi-icon-start: #22d3ee;
+  --ops-kpi-icon-end: #0e7490;
+  --ops-kpi-accent: #0e7490;
+  --ops-kpi-shadow: rgba(14, 116, 144, 0.24);
+}
+
+.ops-shell.light-mode .kpi-grid > .kpi-card:nth-child(3),
+.ops-shell.light-mode .equipment-grid > .equipment-card:nth-child(3),
+.ops-shell.light-mode .settlement-kpi-grid > .settlement-kpi:nth-child(3),
+.ops-shell.light-mode .realtime-kpi-grid > .realtime-kpi:nth-child(3),
+.ops-shell.light-mode .kpi-card.ok,
+.ops-shell.light-mode .equipment-card.green,
+.ops-shell.light-mode .settlement-kpi.card,
+.ops-shell.light-mode .realtime-kpi.ok {
+  --ops-kpi-icon-start: #34d399;
+  --ops-kpi-icon-end: #047857;
+  --ops-kpi-accent: #047857;
+  --ops-kpi-shadow: rgba(4, 120, 87, 0.26);
+}
+
+.ops-shell.light-mode .kpi-grid > .kpi-card:nth-child(4),
+.ops-shell.light-mode .equipment-grid > .equipment-card:nth-child(4),
+.ops-shell.light-mode .settlement-kpi-grid > .settlement-kpi:nth-child(4),
+.ops-shell.light-mode .realtime-kpi-grid > .realtime-kpi:nth-child(4),
+.ops-shell.light-mode .kpi-card.purple,
+.ops-shell.light-mode .equipment-card.purple,
+.ops-shell.light-mode .realtime-kpi.info {
+  --ops-kpi-icon-start: #818cf8;
+  --ops-kpi-icon-end: #4338ca;
+  --ops-kpi-accent: #4f46e5;
+  --ops-kpi-shadow: rgba(67, 56, 202, 0.24);
+}
+
+.ops-shell.light-mode .kpi-grid > .kpi-card:nth-child(5),
+.ops-shell.light-mode .equipment-grid > .equipment-card:nth-child(5),
+.ops-shell.light-mode .kpi-card.yellow,
+.ops-shell.light-mode .equipment-card.mint,
+.ops-shell.light-mode .settlement-kpi.hold,
+.ops-shell.light-mode .realtime-kpi.warn {
+  --ops-kpi-icon-start: #fbbf24;
+  --ops-kpi-icon-end: #b45309;
+  --ops-kpi-accent: #b45309;
+  --ops-kpi-shadow: rgba(180, 83, 9, 0.24);
+}
+
+.ops-shell.light-mode .kpi-card.navy,
+.ops-shell.light-mode .equipment-card.teal,
+.ops-shell.light-mode .settlement-kpi.danger {
+  --ops-kpi-icon-start: #fb7185;
+  --ops-kpi-icon-end: #be123c;
+  --ops-kpi-accent: #be123c;
+  --ops-kpi-shadow: rgba(190, 18, 60, 0.24);
+}
+
+.ops-shell.light-mode .kpi-card i,
+.ops-shell.light-mode .equipment-card i,
+.ops-shell.light-mode .settlement-kpi i,
+.ops-shell.light-mode .realtime-kpi i {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--ops-kpi-icon-start, #3b82f6), var(--ops-kpi-icon-end, #1d4ed8)) !important;
+  box-shadow: 0 8px 18px var(--ops-kpi-shadow, rgba(29, 78, 216, 0.28)) !important;
+}
+
+.ops-shell.light-mode .kpi-card i img,
+.ops-shell.light-mode .equipment-card i img,
+.ops-shell.light-mode .settlement-kpi i img,
+.ops-shell.light-mode .realtime-kpi i img {
+  filter: brightness(0) invert(1) !important;
+}
+
+.ops-shell.light-mode .kpi-card span,
+.ops-shell.light-mode .equipment-card span,
+.ops-shell.light-mode .settlement-kpi span,
+.ops-shell.light-mode .realtime-kpi span,
+.ops-shell.light-mode .equipment-card p,
+.ops-shell.light-mode .realtime-kpi em {
+  color: #53657a !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .kpi-card strong,
+.ops-shell.light-mode .equipment-card strong,
+.ops-shell.light-mode .settlement-kpi strong,
+.ops-shell.light-mode .realtime-kpi strong,
+.ops-shell.light-mode .settlement-kpi strong small {
+  color: #142235 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .kpi-card em,
+.ops-shell.light-mode .equipment-card em,
+.ops-shell.light-mode .settlement-kpi em {
+  color: var(--ops-kpi-accent, #2563eb) !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .kpi-card em.down,
+.ops-shell.light-mode .settlement-kpi.danger em {
+  color: #b91c1c !important;
+}
+
+.ops-shell.light-mode .equipment-card p {
+  border-top-color: #bfd6f5 !important;
+}
+
+/* Control light mode: final readability pass across all related pages. */
+.ops-shell.light-mode .main {
+  color: #142235;
+}
+
+.ops-shell.light-mode .panel-head h2,
+.ops-shell.light-mode .title-row h1,
+.ops-shell.light-mode .event-title-row h1,
+.ops-shell.light-mode .event-detail-head h2,
+.ops-shell.light-mode .modal-header h2,
+.ops-shell.light-mode .zone-card h3,
+.ops-shell.light-mode .settings-card dt,
+.ops-shell.light-mode .settings-card dd,
+.ops-shell.light-mode .impact-card strong,
+.ops-shell.light-mode .settlement-donut-wrap dd,
+.ops-shell.light-mode .settlement-donut-center strong,
+.ops-shell.light-mode .realtime-meta-card b,
+.ops-shell.light-mode .comm-card strong,
+.ops-shell.light-mode .field-list b,
+.ops-shell.light-mode .alert-row b,
+.ops-shell.light-mode .gps-case > b,
+.ops-shell.light-mode .review-info-list dd,
+.ops-shell.light-mode .review-result-grid dd,
+.ops-shell.light-mode .selected-gps-panel dd,
+.ops-shell.light-mode .modal-event-dl dd,
+.ops-shell.light-mode .modal-gps-meta b {
+  color: #142235 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .title-row p,
+.ops-shell.light-mode .event-title-row p,
+.ops-shell.light-mode .panel-head small,
+.ops-shell.light-mode .frame-meta span,
+.ops-shell.light-mode .event-detail-top dt,
+.ops-shell.light-mode .gps-judge-body dt,
+.ops-shell.light-mode .review-info-list dt,
+.ops-shell.light-mode .review-result-grid dt,
+.ops-shell.light-mode .selected-gps-panel dt,
+.ops-shell.light-mode .settings-card dt,
+.ops-shell.light-mode .settings-card .compact-list span,
+.ops-shell.light-mode .setting-options label,
+.ops-shell.light-mode .setting-toggles label,
+.ops-shell.light-mode .camera-note,
+.ops-shell.light-mode .comm-card span,
+.ops-shell.light-mode .comm-card small,
+.ops-shell.light-mode .comm-summary span,
+.ops-shell.light-mode .alert-row span,
+.ops-shell.light-mode .alert-row p,
+.ops-shell.light-mode .alert-row p span,
+.ops-shell.light-mode .field-list span,
+.ops-shell.light-mode .field-list time,
+.ops-shell.light-mode .realtime-meta-card span,
+.ops-shell.light-mode .settlement-donut-center span,
+.ops-shell.light-mode .settlement-donut-center small,
+.ops-shell.light-mode .impact-card p,
+.ops-shell.light-mode .modal-event-dl dt,
+.ops-shell.light-mode .modal-gps-meta span,
+.ops-shell.light-mode .evidence-label,
+.ops-shell.light-mode .operator small,
+.ops-shell.light-mode .notification-popover span,
+.ops-shell.light-mode .notification-popover time {
+  color: #334155 !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode th,
+.ops-shell.light-mode .event-table th,
+.ops-shell.light-mode .gps-log-panel th,
+.ops-shell.light-mode .gps-history-panel th,
+.ops-shell.light-mode .review-history-panel th,
+.ops-shell.light-mode .settlement-table-panel th,
+.ops-shell.light-mode .realtime-event-panel th,
+.ops-shell.light-mode .settings-history-panel th,
+.ops-shell.light-mode .modal-history-table th {
+  color: #334155 !important;
+  background: #edf4fc !important;
+  border-color: #b9cbe0 !important;
+  font-weight: 900 !important;
+}
+
+.ops-shell.light-mode td,
+.ops-shell.light-mode .event-table td,
+.ops-shell.light-mode .gps-log-panel td,
+.ops-shell.light-mode .gps-history-panel td,
+.ops-shell.light-mode .review-history-panel td,
+.ops-shell.light-mode .settlement-table-panel td,
+.ops-shell.light-mode .realtime-event-panel td,
+.ops-shell.light-mode .settings-history-panel td,
+.ops-shell.light-mode .modal-history-table td {
+  color: #142235 !important;
+  background: #ffffff !important;
+  border-color: #dce6f1 !important;
+  font-weight: 700;
+}
+
+.ops-shell.light-mode .event-table tr.selected td,
+.ops-shell.light-mode .control-table tr.selected td,
+.ops-shell.light-mode tbody tr.selected td {
+  color: #0f172a !important;
+  background: #eaf3ff !important;
+}
+
+.ops-shell.light-mode .event-pagination,
+.ops-shell.light-mode .event-pagination > span,
+.ops-shell.light-mode .gps-log-panel footer,
+.ops-shell.light-mode .gps-log-panel footer span {
+  color: #1f3349 !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .event-filter-row label,
+.ops-shell.light-mode .event-filter-row button,
+.ops-shell.light-mode .gps-filter-row label,
+.ops-shell.light-mode .gps-filter-row button,
+.ops-shell.light-mode .settlement-tabs button,
+.ops-shell.light-mode .chart-toggle button,
+.ops-shell.light-mode .event-table button,
+.ops-shell.light-mode .event-pagination button,
+.ops-shell.light-mode .gps-log-actions button,
+.ops-shell.light-mode .gps-log-panel footer button,
+.ops-shell.light-mode .gps-history-panel .panel-head button,
+.ops-shell.light-mode .selected-gps-actions button,
+.ops-shell.light-mode .review-tabs button,
+.ops-shell.light-mode .review-queue-panel .panel-head button,
+.ops-shell.light-mode .review-more,
+.ops-shell.light-mode .review-actions button,
+.ops-shell.light-mode .settings-card .panel-head button,
+.ops-shell.light-mode .modal-footer button {
+  color: #174f7a !important;
+  background: #eaf3fc !important;
+  border-color: #91b2d5 !important;
+  box-shadow: 0 3px 9px rgba(31, 73, 125, 0.09) !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .event-filter-row input,
+.ops-shell.light-mode .setting-options input,
+.ops-shell.light-mode .event-search input {
+  color: #142235 !important;
+  background: transparent !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .event-filter-row input::placeholder,
+.ops-shell.light-mode .event-search input::placeholder {
+  color: #64748b !important;
+  opacity: 1;
+}
+
+.ops-shell.light-mode .filter-dropdown {
+  background: #ffffff !important;
+  border-color: #b8cbe0 !important;
+  box-shadow: 0 12px 26px rgba(31, 73, 125, 0.16) !important;
+}
+
+.ops-shell.light-mode .filter-dropdown button {
+  color: #244461 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ops-shell.light-mode .filter-dropdown button:hover,
+.ops-shell.light-mode .filter-dropdown button.chosen,
+.ops-shell.light-mode .filter-toggle.active,
+.ops-shell.light-mode .event-view-btn.active,
+.ops-shell.light-mode .chart-toggle button.active,
+.ops-shell.light-mode .settlement-tabs button.active {
+  color: #0f4f87 !important;
+  background: #dceeff !important;
+  border-color: #79a7d6 !important;
+}
+
+.ops-shell.light-mode .gps-legend,
+.ops-shell.light-mode .gps-area-legend,
+.ops-shell.light-mode .review-gps-legend,
+.ops-shell.light-mode .chart-legend,
+.ops-shell.light-mode .gps-case small {
+  color: #334155 !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .gps-map-mini,
+.ops-shell.light-mode .gps-case-map,
+.ops-shell.light-mode .settings-map {
+  border-color: #b8cbe0 !important;
+  background:
+    linear-gradient(rgba(150, 172, 198, 0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150, 172, 198, 0.28) 1px, transparent 1px),
+    #f8fbff !important;
+}
+
+.ops-shell.light-mode .gps-case,
+.ops-shell.light-mode .gps-judge-body dl,
+.ops-shell.light-mode .review-gps-box,
+.ops-shell.light-mode .realtime-meta-card,
+.ops-shell.light-mode .comm-card,
+.ops-shell.light-mode .comm-summary p,
+.ops-shell.light-mode .alert-row,
+.ops-shell.light-mode .field-list article,
+.ops-shell.light-mode .status-grid article,
+.ops-shell.light-mode .setting-options label,
+.ops-shell.light-mode .setting-toggles label,
+.ops-shell.light-mode .modal-gps-meta {
+  color: #142235 !important;
+  background: #ffffff !important;
+  border-color: #c7d4e3 !important;
+}
+
+.ops-shell.light-mode .event-pill,
+.ops-shell.light-mode .event-state,
+.ops-shell.light-mode .state,
+.ops-shell.light-mode .pay,
+.ops-shell.light-mode .status-ok,
+.ops-shell.light-mode .pill {
+  border-width: 1px !important;
+  font-weight: 900 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
+}
+
+.ops-shell.light-mode .event-state.ok,
+.ops-shell.light-mode .state.ok,
+.ops-shell.light-mode .pay.ok,
+.ops-shell.light-mode .status-ok,
+.ops-shell.light-mode .live-chip {
+  color: #2f7d55 !important;
+  background: #e5f4ec !important;
+  border-color: #8fc3a6 !important;
+}
+
+.ops-shell.light-mode .event-state.warn,
+.ops-shell.light-mode .event-state.boundary,
+.ops-shell.light-mode .state.warn,
+.ops-shell.light-mode .state.boundary,
+.ops-shell.light-mode .pay.warn,
+.ops-shell.light-mode .pay.boundary,
+.ops-shell.light-mode .live-chip.waiting {
+  color: #92400e !important;
+  background: #fff0c7 !important;
+  border-color: #d59d2b !important;
+}
+
+.ops-shell.light-mode .event-state.danger,
+.ops-shell.light-mode .state.danger,
+.ops-shell.light-mode .pay.danger {
+  color: #991b1b !important;
+  background: #ffe4e4 !important;
+  border-color: #df8b8b !important;
+}
+
+.ops-shell.light-mode .event-state.muted,
+.ops-shell.light-mode .pill {
+  color: #155a99 !important;
+  background: #e3f0ff !important;
+  border-color: #8fb5dc !important;
+}
+
+.ops-shell.light-mode .event-pill.in {
+  color: #155a99 !important;
+  background: #e3f0ff !important;
+  border-color: #8fb5dc !important;
+}
+
+.ops-shell.light-mode .event-pill.out {
+  color: #92400e !important;
+  background: #fff0c7 !important;
+  border-color: #d59d2b !important;
+}
+
+.ops-shell.light-mode .row-dot.ok,
+.ops-shell.light-mode .dot.ok {
+  background: #6fcf97 !important;
+  box-shadow: 0 0 0 3px rgba(47, 125, 85, 0.13) !important;
+}
+
+.ops-shell.light-mode .row-dot.warn,
+.ops-shell.light-mode .row-dot.boundary,
+.ops-shell.light-mode .dot.warn {
+  background: #d59d2b !important;
+  box-shadow: 0 0 0 3px rgba(146, 64, 14, 0.12) !important;
+}
+
+.ops-shell.light-mode .row-dot.danger,
+.ops-shell.light-mode .dot.danger {
+  background: #df6b6b !important;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.12) !important;
+}
+
+.ops-shell.light-mode .modal-panel {
+  background: #ffffff !important;
+  border-color: #b8cbe0 !important;
+}
+
+.ops-shell.light-mode .modal-header,
+.ops-shell.light-mode .modal-footer,
+.ops-shell.light-mode .modal-gps-section,
+.ops-shell.light-mode .modal-history-section,
+.ops-shell.light-mode .settings-card dl,
+.ops-shell.light-mode .settings-card dt,
+.ops-shell.light-mode .settings-card dd {
+  border-color: #d7e3f0 !important;
+}
+
+/* Control light mode: use the master admin table system everywhere. */
+.ops-shell.light-mode table,
+.ops-shell.light-mode .event-table,
+.ops-shell.light-mode .gps-log-panel table,
+.ops-shell.light-mode .gps-history-panel table,
+.ops-shell.light-mode .review-history-panel table,
+.ops-shell.light-mode .settlement-table-panel table,
+.ops-shell.light-mode .realtime-event-panel table,
+.ops-shell.light-mode .settings-history-panel table,
+.ops-shell.light-mode .modal-history-table,
+.ops-shell.light-mode .recent-panel table,
+.ops-shell.light-mode .gps-panel table,
+.ops-shell.light-mode .rail-panel table,
+.ops-shell.light-mode .history-panel table {
+  overflow: hidden;
+  border: 1px solid #9fb7d2 !important;
+  border-radius: 8px;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  background: #ffffff !important;
+}
+
+.ops-shell.light-mode table th,
+.ops-shell.light-mode .event-table th,
+.ops-shell.light-mode .gps-log-panel th,
+.ops-shell.light-mode .gps-history-panel th,
+.ops-shell.light-mode .review-history-panel th,
+.ops-shell.light-mode .settlement-table-panel th,
+.ops-shell.light-mode .realtime-event-panel th,
+.ops-shell.light-mode .settings-history-panel th,
+.ops-shell.light-mode .modal-history-table th,
+.ops-shell.light-mode .recent-panel th,
+.ops-shell.light-mode .gps-panel th,
+.ops-shell.light-mode .rail-panel th,
+.ops-shell.light-mode .history-panel th {
+  height: 38px;
+  color: #42546a !important;
+  background: #edf4fc !important;
+  border-bottom: 1px solid #b9cbe0 !important;
+  border-right: 1px solid #d7e3f0 !important;
+  font-weight: 800 !important;
+}
+
+.ops-shell.light-mode table td,
+.ops-shell.light-mode table tbody tr:nth-child(even) td,
+.ops-shell.light-mode .event-table td,
+.ops-shell.light-mode .event-table tbody tr:nth-child(even) td,
+.ops-shell.light-mode .gps-log-panel td,
+.ops-shell.light-mode .gps-log-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .gps-history-panel td,
+.ops-shell.light-mode .gps-history-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .review-history-panel td,
+.ops-shell.light-mode .review-history-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .settlement-table-panel td,
+.ops-shell.light-mode .settlement-table-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .realtime-event-panel td,
+.ops-shell.light-mode .realtime-event-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .settings-history-panel td,
+.ops-shell.light-mode .settings-history-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .modal-history-table td,
+.ops-shell.light-mode .modal-history-table tbody tr:nth-child(even) td,
+.ops-shell.light-mode .recent-panel td,
+.ops-shell.light-mode .recent-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .gps-panel td,
+.ops-shell.light-mode .gps-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .rail-panel td,
+.ops-shell.light-mode .rail-panel tbody tr:nth-child(even) td,
+.ops-shell.light-mode .history-panel td,
+.ops-shell.light-mode .history-panel tbody tr:nth-child(even) td {
+  color: #142235 !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #dce6f1 !important;
+  border-right: 1px solid #e2eaf3 !important;
+  font-weight: 600;
+}
+
+.ops-shell.light-mode table th:last-child,
+.ops-shell.light-mode table td:last-child,
+.ops-shell.light-mode .event-table th:last-child,
+.ops-shell.light-mode .event-table td:last-child,
+.ops-shell.light-mode .gps-log-panel th:last-child,
+.ops-shell.light-mode .gps-log-panel td:last-child,
+.ops-shell.light-mode .gps-history-panel th:last-child,
+.ops-shell.light-mode .gps-history-panel td:last-child,
+.ops-shell.light-mode .review-history-panel th:last-child,
+.ops-shell.light-mode .review-history-panel td:last-child,
+.ops-shell.light-mode .settlement-table-panel th:last-child,
+.ops-shell.light-mode .settlement-table-panel td:last-child,
+.ops-shell.light-mode .realtime-event-panel th:last-child,
+.ops-shell.light-mode .realtime-event-panel td:last-child,
+.ops-shell.light-mode .settings-history-panel th:last-child,
+.ops-shell.light-mode .settings-history-panel td:last-child,
+.ops-shell.light-mode .modal-history-table th:last-child,
+.ops-shell.light-mode .modal-history-table td:last-child,
+.ops-shell.light-mode .recent-panel th:last-child,
+.ops-shell.light-mode .recent-panel td:last-child,
+.ops-shell.light-mode .gps-panel th:last-child,
+.ops-shell.light-mode .gps-panel td:last-child,
+.ops-shell.light-mode .rail-panel th:last-child,
+.ops-shell.light-mode .rail-panel td:last-child,
+.ops-shell.light-mode .history-panel th:last-child,
+.ops-shell.light-mode .history-panel td:last-child {
+  border-right: 0 !important;
+}
+
+.ops-shell.light-mode table tbody tr:hover td,
+.ops-shell.light-mode .event-table tbody tr:hover td,
+.ops-shell.light-mode .gps-log-panel tbody tr:hover td,
+.ops-shell.light-mode .gps-history-panel tbody tr:hover td,
+.ops-shell.light-mode .review-history-panel tbody tr:hover td,
+.ops-shell.light-mode .settlement-table-panel tbody tr:hover td,
+.ops-shell.light-mode .realtime-event-panel tbody tr:hover td,
+.ops-shell.light-mode .settings-history-panel tbody tr:hover td,
+.ops-shell.light-mode .modal-history-table tbody tr:hover td,
+.ops-shell.light-mode .recent-panel tbody tr:hover td,
+.ops-shell.light-mode .gps-panel tbody tr:hover td,
+.ops-shell.light-mode .rail-panel tbody tr:hover td,
+.ops-shell.light-mode .history-panel tbody tr:hover td {
+  background: #f1f6fb !important;
+}
+
+.ops-shell.light-mode table tr.selected td,
+.ops-shell.light-mode .event-table tr.selected td,
+.ops-shell.light-mode .gps-log-panel tr.selected td,
+.ops-shell.light-mode .gps-history-panel tr.selected td,
+.ops-shell.light-mode .review-history-panel tr.selected td,
+.ops-shell.light-mode .settlement-table-panel tr.selected td,
+.ops-shell.light-mode .realtime-event-panel tr.selected td,
+.ops-shell.light-mode .settings-history-panel tr.selected td,
+.ops-shell.light-mode .modal-history-table tr.selected td,
+.ops-shell.light-mode .recent-panel tr.selected td,
+.ops-shell.light-mode .gps-panel tr.selected td,
+.ops-shell.light-mode .rail-panel tr.selected td,
+.ops-shell.light-mode .history-panel tr.selected td {
+  background: #eaf3ff !important;
+  box-shadow: inset 0 0 0 1px rgba(31, 115, 190, 0.22);
+}
+
+/* Control dashboard current status and panel action readability. */
+.ops-shell.light-mode .current-panel .status-grid article,
+.ops-shell.light-mode .realtime-status-panel .status-grid article {
+  background: #ffffff !important;
+  border-color: #b8cbe0 !important;
+  box-shadow: 0 4px 12px rgba(31, 73, 125, 0.07) !important;
+}
+
+.ops-shell.light-mode .current-panel .status-grid i,
+.ops-shell.light-mode .realtime-status-panel .status-grid i {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #2f8bd7, #155a99) !important;
+  box-shadow: 0 6px 14px rgba(21, 90, 153, 0.18) !important;
+}
+
+.ops-shell.light-mode .current-panel .status-grid i img,
+.ops-shell.light-mode .realtime-status-panel .status-grid i img {
+  width: 21px;
+  height: 21px;
+  filter: brightness(0) invert(1) !important;
+  opacity: 1 !important;
+}
+
+.ops-shell.light-mode .current-panel .status-grid span,
+.ops-shell.light-mode .realtime-status-panel .status-grid span {
+  color: #334155 !important;
+  font-weight: 800;
+}
+
+.ops-shell.light-mode .current-panel .status-grid strong,
+.ops-shell.light-mode .realtime-status-panel .status-grid strong {
+  color: #2f7d55 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .current-panel .status-grid .info strong,
+.ops-shell.light-mode .realtime-status-panel .status-grid .info strong {
+  color: #2f7d55 !important;
+}
+
+.ops-shell.light-mode .live-chip.waiting .dot,
+.ops-shell.light-mode .live-chip.waiting .dot.ok {
+  background: #d59d2b !important;
+  box-shadow: 0 0 0 3px rgba(146, 64, 14, 0.12) !important;
+}
+
+.ops-shell.light-mode .frame-meta p {
+  padding: 8px 10px;
+}
+
+.ops-shell.light-mode .frame-meta span {
+  font-size: 11px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.ops-shell.light-mode .frame-meta b {
+  margin-top: 4px;
+  font-size: 16px;
+  line-height: 1.22;
+  word-break: keep-all;
+}
+
+.ops-shell.light-mode .gps-panel .panel-head button,
+.ops-shell.light-mode .field-panel .panel-head button,
+.ops-shell.light-mode .current-panel .panel-head button {
+  height: 26px !important;
+  min-width: auto !important;
+  padding: 0 8px !important;
+  color: #174f7a !important;
+  background: #eaf3fc !important;
+  border: 1px solid #91b2d5 !important;
+  border-radius: 5px;
+  box-shadow: 0 3px 9px rgba(31, 73, 125, 0.09) !important;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-panel .panel-head button:hover,
+.ops-shell.light-mode .field-panel .panel-head button:hover,
+.ops-shell.light-mode .current-panel .panel-head button:hover {
+  color: #0f4f87 !important;
+  background: #edf6ff !important;
+  border-color: #7fa8d2 !important;
+}
+
+/* GPS decision panel readability and legend isolation. */
+.ops-shell.light-mode .gps-area-legend {
+  gap: 30px;
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-area-legend span,
+.ops-shell.light-mode .gps-area-legend .ok,
+.ops-shell.light-mode .gps-area-legend .point,
+.ops-shell.light-mode .gps-area-legend .danger {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  color: #334155 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.ops-shell.light-mode .gps-area-legend span::before {
+  width: 11px;
+  height: 11px;
+  margin-right: 8px;
+  flex: 0 0 auto;
+  box-shadow: none !important;
+}
+
+.ops-shell.light-mode .gps-area-legend .ok::before {
+  background: #38b876 !important;
+}
+
+.ops-shell.light-mode .gps-area-legend .point::before {
+  background: #d59d2b !important;
+}
+
+.ops-shell.light-mode .gps-area-legend .danger::before {
+  background: #d66a57 !important;
+}
+
+.ops-shell.light-mode .gps-case > b {
+  color: #142235 !important;
+  font-size: 15px;
+}
+
+.ops-shell.light-mode .gps-case dt {
+  color: #55708d !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-case dd {
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.ops-shell.light-mode .gps-case-map i {
+  border-color: #32b979 !important;
+  background: rgba(50, 185, 121, 0.12) !important;
+}
+
+.ops-shell.light-mode .gps-case-map em {
+  background: #d59d2b !important;
+  box-shadow: 0 0 0 5px rgba(213, 157, 43, 0.14) !important;
+}
+
+.ops-shell.light-mode .danger-case .gps-case-map em {
+  background: #d66a57 !important;
+  box-shadow: 0 0 0 5px rgba(214, 106, 87, 0.14) !important;
+}
+
+.ops-shell.light-mode .gps-case-map strong {
+  color: #55708d !important;
+  font-weight: 900;
+}
+
+/* Settlement page light-mode impact and legend polish. */
+.ops-shell.light-mode .settlement-donut-wrap dt,
+.ops-shell.light-mode .settlement-donut-wrap dt.ok,
+.ops-shell.light-mode .settlement-donut-wrap dt.warn,
+.ops-shell.light-mode .settlement-donut-wrap dt.danger {
+  width: 13px;
+  min-width: 13px;
+  height: 13px;
+  padding: 0;
+  color: transparent !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.ops-shell.light-mode .settlement-donut-wrap dt::before {
+  background: #38b876 !important;
+  box-shadow: none !important;
+}
+
+.ops-shell.light-mode .settlement-donut-wrap dt.warn::before {
+  background: #d59d2b !important;
+}
+
+.ops-shell.light-mode .settlement-donut-wrap dt.danger::before {
+  background: #d66a57 !important;
+}
+
+.ops-shell.light-mode .settlement-donut-wrap dd {
+  color: #142235 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card {
+  background: #e8f3ee !important;
+  border-color: #9dcbb4 !important;
+  box-shadow: 0 4px 12px rgba(31, 73, 125, 0.07) !important;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card.danger {
+  background: #f6e8e6 !important;
+  border-color: #d7a29a !important;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card header,
+.ops-shell.light-mode .gps-impact-panel .impact-card header b {
+  color: #2f7d55 !important;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card.danger header,
+.ops-shell.light-mode .gps-impact-panel .impact-card.danger header b {
+  color: #b05245 !important;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card header span {
+  color: #2f7d55 !important;
+  background: #d7ecdf !important;
+  border-color: #93c3a7 !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card.danger header span {
+  color: #b05245 !important;
+  background: #f2d7d2 !important;
+  border-color: #d99c92 !important;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card p {
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .gps-impact-panel .impact-card strong {
+  color: #142235 !important;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .nofix-line {
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .nofix-line i {
+  background: #4f8fd6 !important;
+  box-shadow: none !important;
+}
+
+.ops-shell.light-mode .nofix-line span {
+  color: #334155 !important;
+  font-weight: 900;
+}
+
+/* Equipment alert rows: keep labels/actions on one line in light mode. */
+.ops-shell.light-mode .equipment-page .alert-panel .panel-head button {
+  height: 28px !important;
+  padding: 0 8px !important;
+  color: #174f7a !important;
+  background: #eaf3fc !important;
+  border: 1px solid #91b2d5 !important;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row {
+  grid-template-columns: 28px minmax(180px, 1fr) 68px 64px 42px 68px 48px;
+  gap: 6px;
+  min-height: 72px;
+  padding: 9px 8px;
+  align-items: center;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row > div {
+  min-width: 0;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row b,
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row span,
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row p,
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row button {
+  white-space: nowrap;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row b {
+  color: #142235 !important;
+  font-size: 13px;
+  line-height: 1.2;
+  overflow: visible;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row > div > span {
+  margin-top: 7px;
+  color: #334155 !important;
+  font-size: 12px;
+  font-weight: 900;
+  overflow: visible;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row p {
+  color: #142235 !important;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row p span {
+  margin-bottom: 4px;
+  color: #334155 !important;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row button {
+  height: 30px;
+  min-width: 0;
+  padding: 0 6px;
+  color: #174f7a !important;
+  background: #edf4fb !important;
+  border: 1px solid #9bb4ce !important;
+  border-radius: 6px;
+  box-shadow: none !important;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .alert-panel .alert-row button.done {
+  color: #2f7d55 !important;
+  background: #e5f4ec !important;
+  border-color: #8fc3a6 !important;
+}
+
+/* Equipment communication panel light-mode polish. */
+.ops-shell.light-mode .equipment-page .comm-panel {
+  background: #ffffff !important;
+  border-color: #c7d4e3 !important;
+  box-shadow: 0 6px 18px rgba(31, 73, 125, 0.08) !important;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card {
+  grid-template-columns: 64px 1fr;
+  min-height: 132px;
+  padding: 18px 20px;
+  background: #ffffff !important;
+  border-color: #b8cbe0 !important;
+  box-shadow: 0 4px 12px rgba(31, 73, 125, 0.06) !important;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card i {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2f8bd7, #155a99) !important;
+  box-shadow: 0 6px 14px rgba(21, 90, 153, 0.18) !important;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card i img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1) !important;
+  opacity: 1 !important;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card span {
+  color: #334155 !important;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card strong {
+  color: #142235 !important;
+  font-size: 28px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card strong.pending {
+  color: #142235 !important;
+}
+
+.ops-shell.light-mode .equipment-page .comm-card small {
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .comm-summary {
+  padding: 0 14px 14px;
+}
+
+.ops-shell.light-mode .equipment-page .comm-summary p {
+  min-height: 74px;
+  padding: 16px 18px;
+  background: #f8fbff !important;
+  border-right-color: #c7d4e3 !important;
+}
+
+.ops-shell.light-mode .equipment-page .comm-summary span {
+  color: #334155 !important;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .equipment-page .comm-summary b {
+  display: block;
+  margin-top: 8px;
+  color: #142235 !important;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+/* Equipment page: reserve enough room for status history. */
+.ops-shell .equipment-page .equipment-layout {
+  grid-template-columns: minmax(0, 0.94fr) minmax(650px, 1.18fr);
+  align-items: stretch;
+}
+
+.ops-shell .equipment-page .equipment-left-column,
+.ops-shell .equipment-page .equipment-history {
+  min-width: 0;
+}
+
+.ops-shell .equipment-page .equipment-history {
+  align-self: stretch;
+  display: grid;
+  grid-template-rows: 48px minmax(0, 1fr);
+  margin-top: 0 !important;
+  overflow: hidden;
+}
+
+.ops-shell .equipment-page .equipment-history table {
+  table-layout: fixed;
+  margin: 0 12px 12px;
+  width: calc(100% - 24px);
+}
+
+.ops-shell .equipment-page .equipment-history th,
+.ops-shell .equipment-page .equipment-history td {
+  padding: 0 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.ops-shell .equipment-page .equipment-history th:nth-child(1),
+.ops-shell .equipment-page .equipment-history td:nth-child(1) {
+  width: 84px;
+}
+
+.ops-shell .equipment-page .equipment-history th:nth-child(2),
+.ops-shell .equipment-page .equipment-history td:nth-child(2) {
+  width: 156px;
+}
+
+.ops-shell .equipment-page .equipment-history th:nth-child(3),
+.ops-shell .equipment-page .equipment-history td:nth-child(3) {
+  width: 96px;
+}
+
+.ops-shell .equipment-page .equipment-history th:nth-child(5),
+.ops-shell .equipment-page .equipment-history td:nth-child(5) {
+  width: 86px;
+}
+
+.ops-shell .equipment-page .equipment-history th:nth-child(6),
+.ops-shell .equipment-page .equipment-history td:nth-child(6) {
+  width: 86px;
+}
+
+.ops-shell.light-mode .equipment-page .equipment-history .panel-head button {
+  height: 28px !important;
+  padding: 0 8px !important;
+  color: #174f7a !important;
+  background: #eaf3fc !important;
+  border: 1px solid #91b2d5 !important;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* Settings page light-mode readability. */
+.ops-shell.light-mode .settings-page .settings-card {
+  background: #ffffff !important;
+  border-color: #c7d4e3 !important;
+  box-shadow: 0 6px 18px rgba(31, 73, 125, 0.08) !important;
+}
+
+.ops-shell.light-mode .settings-page .settings-card dt,
+.ops-shell.light-mode .settings-page .setting-options label,
+.ops-shell.light-mode .settings-page .setting-toggles label,
+.ops-shell.light-mode .settings-page .setting-options label span,
+.ops-shell.light-mode .settings-page .setting-toggles label span {
+  color: #334155 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .settings-page .settings-card dd {
+  color: #142235 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .settings-page .setting-options label,
+.ops-shell.light-mode .settings-page .setting-toggles label {
+  background: #f8fbff !important;
+  border-color: #c7d4e3 !important;
+}
+
+.ops-shell.light-mode .settings-page .setting-options input {
+  color: #142235 !important;
+  background: #ffffff !important;
+  border-color: #9fb7d2 !important;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .settings-page .setting-toggles input {
+  accent-color: #1f73be;
+}
+
+.ops-shell.light-mode .settings-page .settings-map {
+  border-color: #b8cbe0 !important;
+  background:
+    linear-gradient(rgba(150, 172, 198, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150, 172, 198, 0.3) 1px, transparent 1px),
+    #f8fbff !important;
+}
+
+.ops-shell.light-mode .settings-page .settings-map i {
+  border-color: #32b979 !important;
+  background: rgba(50, 185, 121, 0.12) !important;
+}
+
+.ops-shell.light-mode .settings-page .settings-map b {
+  background: #d59d2b !important;
+  box-shadow: 0 0 0 5px rgba(213, 157, 43, 0.14) !important;
+}
+
+.ops-shell.light-mode .settings-page .settings-history-panel .panel-head button {
+  height: 28px !important;
+  padding: 0 8px !important;
+  color: #174f7a !important;
+  background: #eaf3fc !important;
+  border: 1px solid #91b2d5 !important;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ops-shell.light-mode .settings-page .settings-history-panel th {
+  color: #42546a !important;
+  font-weight: 900 !important;
+}
+
+.ops-shell.light-mode .settings-page .settings-history-panel td {
+  color: #142235 !important;
+  font-weight: 700;
+}
+
+/* Equipment rail status table alignment. */
+.ops-shell .equipment-page .rail-panel th,
+.ops-shell .equipment-page .rail-panel td {
+  text-align: center;
+}
+
+.ops-shell .equipment-page .rail-panel td:first-child {
+  text-align: left;
+}
+
+.ops-shell .equipment-page .rail-panel td:first-child .lane-badge {
+  vertical-align: middle;
+}
+
+/* Control operator dropdown readability in light mode. */
+.ops-shell.light-mode .operator-menu {
+  background: #ffffff !important;
+  border: 1px solid #b8cbe0 !important;
+  box-shadow: 0 18px 36px rgba(31, 73, 125, 0.18) !important;
+}
+
+.ops-shell.light-mode .operator-menu button {
+  color: #174f7a !important;
+  background: transparent !important;
+  font-size: 14px;
+  font-weight: 900;
+  opacity: 1 !important;
+}
+
+.ops-shell.light-mode .operator-menu button:hover {
+  color: #0f3d73 !important;
+  background: #eaf3fc !important;
 }

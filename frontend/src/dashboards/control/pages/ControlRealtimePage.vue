@@ -98,8 +98,8 @@ const {
             <article class="panel realtime-alert-panel">
               <div class="panel-head"><h2>현장 알림</h2><button type="button">더 보기</button></div>
               <div class="alert-list">
-                <article class="alert-row warn"><i>!</i><div><b>2차선 CCTV 프레임 지연</b><span>최근 3초 이상 지연</span></div><p><span>발생 시각</span>17:35:18</p><button type="button">확인</button></article>
-                <article class="alert-row info"><i>i</i><div><b>LAN 경로 안정화</b><span>이벤트 수신 정상화</span></div><p><span>발생 시각</span>17:32:04</p><button type="button">확인</button></article>
+                <article class="alert-row warn"><i>!</i><b>2차선 CCTV 프레임 지연</b><p><span>발생 시각</span>17:35:18</p><button type="button">확인</button><span class="alert-sub">최근 3초 이상 지연</span></article>
+                <article class="alert-row info"><i>i</i><b>LAN 경로 안정화</b><p><span>발생 시각</span>17:32:04</p><button type="button">확인</button><span class="alert-sub">이벤트 수신 정상화</span></article>
               </div>
             </article>
           </section>

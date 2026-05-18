@@ -152,12 +152,12 @@ button {
 }
 
 .master-shell.light .nav-icon img {
-  filter: brightness(0) invert(0.35);
+  filter: brightness(0) invert(0.65);
 }
 
 .master-shell.light .nav-main.active .nav-icon img,
 .master-shell.light .nav-main:hover .nav-icon img {
-  filter: brightness(0) invert(0.08);
+  filter: brightness(0) invert(1);
 }
 
 .nav-caret {
@@ -1389,29 +1389,28 @@ select {
 
 /* ===== Light mode ===== */
 .master-shell.light {
-  color: #203044;
-  background:
-    radial-gradient(circle at 14% 8%, rgba(22, 131, 255, 0.12), transparent 30%),
-    radial-gradient(circle at 80% 86%, rgba(52, 211, 153, 0.10), transparent 30%),
-    #eef5ff;
+  color: #111827;
+  background: #F3F4F6;
 }
 
-.master-shell.light .sidebar,
+.master-shell.light .sidebar {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.12);
+}
+
 .master-shell.light .topbar {
-  background: rgba(248, 251, 255, 0.88);
-  border-color: rgba(38, 107, 186, 0.2);
-  box-shadow: 0 14px 38px rgba(24, 57, 100, 0.08);
+  background: #ffffff;
+  border-color: #E5E7EB;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .master-shell.light .glass,
-.master-shell.light .quick-menu,
 .master-shell.light .company-modal,
 .master-shell.light .center-detail-modal {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(242, 248, 255, 0.72)),
-    rgba(255, 255, 255, 0.72);
-  border-color: rgba(38, 107, 186, 0.2);
-  box-shadow: 0 16px 38px rgba(24, 57, 100, 0.09);
+  background: #FAFAFA;
+  border-color: #D1D5DB;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
 .master-shell.light .topbar-title strong,
@@ -1424,11 +1423,10 @@ select {
 .master-shell.light .center-modal-summary dd,
 .master-shell.light .center-metric-cards strong,
 .master-shell.light .subpage-toolbar h3,
-.master-shell.light .modal-head h3,
 .master-shell.light .admin-chip,
 .master-shell.light .clock,
 .master-shell.light .system-state {
-  color: #102033;
+  color: #111827;
 }
 
 .master-shell.light .topbar-title span:not(.brand-diamond),
@@ -1443,7 +1441,7 @@ select {
 .master-shell.light .modal-grid span,
 .master-shell.light .admin-chip small,
 .master-shell.light .copyright {
-  color: #526b88;
+  color: #6B7280;
 }
 
 .master-shell.light .home-btn,
@@ -1455,28 +1453,28 @@ select {
 .master-shell.light .tab-row button,
 .master-shell.light .quick-menu button,
 .master-shell.light .action-btn {
-  color: #24425f;
-  background: linear-gradient(180deg, rgba(235, 243, 255, 0.95), rgba(220, 235, 255, 0.86));
-  border-color: rgba(38, 107, 186, 0.24);
+  color: #374151;
+  background: #FAFAFA;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .theme-btn {
-  color: #05233d;
-  background: linear-gradient(135deg, #ffffff, #dcecff);
-  border-color: rgba(38, 107, 186, 0.42);
-  box-shadow: 0 4px 14px rgba(24, 57, 100, 0.14);
+  color: #1F2937;
+  background: #FFFFFF;
+  border-color: #D1D5DB;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .master-shell.light .control-table th {
-  color: #55708d;
-  background: rgba(227, 239, 255, 0.92);
+  color: #6B7280;
+  background: #E5E7EB;
 }
 
 .master-shell.light .control-table td,
 .master-shell.light .control-table tbody tr {
-  color: #223245;
-  background: rgba(255, 255, 255, 0.52);
-  border-color: rgba(38, 107, 186, 0.09);
+  color: #111827;
+  background: #FAFAFA;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .control-table td:first-child,
@@ -1486,116 +1484,116 @@ select {
 .master-shell.light .summary-grid strong,
 .master-shell.light .settings-grid label span,
 .master-shell.light .marker-label b {
-  color: #102033;
+  color: #111827;
 }
 
 .master-shell.light .status.ok,
 .master-shell.light .ok,
 .master-shell.light .map-marker.ok .marker-label small {
-  color: #087a50;
+  color: #059669;
 }
 
 .master-shell.light .status.caution,
 .master-shell.light .caution,
 .master-shell.light .map-marker.caution .marker-label small {
-  color: #9a6700;
+  color: #D97706;
 }
 
 .master-shell.light .status.danger,
 .master-shell.light .danger,
 .master-shell.light .map-marker.danger .marker-label small {
-  color: #b34b00;
+  color: #DC2626;
 }
 
 .master-shell.light .member-table th {
-  background: linear-gradient(180deg, rgba(229, 240, 255, 0.98), rgba(215, 232, 253, 0.92));
-  color: #49637f;
+  color: #6B7280;
+  background: #E5E7EB;
 }
 
 .master-shell.light .member-table td,
 .master-shell.light .member-table tbody tr:nth-child(even) td {
-  color: #223245;
-  background: rgba(255, 255, 255, 0.68);
+  color: #111827;
+  background: #FAFAFA;
 }
 
 .master-shell.light .member-table tbody tr:hover td,
 .master-shell.light .control-table tbody tr:hover {
-  background: rgba(22, 131, 255, 0.10);
+  background: #FFFFFF;
 }
 
 .master-shell.light .state-summary,
 .master-shell.light .summary-grid div,
 .master-shell.light .settings-grid label,
 .master-shell.light .tab-row {
-  background: rgba(255, 255, 255, 0.76);
-  border-color: rgba(38, 107, 186, 0.18);
+  background: #FAFAFA;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .donut::before {
-  background: #f8fbff;
-  box-shadow: inset 0 0 0 1px rgba(38, 107, 186, 0.10);
+  background: #F3F4F6;
+  box-shadow: inset 0 0 0 1px #D1D5DB;
 }
 
 .master-shell.light .donut span {
-  color: #102033;
+  color: #111827;
 }
 
 .master-shell.light .state-summary div,
 .master-shell.light .legend p,
 .master-shell.light .notice-list time,
 .master-shell.light .summary-grid span {
-  color: #49637f;
+  color: #6B7280;
 }
 
 .master-shell.light .search-box,
 .master-shell.light .modal-grid input,
 .master-shell.light .modal-grid select,
 .master-shell.light select {
-  color: #102033;
-  background: #fff;
-  border-color: rgba(38, 107, 186, 0.24);
+  color: #111827;
+  background: #FFFFFF;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .center-modal-summary dl div,
 .master-shell.light .center-modal-metrics,
 .master-shell.light .center-metric-cards article {
-  background: rgba(246, 250, 255, 0.88);
-  border-color: rgba(58, 126, 204, 0.24);
+  background: #F3F4F6;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .center-modal-summary dt,
 .master-shell.light .center-metric-cards span,
 .master-shell.light .center-metric-cards small {
-  color: #53677f;
+  color: #6B7280;
 }
 
 .master-shell.light .center-period-tabs button {
-  color: #34536f;
-  background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(58, 126, 204, 0.24);
+  color: #374151;
+  background: #FAFAFA;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .center-period-tabs button.active {
-  color: #063963;
-  background: rgba(22, 131, 255, 0.15);
-  border-color: rgba(22, 131, 255, 0.45);
+  color: #1F2937;
+  background: rgba(37, 99, 235, 0.10);
+  border-color: rgba(37, 99, 235, 0.40);
 }
 
 .master-shell.light .center-bar-chart {
   background:
-    linear-gradient(rgba(82, 112, 145, 0.12) 1px, transparent 1px),
-    rgba(255, 255, 255, 0.82);
-  border-color: rgba(58, 126, 204, 0.22);
+    linear-gradient(rgba(55, 65, 81, 0.08) 1px, transparent 1px),
+    #FAFAFA;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .map-panel::after {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.18));
+  display: none;
 }
 
 .master-shell.light .marker-label {
-  background: rgba(255, 255, 255, 0.9);
-  color: #102033;
-  border-color: rgba(38, 107, 186, 0.28);
+  background: #FFFFFF;
+  color: #111827;
+  border-color: #D1D5DB;
 }
 
 /* 라이트 모드 최종 대비 보정 */
@@ -1626,7 +1624,7 @@ select {
 .master-shell.light .company-modal span,
 .master-shell.light .center-detail-modal p,
 .master-shell.light .center-detail-modal span {
-  color: #17283b;
+  color: #111827;
 }
 
 .master-shell.light .sidebar-brand span,
@@ -1640,7 +1638,7 @@ select {
 .master-shell.light .legend p,
 .master-shell.light .summary-grid span,
 .master-shell.light .modal-grid span {
-  color: #425b78;
+  color: #6B7280;
 }
 
 .master-shell.light button,
@@ -1652,8 +1650,9 @@ select {
 .master-shell.light .map-zoom button,
 .master-shell.light .tab-row button,
 .master-shell.light .quick-menu button {
-  color: #12324f;
-  background-color: rgba(239, 247, 255, 0.95);
+  color: #374151;
+  background-color: #FAFAFA;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .small-btn:hover,
@@ -1662,14 +1661,14 @@ select {
 .master-shell.light .tab-row button.active,
 .master-shell.light .menu-group button.active,
 .master-shell.light .submenu button.active {
-  color: #063963;
-  background: rgba(22, 131, 255, 0.14);
+  color: #1F2937;
+  background: #FFFFFF;
 }
 
 .master-shell.light .add-btn,
 .master-shell.light .map-edit-btn.active {
-  color: #066c47;
-  background: rgba(31, 150, 93, 0.12);
+  color: #059669;
+  background: rgba(5, 150, 105, 0.10);
 }
 
 .master-shell.light .kpi-icon,
@@ -1681,26 +1680,26 @@ select {
 .master-shell.light .status,
 .master-shell.light .marker-label,
 .master-shell.light .state-summary {
-  color: #17283b;
+  color: #111827;
 }
 
 .master-shell.light .ok,
 .master-shell.light .status.ok,
 .master-shell.light .map-marker.ok .marker-label small,
 .master-shell.light .system-state {
-  color: #066c47;
+  color: #059669;
 }
 
 .master-shell.light .caution,
 .master-shell.light .status.caution,
 .master-shell.light .map-marker.caution .marker-label small {
-  color: #7a5200;
+  color: #D97706;
 }
 
 .master-shell.light .danger,
 .master-shell.light .status.danger,
 .master-shell.light .map-marker.danger .marker-label small {
-  color: #a33b00;
+  color: #DC2626;
 }
 
 /* Master dashboard 2026 control-console layout */
@@ -1714,7 +1713,16 @@ select {
 
 .sidebar-brand {
   height: 68px;
-  align-items: flex-start;
+  align-items: center;
+}
+
+.sidebar-logo {
+  height: 100%;
+  max-height: 68px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .sidebar-brand strong {
@@ -2171,6 +2179,20 @@ select {
   background: rgba(22, 154, 96, 0.1);
 }
 
+/* topbar system-state 텍스트 — 흰 배경 기준 */
+.master-shell.light .topbar .clock {
+  color: #374151;
+}
+.master-shell.light .topbar .system-state {
+  color: #374151;
+  border-left-color: #D1D5DB;
+}
+.master-shell.light .topbar .system-state.global-ok {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
 .master-shell.light .marker-detail,
 .master-shell.light .audit-panel small,
 .master-shell.light .alert-list time,
@@ -2189,12 +2211,12 @@ select {
 
 .master-shell.light .dashboard-pipeline-table td,
 .master-shell.light .pipeline-table-name {
-  color: #102033 !important;
+  color: #111827 !important;
 }
 
 .master-shell.light .dashboard-pipeline-table td:nth-child(3),
 .master-shell.light .dashboard-pipeline-table tr:not(:first-child) td:first-child:not(.pipeline-table-icon) {
-  color: #53677f !important;
+  color: #6B7280 !important;
 }
 
 .master-shell.light .pipeline-table-icon {
@@ -2305,4 +2327,371 @@ select {
 
 .master-bottom-grid > .panel {
   min-height: 246px;
+}
+
+/* ===== Light mode: dark sidebar nav overrides ===== */
+/* 다크 사이드바(#1e293b) 내부이므로 라이트모드에서도 다크 팔레트 적용.
+   .sidebar button/(0,3,1)이 #111827로 덮으므로 .sidebar .nav-main(0,4,0+) 사용. */
+
+/* 사이드바 brand */
+.master-shell.light .sidebar .sidebar-brand strong {
+  color: #ffffff;
+}
+.master-shell.light .sidebar .sidebar-brand span {
+  color: #94a3b8;
+}
+
+/* 메인 nav 버튼 */
+.master-shell.light .sidebar .nav-main {
+  color: #94a3b8;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.master-shell.light .sidebar .nav-main:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: transparent;
+}
+.master-shell.light .sidebar .nav-main.active {
+  color: #ffffff;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  box-shadow: inset 0 0 16px rgba(37, 99, 235, 0.08);
+}
+
+/* 서브메뉴 */
+.master-shell.light .sidebar .nav-children {
+  border-left-color: rgba(148, 163, 184, 0.18);
+}
+.master-shell.light .sidebar .nav-children button {
+  color: #64748b;
+  background: transparent;
+  border-color: transparent;
+}
+.master-shell.light .sidebar .nav-children button:hover {
+  color: #cbd5e1;
+  background: transparent;
+}
+.master-shell.light .sidebar .nav-children button.active {
+  color: #e2e8f0;
+}
+.master-shell.light .sidebar .nav-children button::before {
+  background: #475569;
+}
+
+/* 아이콘 필터 — 다크 사이드바이므로 다크모드와 동일 */
+.master-shell.light .sidebar .nav-icon img {
+  filter: brightness(0) invert(0.65);
+}
+.master-shell.light .sidebar .nav-main.active .nav-icon img,
+.master-shell.light .sidebar .nav-main:hover .nav-icon img {
+  filter: brightness(0) invert(1);
+}
+
+/* 퀵메뉴 — 다크 사이드바 내부이므로 다크 계열 유지 */
+.master-shell.light .sidebar .quick-menu {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+.master-shell.light .sidebar .quick-menu p {
+  color: #64748b;
+}
+.master-shell.light .sidebar .quick-menu button {
+  color: #94a3b8;
+  background: transparent;
+  border-color: transparent;
+}
+.master-shell.light .sidebar .quick-menu button:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* 사이드바 로고 */
+.master-shell.light .sidebar .sidebar-logo {
+  filter: brightness(0) invert(1);
+}
+
+/* 홈/로그아웃 버튼 */
+.master-shell.light .sidebar .home-btn,
+.master-shell.light .sidebar .logout-btn {
+  color: #94a3b8;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.master-shell.light .sidebar .home-btn:hover,
+.master-shell.light .sidebar .logout-btn:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* 저작권 */
+.master-shell.light .sidebar .copyright {
+  color: #475569;
+}
+
+/* ===== Professional smart-tolling light polish ===== */
+.master-shell.light {
+  --dash-bg: #eef3f8;
+  --dash-surface: #ffffff;
+  --dash-surface-soft: #f7fafc;
+  --dash-border: #d5dee9;
+  --dash-border-strong: #b9c7d8;
+  --dash-text: #142235;
+  --dash-muted: #607187;
+  --dash-accent: #1f73be;
+  --dash-teal: #0f9f8a;
+  --dash-nav: #152133;
+  --dash-nav-2: #0f1a2a;
+  color: var(--dash-text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(239, 244, 249, 0.96)),
+    linear-gradient(135deg, #f7fafc 0%, #eef3f8 48%, #e7eef6 100%);
+}
+
+.master-shell.light .content-shell {
+  background:
+    linear-gradient(rgba(31, 115, 190, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 115, 190, 0.028) 1px, transparent 1px);
+  background-size: 38px 38px;
+}
+
+.master-shell.light .sidebar {
+  background: linear-gradient(180deg, var(--dash-nav), var(--dash-nav-2));
+  border-right-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 8px 0 24px rgba(20, 34, 53, 0.14);
+}
+
+.master-shell.light .topbar {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: var(--dash-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 24px rgba(36, 60, 86, 0.07);
+  backdrop-filter: blur(14px);
+}
+
+.master-shell.light .topbar-title strong,
+.master-shell.light .clock,
+.master-shell.light .admin-chip b {
+  color: var(--dash-text);
+}
+
+.master-shell.light .topbar-title span:not(.brand-diamond),
+.master-shell.light .admin-chip small {
+  color: var(--dash-muted);
+}
+
+.master-shell.light .sidebar .sidebar-brand {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 14px;
+}
+
+.master-shell.light .sidebar .nav-main {
+  height: 40px;
+  color: #aebbd0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+
+.master-shell.light .sidebar .nav-main:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.master-shell.light .sidebar .nav-main.active {
+  color: #ffffff;
+  border-color: rgba(89, 159, 230, 0.52);
+  background:
+    linear-gradient(90deg, rgba(31, 115, 190, 0.42), rgba(15, 159, 138, 0.16)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 3px 0 0 #2f9be8, inset 0 0 24px rgba(31, 115, 190, 0.18);
+}
+
+.master-shell.light .sidebar .nav-children {
+  border-left-color: rgba(174, 187, 208, 0.24);
+}
+
+.master-shell.light .sidebar .nav-children button {
+  color: #8696ad;
+}
+
+.master-shell.light .sidebar .nav-children button:hover,
+.master-shell.light .sidebar .nav-children button.active {
+  color: #e7eef8;
+}
+
+.master-shell.light .sidebar .quick-menu {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.master-shell.light .sidebar .quick-menu button {
+  color: #d7e1ee;
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.master-shell.light .sidebar .quick-menu button:hover {
+  border-color: rgba(89, 159, 230, 0.5);
+  background: rgba(31, 115, 190, 0.2);
+}
+
+.master-shell.light .glass,
+.master-shell.light .panel,
+.master-shell.light .map-panel,
+.master-shell.light .subpage-panel,
+.master-shell.light .subpage-hero,
+.master-shell.light .company-modal,
+.master-shell.light .center-detail-modal {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  box-shadow: 0 10px 26px rgba(36, 60, 86, 0.09);
+  backdrop-filter: none;
+}
+
+.master-shell.light .map-panel {
+  background: #f4f8fc;
+}
+
+.master-shell.light .map-panel::after {
+  display: block;
+  background: linear-gradient(180deg, rgba(244, 248, 252, 0.06), rgba(244, 248, 252, 0.22));
+}
+
+.master-shell.light .panel-title {
+  border-left-color: var(--dash-accent);
+}
+
+.master-shell.light .panel-title h2,
+.master-shell.light .subpage-toolbar h3,
+.master-shell.light .subpage-hero h2,
+.master-shell.light .modal-head h3,
+.master-shell.light .control-table td:first-child,
+.master-shell.light .member-table td:first-child,
+.master-shell.light .summary-grid strong,
+.master-shell.light .settings-grid label span {
+  color: var(--dash-text);
+}
+
+.master-shell.light .panel-title span,
+.master-shell.light .subpage-note,
+.master-shell.light .control-table th,
+.master-shell.light .member-table th,
+.master-shell.light .notice-list time,
+.master-shell.light .legend p,
+.master-shell.light .summary-grid span {
+  color: var(--dash-muted);
+}
+
+.master-shell.light .kpi,
+.master-shell.light .summary-grid div,
+.master-shell.light .settings-grid label,
+.master-shell.light .state-summary,
+.master-shell.light .tab-row,
+.master-shell.light .center-modal-summary dl div,
+.master-shell.light .center-modal-metrics,
+.master-shell.light .center-metric-cards article {
+  background: var(--dash-surface-soft);
+  border-color: var(--dash-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.master-shell.light .kpi strong,
+.master-shell.light .center-modal-summary dd,
+.master-shell.light .center-metric-cards strong,
+.master-shell.light .donut span {
+  color: var(--dash-text);
+}
+
+.master-shell.light .kpi p,
+.master-shell.light .center-modal-summary dt,
+.master-shell.light .center-metric-cards span,
+.master-shell.light .center-metric-cards small {
+  color: var(--dash-muted);
+}
+
+.master-shell.light .control-table,
+.master-shell.light .member-table {
+  border-color: var(--dash-border);
+  background: var(--dash-surface);
+}
+
+.master-shell.light .control-table th,
+.master-shell.light .member-table th {
+  background: #edf3f8;
+}
+
+.master-shell.light .control-table td,
+.master-shell.light .control-table tbody tr,
+.master-shell.light .member-table td,
+.master-shell.light .member-table tbody tr:nth-child(even) td {
+  color: var(--dash-text);
+  background: var(--dash-surface);
+  border-color: #e5ebf2;
+}
+
+.master-shell.light .control-table tbody tr:hover,
+.master-shell.light .member-table tbody tr:hover td {
+  background: #f2f7fc;
+}
+
+.master-shell.light .home-btn,
+.master-shell.light .theme-btn,
+.master-shell.light .logout-btn,
+.master-shell.light .small-btn,
+.master-shell.light .text-btn,
+.master-shell.light .map-edit-btn,
+.master-shell.light .map-zoom button,
+.master-shell.light .tab-row button,
+.master-shell.light .action-btn {
+  color: #244461;
+  background: #ffffff;
+  border-color: var(--dash-border-strong);
+  box-shadow: none;
+}
+
+.master-shell.light .small-btn:hover,
+.master-shell.light .home-btn:hover,
+.master-shell.light .logout-btn:hover,
+.master-shell.light .tab-row button.active {
+  color: #0f3d73;
+  border-color: rgba(31, 115, 190, 0.56);
+  background: #eef6ff;
+}
+
+.master-shell.light .add-btn,
+.master-shell.light .map-edit-btn.active {
+  color: #04735f;
+  border-color: rgba(15, 159, 138, 0.4);
+  background: rgba(15, 159, 138, 0.09);
+}
+
+.master-shell.light .search-box,
+.master-shell.light .modal-grid input,
+.master-shell.light .modal-grid select,
+.master-shell.light select {
+  color: var(--dash-text);
+  background: #ffffff;
+  border-color: var(--dash-border);
+}
+
+.master-shell.light .marker-label {
+  color: var(--dash-text);
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(31, 115, 190, 0.32);
+  box-shadow: 0 8px 22px rgba(36, 60, 86, 0.14);
+}
+
+/* Admin sidebar navigation text should stay white in light mode. */
+.master-shell.light .sidebar .nav-main,
+.master-shell.light .sidebar .nav-main:hover,
+.master-shell.light .sidebar .nav-main.active,
+.master-shell.light .sidebar .nav-main span,
+.master-shell.light .sidebar .nav-main:hover span,
+.master-shell.light .sidebar .nav-main.active span,
+.master-shell.light .sidebar .nav-children button,
+.master-shell.light .sidebar .nav-children button:hover,
+.master-shell.light .sidebar .nav-children button.active {
+  color: #ffffff !important;
 }

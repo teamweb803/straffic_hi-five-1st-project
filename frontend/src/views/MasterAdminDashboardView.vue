@@ -30,7 +30,7 @@ const masterApiState = useDashboardApi({ scope: 'admin', pollMs: 3000 })
 
 const THEME_STORAGE_KEY = 'hifive.dashboard.theme'
 const nowText = ref('')
-const themeMode = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'dark')
+const themeMode = ref('light')
 const activeMenu = ref('대시보드')
 const activeTab = ref('companies')
 const selectedCenter = ref('서울 톨게이트')
@@ -254,7 +254,7 @@ const edgeMetricCharts = [
   { title: 'YOLO 처리 시간', subtitle: '(ms)', status: '정상', color: '#42d779', label: '평균 YOLO ms', data: lineData([25, 27, 24, 29, 30, 32, 31, 28], '#42d779') },
   { title: 'OCR 처리 시간', subtitle: '(ms)', status: '주의', color: '#b28cff', label: '평균 OCR ms', data: lineData([54, 64, 59, 62, 61, 60, 58, 63], '#b28cff'), warn: true },
   { title: 'Spool Count', subtitle: '(건)', status: '정상', color: '#ffb928', label: '현재 Spool', data: lineData([72, 64, 70, 75, 73, 72, 69, 67], '#ffb928') },
-  { title: 'Sent Event Count', subtitle: '(건/분)', status: '정상', color: '#26c8e8', label: '전송 이벤트', data: lineData([45, 43, 56, 62, 51, 44, 38, 42], '#26c8e8'), total: '45,672 건' }
+  { title: 'Sent Event Count', subtitle: '(건/분)', status: '정상', color: '#26c8e8', label: '전송 이벤트', data: lineData([45, 43, 56, 62, 51, 44, 38, 42], '#26c8e8') }
 ]
 
 const ingressCharts = [
@@ -293,7 +293,7 @@ const companyPermissionChartOptions = {
   maintainAspectRatio: false,
   plugins: { legend: { display: false } },
   scales: {
-    x: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { display: false } },
+    x: { ticks: { color: '#334155', font: { size: 11, weight: '700' } }, grid: { display: false } },
     y: { ticks: { display: false }, grid: { color: chartGridColor } }
   }
 }
@@ -1038,11 +1038,8 @@ provide('masterDashboard', masterDashboardContext)
   <div class="master-shell" :class="{ light: isLightMode }">
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <span class="brand-diamond"></span>
-        <div>
-          <strong>HI-FIVE</strong>
-          <span>MASTER<br />Master Admin Console</span>
-        </div>
+        <img src="/hifive_logo.png" alt="HI-FIVE" class="sidebar-logo" />
+        <strong>HI-FIVE</strong>
       </div>
 
       <nav class="sidebar-nav">
@@ -1086,7 +1083,7 @@ provide('masterDashboard', masterDashboardContext)
       <header class="topbar">
         <div class="topbar-title">
           <span class="brand-diamond small"></span>
-          <strong>{{ activeMenu === 'Ingress' ? 'Ingress 관제' : activeMenu === '시스템 관제' ? 'Master Admin · 시스템 관제' : activeMenu === 'Edge 장비' ? 'Edge 장비 관제' : activeMenu === '백엔드/DB' ? 'Backend / DB 관제' : activeMenu === '장애 알림' ? '장애 알림' : activeMenu === '지점 관리' ? '지점 관리' : activeMenu === '감사 로그' ? '감사 로그' : activeMenu === '설정' ? '설정' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 관리' : 'HI-FIVE' }}</strong>
+          <strong>{{ activeMenu === 'Ingress' ? 'Ingress 관제' : activeMenu === '시스템 관제' ? 'Master Admin · 시스템 관제' : activeMenu === 'Edge 장비' ? 'Edge 장비 관제' : activeMenu === '백엔드/DB' ? 'Backend / DB 관제' : activeMenu === '장애 알림' ? '장애 알림' : activeMenu === '지점 관리' ? '지점 관리' : activeMenu === '감사 로그' ? '감사 로그' : activeMenu === '설정' ? '설정' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 관리' : '대시보드' }}</strong>
           <span>{{ activeMenu === 'Ingress' ? 'Python Ingress 서비스 상태 및 이벤트 흐름을 모니터링합니다.' : activeMenu === 'Edge 장비' ? 'Jetson Edge 장비 상태 및 성능 모니터링' : activeMenu === '장애 알림' ? '시스템 및 서비스 이상 상황을 모니터링하고 대응합니다.' : activeMenu === '지점 관리' ? '스마트 톨링 지점 및 제어센터 등록/수정/관리' : activeMenu === '감사 로그' ? '관리자 작업, 권한 변경, 대리조회 이력을 추적합니다.' : activeMenu === '설정' ? '관리자 콘솔 운영 정책과 시스템 기본값을 관리합니다.' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 계정, 권한, 지점 연결 상태를 통합 관리합니다.' : activeMenu === '시스템 관제' || activeMenu === '백엔드/DB' ? '' : 'Master Admin Dashboard' }}</span>
         </div>
 
