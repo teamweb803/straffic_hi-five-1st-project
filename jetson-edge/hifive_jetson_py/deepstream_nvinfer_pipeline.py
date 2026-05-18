@@ -26,7 +26,10 @@ class DeepStreamNvinferOptions:
     srt_port: int = 0
     srt_bitrate_kbps: int = 2500
     srt_latency_ms: int = 120
-    srt_iframe_interval: int = 30
+    srt_iframe_interval: int = 15
+    srt_fps: int = 30
+    srt_width: int = 720
+    srt_height: int = 720
 
 
 def build_deepstream_nvinfer_artifacts(
@@ -64,6 +67,9 @@ def build_deepstream_nvinfer_artifacts(
         srt_bitrate_kbps=options.srt_bitrate_kbps,
         srt_latency_ms=options.srt_latency_ms,
         srt_iframe_interval=options.srt_iframe_interval,
+        srt_fps=options.srt_fps,
+        srt_width=options.srt_width,
+        srt_height=options.srt_height,
     )
     pipeline_text = (
         f"{source_part} "
@@ -119,6 +125,9 @@ def _sink_part(
     srt_bitrate_kbps: int,
     srt_latency_ms: int,
     srt_iframe_interval: int,
+    srt_fps: int,
+    srt_width: int,
+    srt_height: int,
 ) -> str:
     srt_branch = _srt_branch(
         srt_host=srt_host,
@@ -126,6 +135,9 @@ def _sink_part(
         bitrate_kbps=srt_bitrate_kbps,
         latency_ms=srt_latency_ms,
         iframe_interval=srt_iframe_interval,
+        fps=srt_fps,
+        width=srt_width,
+        height=srt_height,
     )
     if not display and not srt_branch:
         return "fakesink sync=false"
@@ -168,22 +180,28 @@ def _srt_branch(
     bitrate_kbps: int,
     latency_ms: int,
     iframe_interval: int,
+    fps: int,
+    width: int,
+    height: int,
 ) -> str:
     if not srt_host and srt_port <= 0:
         return ""
     if not srt_host or srt_port <= 0:
         raise RuntimeError("SRT output requires both srt_host and srt_port")
-    bitrate = max(64, int(bitrate_kbps)) * 1000
     latency = max(20, int(latency_ms))
     iframe = max(1, int(iframe_interval))
+    stream_fps = min(60, max(1, int(fps)))
+    stream_width = max(160, int(width))
+    stream_height = max(160, int(height))
     uri = f"srt://{srt_host}:{srt_port}?mode=caller&transtype=live&latency={latency}"
     return (
         "visual_tee. ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! "
-        "nvvideoconvert ! video/x-raw,format=I420 ! "
+        f"nvvideoconvert ! video/x-raw,format=I420,width={stream_width},height={stream_height} ! "
+        f"videorate drop-only=true ! video/x-raw,format=I420,width={stream_width},height={stream_height},framerate={stream_fps}/1 ! "
         f"x264enc tune=zerolatency speed-preset=ultrafast byte-stream=true option-string=\"repeat-headers=1\" bitrate={max(64, int(bitrate_kbps))} key-int-max={iframe} ! "
         "video/x-h264,stream-format=byte-stream ! "
         "h264parse config-interval=-1 ! mpegtsmux alignment=7 ! "
-        f"srtsink uri=\"{uri}\" wait-for-connection=true sync=false"
+        f"srtsink uri=\"{uri}\" wait-for-connection=true sync=true"
     )
 
 

@@ -22,9 +22,6 @@ spool/
 *.mp4
 *.avi
 *.mov
-*.png
-*.jpg
-*.jpeg
 
 # Local secrets / certs
 certs/

@@ -5,6 +5,7 @@ import asyncio
 import logging
 import ssl
 import time
+from pathlib import Path
 
 from hifive_jetson_py.ingress_state import IngressStats
 from hifive_jetson_py.spring_forwarder import SpringEvidenceForwarder, SpringForwarder, SpringJsonForwarder
@@ -33,14 +34,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--srt-listen-port", type=int, default=0)
     parser.add_argument("--srt-latency-ms", type=int, default=120)
     parser.add_argument("--srt-receiver-command", default="ffmpeg")
+    parser.add_argument("--srt-hls-dir", default="runtime/video_hls")
+    parser.add_argument("--srt-hls-segment-sec", type=float, default=0.5)
+    parser.add_argument("--srt-hls-list-size", type=int, default=18)
+    parser.add_argument("--srt-hls-delete-threshold", type=int, default=18)
     return parser.parse_args()
 
 
-def build_ops_app(stats: IngressStats):
+def build_ops_app(stats: IngressStats, hls_dir: str | None = None):
     from fastapi import FastAPI
-    from fastapi.responses import PlainTextResponse, Response
+    from fastapi.responses import FileResponse, PlainTextResponse, Response, StreamingResponse
 
     app = FastAPI(title="HI-FIVE Python Ingress Ops")
+    hls_root = Path(hls_dir).resolve() if hls_dir else None
 
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:
@@ -53,6 +59,76 @@ def build_ops_app(stats: IngressStats):
     @app.get("/video/status")
     async def video_status() -> dict:
         return stats.snapshot().get("video_receiver", {})
+
+    @app.get("/video/latest.jpg")
+    async def latest_video_frame() -> Response:
+        payload, meta = stats.get_latest_video_frame()
+        if not payload:
+            return Response(status_code=404)
+        headers = {}
+        if meta.get("ts_ms"):
+            headers["X-Hifive-Video-Ts-Ms"] = str(meta["ts_ms"])
+        return Response(content=payload, media_type="image/jpeg", headers=headers)
+
+    @app.get("/video/stream.mjpg")
+    async def video_stream() -> StreamingResponse:
+        async def frames():
+            last_ts_ms = 0
+            stats.mark_video_viewer_open()
+            try:
+                while True:
+                    payload, meta = stats.get_latest_video_frame()
+                    ts_ms = int(meta.get("ts_ms", 0) or 0)
+                    if payload and ts_ms != last_ts_ms:
+                        last_ts_ms = ts_ms
+                        header = (
+                            b"--frame\r\n"
+                            b"Content-Type: image/jpeg\r\n"
+                            + f"Content-Length: {len(payload)}\r\n".encode("ascii")
+                            + f"X-Hifive-Video-Ts-Ms: {ts_ms}\r\n\r\n".encode("ascii")
+                        )
+                        yield header + payload + b"\r\n"
+                    await asyncio.sleep(0.05)
+            finally:
+                stats.mark_video_viewer_closed()
+
+        return StreamingResponse(
+            frames(),
+            media_type="multipart/x-mixed-replace; boundary=frame",
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.get("/video/hls/master.m3u8")
+    async def video_hls_playlist() -> Response:
+        if hls_root is None:
+            return Response(status_code=404)
+        path = hls_root / "master.m3u8"
+        if not path.is_file():
+            return Response(status_code=404)
+        return Response(
+            content=path.read_bytes(),
+            media_type="application/vnd.apple.mpegurl",
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
+
+    @app.get("/video/hls/{segment_name}")
+    async def video_hls_segment(segment_name: str) -> Response:
+        if hls_root is None:
+            return Response(status_code=404)
+        if "/" in segment_name or "\\" in segment_name or ".." in segment_name or not segment_name.endswith(".ts"):
+            return Response(status_code=404)
+        path = hls_root / segment_name
+        if not path.is_file():
+            return Response(status_code=404)
+        return FileResponse(
+            path,
+            media_type="video/mp2t",
+            headers={"Cache-Control": "no-store"},
+        )
 
     @app.get("/preview/latest.jpg")
     async def latest_preview() -> Response:
@@ -78,10 +154,10 @@ def build_ops_app(stats: IngressStats):
     return app
 
 
-async def run_ops_api(stats: IngressStats, host: str, port: int) -> None:
+async def run_ops_api(stats: IngressStats, host: str, port: int, hls_dir: str | None = None) -> None:
     import uvicorn
 
-    config = uvicorn.Config(build_ops_app(stats), host=host, port=port, log_level="info")
+    config = uvicorn.Config(build_ops_app(stats, hls_dir), host=host, port=port, log_level="info")
     server = uvicorn.Server(config)
     await server.serve()
 
@@ -129,6 +205,10 @@ async def async_main() -> None:
             port=args.srt_listen_port,
             latency_ms=args.srt_latency_ms,
             command=args.srt_receiver_command,
+            hls_dir=args.srt_hls_dir,
+            hls_segment_seconds=args.srt_hls_segment_sec,
+            hls_list_size=args.srt_hls_list_size,
+            hls_delete_threshold=args.srt_hls_delete_threshold,
         ),
         stats,
     )
@@ -184,7 +264,7 @@ async def async_main() -> None:
             stats=stats,
         ).create(),
     )
-    asyncio.create_task(run_ops_api(stats, args.ops_host, args.ops_port))
+    asyncio.create_task(run_ops_api(stats, args.ops_host, args.ops_port, args.srt_hls_dir))
     if args.ingress_status_forward_interval_sec > 0 and ingress_status_forwarder is not None:
         asyncio.create_task(
             forward_ingress_status_loop(

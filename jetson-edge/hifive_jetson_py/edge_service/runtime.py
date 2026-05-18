@@ -61,7 +61,10 @@ class EdgeServiceRuntimeOptions:
     srt_port: int = 0
     srt_bitrate_kbps: int = 2500
     srt_latency_ms: int = 120
-    srt_iframe_interval: int = 30
+    srt_iframe_interval: int = 15
+    srt_fps: int = 30
+    srt_width: int = 720
+    srt_height: int = 720
     evidence_upload: bool = False
     evidence_jpeg_quality: int = 85
     parser_lib: str = "/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so"

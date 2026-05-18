@@ -65,6 +65,18 @@ class WebTransportIngressSender:
         self._outage_failed_event_id = ""
         self._outage_failure_route = ""
         self._pending_network_logs: list[tuple[str, bytes]] = []
+        self._primary_reachable = True
+        self._last_primary_probe_ms = 0
+        self._last_primary_probe_detail = ""
+        self._watchdog_failures = 0
+        self._watchdog_successes = 0
+        if self._standby is not None:
+            watchdog = threading.Thread(
+                target=self._failover_watchdog_loop,
+                name="hifive-failover-watchdog",
+                daemon=True,
+            )
+            watchdog.start()
         if self.retry_enabled:
             thread = threading.Thread(target=self._retry_loop, name="hifive-spool-retry", daemon=True)
             thread.start()
@@ -123,6 +135,16 @@ class WebTransportIngressSender:
                 int((self._next_primary_probe_at - time.monotonic()) * 1000),
             )
             pending_network_logs = len(self._pending_network_logs)
+            last_primary_probe_ms = self._last_primary_probe_ms
+            primary_probe_age_ms = (
+                max(0, int(time.time() * 1000) - last_primary_probe_ms)
+                if last_primary_probe_ms
+                else 0
+            )
+            primary_reachable = self._primary_reachable
+            primary_probe_detail = self._last_primary_probe_detail
+            watchdog_failures = self._watchdog_failures
+            watchdog_successes = self._watchdog_successes
         return {
             "kind": "webtransport_ingress",
             "active_path": active_label,
@@ -134,7 +156,111 @@ class WebTransportIngressSender:
             "outage_active": outage_started,
             "next_primary_probe_ms": next_primary_probe_ms,
             "pending_network_logs": pending_network_logs,
+            "watchdog": {
+                "enabled": standby is not None,
+                "primary_reachable": primary_reachable,
+                "last_primary_probe_ms": last_primary_probe_ms,
+                "primary_probe_age_ms": primary_probe_age_ms,
+                "last_primary_probe_detail": primary_probe_detail,
+                "failures": watchdog_failures,
+                "successes": watchdog_successes,
+            },
         }
+
+    def _failover_watchdog_loop(self) -> None:
+        interval = max(0.1, float(self.failover_recheck_sec))
+        timeout = max(0.1, min(float(self.timeout_sec), interval))
+        while True:
+            reachable, detail = self._probe_primary(timeout)
+            now_ms = int(time.time() * 1000)
+            now_mono = time.monotonic()
+            should_flush = False
+            with self._lock:
+                self._primary_reachable = reachable
+                self._last_primary_probe_ms = now_ms
+                self._last_primary_probe_detail = detail[:300]
+                if reachable:
+                    self._watchdog_successes += 1
+                    self._watchdog_failures = 0
+                    if self._active_label == self._standby_label:
+                        previous_active = self._active_label
+                        outage_started = self._outage_started_monotonic
+                        outage_started_ms = self._outage_started_ms
+                        failed_event_id = self._outage_failed_event_id or "watchdog-primary-failed"
+                        failure_route = self._outage_failure_route
+                        outage_ms = (
+                            int((now_mono - outage_started) * 1000)
+                            if outage_started is not None
+                            else 0
+                        )
+                        self._active_label = self._primary.label
+                        self._next_primary_probe_at = 0.0
+                        self._outage_started_monotonic = None
+                        self._outage_started_ms = 0
+                        self._outage_failed_event_id = ""
+                        self._outage_failure_route = ""
+                        self._append_network_transition_locked(
+                            ts_ms=now_ms,
+                            transition="communication_recovered",
+                            from_path=previous_active,
+                            to_endpoint=self._primary,
+                            source="watchdog",
+                            failed_event_id=failed_event_id,
+                            recovered_event_id="watchdog-primary-recovered",
+                            outage_started_ms=outage_started_ms,
+                            outage_ms=outage_ms,
+                            route_before_failure=failure_route,
+                            route_after_recovery=detail,
+                        )
+                        should_flush = True
+                else:
+                    self._watchdog_failures += 1
+                    self._watchdog_successes = 0
+                    if self._active_label == self._primary.label:
+                        previous_active = self._active_label
+                        if self._outage_started_monotonic is None:
+                            self._outage_started_monotonic = now_mono
+                            self._outage_started_ms = now_ms
+                            self._outage_failed_event_id = "watchdog-primary-failed"
+                            self._outage_failure_route = detail
+                        self._active_label = self._standby_label
+                        self._next_primary_probe_at = now_mono + interval
+                        standby = self._active_endpoint_locked()
+                        self._append_network_transition_locked(
+                            ts_ms=now_ms,
+                            transition="watchdog_failover",
+                            from_path=previous_active,
+                            to_endpoint=standby,
+                            source="watchdog",
+                            failed_event_id="watchdog-primary-failed",
+                            recovered_event_id="watchdog-standby-active",
+                            outage_started_ms=self._outage_started_ms,
+                            outage_ms=0,
+                            route_before_failure=detail,
+                            route_after_recovery=f"active_path={standby.label} host={standby.host}",
+                        )
+                        should_flush = True
+            if should_flush:
+                self._flush_network_logs()
+            time.sleep(interval)
+
+    def _probe_primary(self, timeout: float) -> tuple[bool, str]:
+        try:
+            result = subprocess.run(
+                ["ping", "-c", "1", "-n", self._primary.host],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            return False, f"ping timeout host={self._primary.host} timeout_sec={timeout:.3f}"
+        except Exception as exc:
+            return False, f"ping error host={self._primary.host}: {exc}"
+        detail = " ".join((result.stdout or result.stderr).strip().split())
+        if result.returncode == 0:
+            return True, f"ping ok host={self._primary.host} {detail}"[:300]
+        return False, f"ping failed host={self._primary.host} code={result.returncode} {detail}"[:300]
 
     def _retry_loop(self) -> None:
         delay = max(0.1, self.retry_initial_sec)
@@ -315,6 +441,47 @@ class WebTransportIngressSender:
         if not route:
             route = "unavailable"
         return route[:300]
+
+    def _append_network_transition_locked(
+        self,
+        *,
+        ts_ms: int,
+        transition: str,
+        from_path: str,
+        to_endpoint: WebTransportEndpoint,
+        source: str,
+        failed_event_id: str,
+        recovered_event_id: str,
+        outage_started_ms: int,
+        outage_ms: int,
+        route_before_failure: str,
+        route_after_recovery: str,
+    ) -> None:
+        log_event_id = self._network_log_event_id(ts_ms, recovered_event_id)
+        payload = {
+            "type": "network_transition",
+            "transition": transition,
+            "transport": "webtransport",
+            "from_path": from_path,
+            "to_path": to_endpoint.label,
+            "host": to_endpoint.host,
+            "port": to_endpoint.port,
+            "source": source,
+            "failed_event_id": failed_event_id,
+            "recovered_event_id": recovered_event_id,
+            "outage_started_ms": outage_started_ms,
+            "recovered_ms": ts_ms,
+            "outage_ms": outage_ms,
+            "route_before_failure": route_before_failure,
+            "route_after_recovery": route_after_recovery,
+        }
+        body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        self._pending_network_logs.append((log_event_id, body))
+        print(
+            "network_watchdog_transition "
+            f"transition={transition} from={from_path} to={to_endpoint.label} "
+            f"outage_ms={outage_ms} detail={route_after_recovery}"
+        )
 
     def _network_log_event_id(self, recovered_ms: int, recovered_event_id: str) -> str:
         suffix = "".join(
