@@ -335,7 +335,7 @@
   text-align: left;
 }
 
-/* 회원사 목록 테이블 — 헤더·셀 전체 가운데 정렬 */
+/* 센터 목록 테이블 — 헤더·셀 전체 가운데 정렬 */
 .company-admin-table th,
 .company-admin-table td {
   text-align: center;
@@ -496,7 +496,7 @@
     grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
   }
 
-  /* 회원사 관리: 760px 최솟값 제거 */
+  /* 센터 관리: 760px 최솟값 제거 */
   .company-admin-main-grid {
     grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
   }
@@ -572,7 +572,7 @@
     grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
   }
 
-  /* 회원사 관리: 필터행 및 사이드 패널 압축 */
+  /* 센터 관리: 필터행 및 사이드 패널 압축 */
   .company-admin-filter-row {
     grid-template-columns: 110px 100px 100px 130px 1fr 100px;
     gap: 8px;

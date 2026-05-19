@@ -78,9 +78,9 @@ const MAP_MARKER_STORAGE_KEY = 'hifive.masterAdmin.mapMarkers.v1'
 const menuGroups = [
   { label: '대시보드', icon: 'dashboard2.png' },
   {
-    label: '회원사 관리',
+    label: '센터 관리',
     icon: 'member_set.png',
-    children: ['회원사 목록', '계정 관리', '권한 관리', '요금 정산 관리']
+    children: ['센터 목록', '계정 관리', '권한 관리', '요금 정산 관리']
   },
   { label: '시스템 관제', icon: 'system_set.png' },
   { label: 'Edge 장비', icon: 'edge_set.png' },
@@ -299,20 +299,20 @@ const companyPermissionChartOptions = {
 }
 
 const subpageTitle = computed(() => {
-  if (activeMenu.value === '회원사 관리') return '회원사 목록'
+  if (activeMenu.value === '센터 관리') return '센터 목록'
   return activeMenu.value
 })
 
 const subpageDescription = computed(() => {
   const descriptions = {
-    '회원사 목록': '등록된 회원사 정보를 조회하고 수정, 권한 설정을 관리합니다.',
+    '센터 목록': '등록된 센터 정보를 조회하고 수정, 권한 설정을 관리합니다.',
     '계정 관리': '회원 계정의 로그인 정보, 상태, 허용 대시보드를 관리합니다.',
     '권한 관리': '회원별 접근 가능 지점과 정산/단말/공지 권한을 설정합니다.',
-    '요금 정산 관리': '회원사별 정산 상태와 미정산 건을 확인합니다.',
+    '요금 정산 관리': '센터별 정산 상태와 미정산 건을 확인합니다.',
     '지점(관제센터) 관리': '전국 톨게이트 지점의 운영 상태와 대시보드 진입을 관리합니다.',
     '단말기 관리': 'GPS/OCR 수집 단말 상태와 배치 지점을 관리합니다.',
     '시스템 모니터링': '서버, DB, GPS 수신 상태를 점검합니다.',
-    '공지사항': '회원사와 지점에 노출할 공지사항을 관리합니다.',
+    '공지사항': '센터와 지점에 노출할 공지사항을 관리합니다.',
     '감사 로그': '관리자 작업 이력과 권한 변경 이력을 확인합니다.',
     '설정': '마스터 관리자 콘솔의 기본 표시와 운영 정책을 설정합니다.'
   }
@@ -329,7 +329,7 @@ const deviceRows = [
 const auditRows = [
   { time: '2026-05-08 10:24:11', actor: 'master', action: '서울 톨게이트 마커 위치 수정', result: '성공' },
   { time: '2026-05-08 10:18:02', actor: 'master', action: '회원 대시보드 권한 변경', result: '성공' },
-  { time: '2026-05-08 09:42:33', actor: 'admin@hifive.com', action: '회원사 목록 조회', result: '성공' }
+  { time: '2026-05-08 09:42:33', actor: 'admin@hifive.com', action: '센터 목록 조회', result: '성공' }
 ]
 
 const recentAuditRows = [
@@ -526,7 +526,7 @@ const centerMetricChartOptions = {
 }
 
 function centerOwner(centerName) {
-  return companyByCenter[centerName] ?? '담당 회원사'
+  return companyByCenter[centerName] ?? '담당 센터'
 }
 
 function centerIssueCount(centerName) {
@@ -640,7 +640,7 @@ async function createCompany() {
   if (savingCompany.value) return
 
   if (!companyForm.value.name || !companyForm.value.owner || !companyForm.value.phone || !companyForm.value.email) {
-    companyModalMessage.value = '회원사명, 대표자, 연락처, 이메일을 모두 입력해 주세요.'
+    companyModalMessage.value = '센터명, 대표자, 연락처, 이메일을 모두 입력해 주세요.'
     return
   }
 
@@ -659,13 +659,13 @@ async function createCompany() {
     })
     companies.value = [...companies.value, data]
     showCompanyModal.value = false
-    memberMessage.value = `${data.name} 회원사가 추가되었습니다.`
+    memberMessage.value = `${data.name} 센터가 추가되었습니다.`
   } catch (error) {
     const status = error?.response?.status
     if (status === 403) {
       companyModalMessage.value = '관리자 세션이 만료되었거나 권한이 없습니다. admin 계정으로 다시 로그인해 주세요.'
     } else if (status === 400 || status === 500) {
-      companyModalMessage.value = '회원사 추가에 실패했습니다. 이메일 중복 여부와 입력값을 확인해 주세요.'
+      companyModalMessage.value = '센터 추가에 실패했습니다. 이메일 중복 여부와 입력값을 확인해 주세요.'
     } else {
       companyModalMessage.value = '백엔드 연결 상태를 확인해 주세요.'
     }
@@ -688,7 +688,7 @@ function activateMenu(menu) {
     return
   }
 
-  if (['회원사 관리', '회원사 목록', '계정 관리', '권한 관리', '요금 정산 관리'].includes(menu)) {
+  if (['센터 관리', '센터 목록', '계정 관리', '권한 관리', '요금 정산 관리'].includes(menu)) {
     activeTab.value = menu === '계정 관리' ? 'accounts' : menu === '권한 관리' ? 'permissions' : 'companies'
     return
   }
@@ -710,7 +710,7 @@ function showActionMessage(message) {
 }
 
 function openQuickCompanyAdd() {
-  activateMenu('회원사 목록')
+  activateMenu('센터 목록')
   openCompanyModal()
 }
 
@@ -881,7 +881,7 @@ function stopMarkerDrag() {
 }
 
 function notifyCompanyEdited() {
-  window.alert('회원사 정보가 수정되었습니다.')
+  window.alert('센터 정보가 수정되었습니다.')
 }
 
 function notifyPermissionSaved() {
@@ -901,7 +901,7 @@ onMounted(() => {
     memberMessage.value = '회원 목록을 불러오지 못했습니다. 백엔드 실행 상태와 관리자 로그인을 확인해 주세요.'
   })
   fetchCompanies().catch(() => {
-    memberMessage.value = '회원사 목록을 불러오지 못했습니다. 백엔드 실행 상태를 확인해 주세요.'
+    memberMessage.value = '센터 목록을 불러오지 못했습니다. 백엔드 실행 상태를 확인해 주세요.'
   })
 })
 
@@ -1070,7 +1070,7 @@ provide('masterDashboard', masterDashboardContext)
 
       <div class="quick-menu">
         <p>빠른 메뉴</p>
-        <button type="button" @click="openQuickCompanyAdd">회원사 추가</button>
+        <button type="button" @click="openQuickCompanyAdd">센터 추가</button>
         <button type="button" @click="openCenterAdd">지점 추가</button>
         <button type="button" @click="openNoticeCreate">점검 공지</button>
         <button type="button" @click="activateMenu('장애 알림')">장애 등록</button>
@@ -1083,8 +1083,8 @@ provide('masterDashboard', masterDashboardContext)
       <header class="topbar">
         <div class="topbar-title">
           <span class="brand-diamond small"></span>
-          <strong>{{ activeMenu === 'Ingress' ? 'Ingress 관제' : activeMenu === '시스템 관제' ? 'Master Admin · 시스템 관제' : activeMenu === 'Edge 장비' ? 'Edge 장비 관제' : activeMenu === '백엔드/DB' ? 'Backend / DB 관제' : activeMenu === '장애 알림' ? '장애 알림' : activeMenu === '지점 관리' ? '지점 관리' : activeMenu === '감사 로그' ? '감사 로그' : activeMenu === '설정' ? '설정' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 관리' : '대시보드' }}</strong>
-          <span>{{ activeMenu === 'Ingress' ? 'Python Ingress 서비스 상태 및 이벤트 흐름을 모니터링합니다.' : activeMenu === 'Edge 장비' ? 'Jetson Edge 장비 상태 및 성능 모니터링' : activeMenu === '장애 알림' ? '시스템 및 서비스 이상 상황을 모니터링하고 대응합니다.' : activeMenu === '지점 관리' ? '스마트 톨링 지점 및 제어센터 등록/수정/관리' : activeMenu === '감사 로그' ? '관리자 작업, 권한 변경, 대리조회 이력을 추적합니다.' : activeMenu === '설정' ? '관리자 콘솔 운영 정책과 시스템 기본값을 관리합니다.' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 계정, 권한, 지점 연결 상태를 통합 관리합니다.' : activeMenu === '시스템 관제' || activeMenu === '백엔드/DB' ? '' : 'Master Admin Dashboard' }}</span>
+          <strong>{{ activeMenu === 'Ingress' ? 'Ingress 관제' : activeMenu === '시스템 관제' ? 'Master Admin · 시스템 관제' : activeMenu === 'Edge 장비' ? 'Edge 장비 관제' : activeMenu === '백엔드/DB' ? 'Backend / DB 관제' : activeMenu === '장애 알림' ? '장애 알림' : activeMenu === '지점 관리' ? '지점 관리' : activeMenu === '감사 로그' ? '감사 로그' : activeMenu === '설정' ? '설정' : ['센터 관리', '센터 목록'].includes(activeMenu) ? '센터 관리' : '대시보드' }}</strong>
+          <span>{{ activeMenu === 'Ingress' ? 'Python Ingress 서비스 상태 및 이벤트 흐름을 모니터링합니다.' : activeMenu === 'Edge 장비' ? 'Jetson Edge 장비 상태 및 성능 모니터링' : activeMenu === '장애 알림' ? '시스템 및 서비스 이상 상황을 모니터링하고 대응합니다.' : activeMenu === '지점 관리' ? '스마트 톨링 지점 및 제어센터 등록/수정/관리' : activeMenu === '감사 로그' ? '관리자 작업, 권한 변경, 대리조회 이력을 추적합니다.' : activeMenu === '설정' ? '관리자 콘솔 운영 정책과 시스템 기본값을 관리합니다.' : ['센터 관리', '센터 목록'].includes(activeMenu) ? '센터 계정, 권한, 지점 연결 상태를 통합 관리합니다.' : activeMenu === '시스템 관제' || activeMenu === '백엔드/DB' ? '' : 'Master Admin Dashboard' }}</span>
         </div>
 
         <div class="header-tools">
@@ -1101,8 +1101,8 @@ provide('masterDashboard', masterDashboardContext)
 
       <main>
         <MasterDashboardHomePage v-if="activeMenu === '대시보드'" />
-        <MasterFallbackPage v-else-if="!['Ingress', '시스템 관제', 'Edge 장비', '백엔드/DB', '장애 알림', '지점 관리', '감사 로그', '설정', '회원사 관리', '회원사 목록'].includes(activeMenu)" />
-        <MemberCompanyListPage v-else-if="['회원사 관리', '회원사 목록'].includes(activeMenu)" />
+        <MasterFallbackPage v-else-if="!['Ingress', '시스템 관제', 'Edge 장비', '백엔드/DB', '장애 알림', '지점 관리', '감사 로그', '설정', '센터 관리', '센터 목록'].includes(activeMenu)" />
+        <MemberCompanyListPage v-else-if="['센터 관리', '센터 목록'].includes(activeMenu)" />
         <MemberAccountManagementPage v-else-if="activeMenu === '계정 관리'" />
         <MemberPermissionManagementPage v-else-if="activeMenu === '권한 관리'" />
         <FeeSettlementManagementPage v-else-if="activeMenu === '요금 정산 관리'" />
@@ -1138,7 +1138,7 @@ provide('masterDashboard', masterDashboardContext)
                   <dd>{{ selectedCenterDetail.name }}</dd>
                 </div>
                 <div>
-                  <dt>담당 회원사</dt>
+                  <dt>담당 센터</dt>
                   <dd>{{ centerOwner(selectedCenterDetail.name) }}</dd>
                 </div>
                 <div>
@@ -1209,15 +1209,15 @@ provide('masterDashboard', masterDashboardContext)
           <form class="company-modal glass" @submit.prevent="createCompany">
             <div class="modal-head">
               <div>
-                <p class="subpage-kicker">COMPANY</p>
-                <h3>회원사 추가</h3>
+                <p class="subpage-kicker">CENTER</p>
+                <h3>센터 추가</h3>
               </div>
               <button class="modal-close" type="button" @click="showCompanyModal = false">×</button>
             </div>
 
             <div class="modal-grid">
               <label>
-                <span>회원사명</span>
+                <span>센터명</span>
                 <input v-model.trim="companyForm.name" required type="text" placeholder="예: 인천 하이패스(주)" />
               </label>
               <label>
