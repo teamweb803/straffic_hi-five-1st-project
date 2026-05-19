@@ -66,8 +66,8 @@ public class PassageEventRecord {
 	@Column(name = "global_lane_no")
 	private Integer globalLaneNo;
 
-	@Column(name = "local_track_id")
-	private Long localTrackId;
+	@Column(name = "local_track_id", length = 80)
+	private String localTrackId;
 
 	@Column(name = "vehicle_pass_id", length = 120)
 	private String vehiclePassId;
@@ -145,7 +145,7 @@ public class PassageEventRecord {
 		String direction,
 		Integer laneNo,
 		Integer globalLaneNo,
-		Long localTrackId,
+		String localTrackId,
 		String vehiclePassId,
 		Double vehicleConfidence,
 		String plateText,
@@ -238,7 +238,7 @@ public class PassageEventRecord {
 		return globalLaneNo;
 	}
 
-	public Long getLocalTrackId() {
+	public String getLocalTrackId() {
 		return localTrackId;
 	}
 
