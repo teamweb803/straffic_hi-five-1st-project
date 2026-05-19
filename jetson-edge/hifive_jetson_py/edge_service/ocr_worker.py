@@ -3,7 +3,10 @@ from __future__ import annotations
 import queue
 import threading
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
+
+from hifive_jetson_py.shared_crop_ipc import discard_shared_plate_crop, open_shared_plate_crop
 
 from .plate_tracker import PlateBBoxTracker
 from .types import OcrTask, ReadyPlateEvent, SharedState
@@ -36,39 +39,44 @@ class OcrWorker:
 
     def process_task(self, task: OcrTask) -> None:
         start = time.perf_counter()
-        decoded = self.ocr_runner.predict_crop(task.crop)
-        ocr_ms = (time.perf_counter() - start) * 1000.0
-        now = time.monotonic()
+        with self._task_crop(task) as crop_bgr:
+            decoded = self.ocr_runner.predict_crop(crop_bgr)
+            ocr_ms = (time.perf_counter() - start) * 1000.0
+            now = time.monotonic()
+            ready = self._process_decoded(task, decoded, ocr_ms, now, crop_bgr)
+        if ready is not None:
+            self.event_queue.put(ready)
 
+    def _process_decoded(self, task: OcrTask, decoded, ocr_ms: float, now: float, crop_bgr) -> ReadyPlateEvent | None:
         with self.shared.lock:
             self.shared.latest_ocr_ms = ocr_ms
             self.shared.processed_ocr_tasks += 1
             track = self.tracker.tracks.get(task.track_id)
             if track is None:
-                return
+                return None
 
             track.pending_ocr = False
             if track.stable_text:
-                return
+                return None
             track.live_confidence = float(decoded.confidence)
             track.live_valid = bool(decoded.valid_pattern)
 
             if not task.readable:
                 track.candidate_text = ""
                 track.candidate_started_at = 0.0
-                return
+                return None
 
             if not self._can_emit(decoded):
-                return
+                return None
 
             if decoded.text != track.candidate_text:
                 track.candidate_text = str(decoded.text)
                 track.candidate_started_at = now
                 track.live_text = ""
-                return
+                return None
 
             if now - track.candidate_started_at < self.stable_sec:
-                return
+                return None
 
             track.stable_text = str(decoded.text)
             track.live_text = track.stable_text
@@ -80,16 +88,24 @@ class OcrWorker:
             if restored:
                 track.event_sent = True
             if track.event_sent:
-                return
+                return None
 
             track.event_sent = True
-            self.event_queue.put(
-                ReadyPlateEvent(
-                    task=replace(task, display_id=track.display_id),
-                    text=track.stable_text,
-                    confidence=track.stable_confidence,
-                )
+            return ReadyPlateEvent(
+                task=replace(task, display_id=track.display_id, crop=crop_bgr.copy(), shared_crop=None),
+                text=track.stable_text,
+                confidence=track.stable_confidence,
             )
+
+    @contextmanager
+    def _task_crop(self, task: OcrTask):
+        if task.shared_crop is not None:
+            with open_shared_plate_crop(task.shared_crop, unlink=True) as crop_bgr:
+                yield crop_bgr
+            return
+        if task.crop is None:
+            raise RuntimeError("OCR task has no crop data")
+        yield task.crop
 
     def _can_emit(self, decoded) -> bool:
         if not decoded.text:
@@ -107,11 +123,14 @@ def put_latest_ocr_task(
     track_id: str,
     tracker: PlateBBoxTracker,
     task: OcrTask,
-) -> None:
+) -> bool:
     with shared.lock:
         track = tracker.tracks.get(track_id)
         if track is None or track.pending_ocr:
-            return
+            if task.shared_crop is not None:
+                discard_shared_plate_crop(task.shared_crop)
+            shared.dropped_ocr_tasks += 1
+            return False
         track.pending_ocr = True
     try:
         input_queue.put_nowait(task)
@@ -120,3 +139,8 @@ def put_latest_ocr_task(
             track = tracker.tracks.get(track_id)
             if track is not None:
                 track.pending_ocr = False
+            shared.dropped_ocr_tasks += 1
+        if task.shared_crop is not None:
+            discard_shared_plate_crop(task.shared_crop)
+        return False
+    return True

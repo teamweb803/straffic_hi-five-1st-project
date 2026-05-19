@@ -191,6 +191,12 @@ class TransportConfig:
     retry_initial_sec: float = 1.0
     retry_max_sec: float = 30.0
     retry_max_items_per_cycle: int = 16
+    failover_enabled: bool = False
+    standby_ingress_host: str = ""
+    standby_ingress_port: int = 0
+    standby_server_name: str = ""
+    standby_verify_tls: bool | None = None
+    failover_recheck_sec: float = 1.0
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "TransportConfig":
@@ -208,6 +214,12 @@ class TransportConfig:
             retry_initial_sec=float(data.get("retry_initial_sec", 1.0)),
             retry_max_sec=float(data.get("retry_max_sec", 30.0)),
             retry_max_items_per_cycle=int(data.get("retry_max_items_per_cycle", 16)),
+            failover_enabled=bool(data.get("failover_enabled", False)),
+            standby_ingress_host=str(data.get("standby_ingress_host", "")),
+            standby_ingress_port=int(data.get("standby_ingress_port", 0)),
+            standby_server_name=str(data.get("standby_server_name", "")),
+            standby_verify_tls=data.get("standby_verify_tls"),
+            failover_recheck_sec=float(data.get("failover_recheck_sec", 1.0)),
         )
 
 

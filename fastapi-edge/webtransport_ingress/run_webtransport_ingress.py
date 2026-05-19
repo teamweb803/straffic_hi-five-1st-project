@@ -4,9 +4,11 @@ import argparse
 import asyncio
 import logging
 import ssl
+import time
 
 from hifive_jetson_py.ingress_state import IngressStats
-from hifive_jetson_py.spring_forwarder import SpringForwarder
+from hifive_jetson_py.spring_forwarder import SpringEvidenceForwarder, SpringForwarder, SpringJsonForwarder
+from hifive_jetson_py.srt_video_receiver import SrtVideoReceiver, SrtVideoReceiverOptions
 from hifive_jetson_py.webtransport_ingress import WebTransportIngressFactory
 
 
@@ -18,17 +20,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--key", required=True)
     parser.add_argument("--wt-path", default="/hifive/edge")
     parser.add_argument("--spring-url", default="http://127.0.0.1:8080/api/ingest/passage-events")
+    parser.add_argument("--spring-edge-status-url", default="")
+    parser.add_argument("--spring-ingress-status-url", default="")
+    parser.add_argument("--spring-evidence-url", default="")
+    parser.add_argument("--ingress-status-forward-interval-sec", type=float, default=0.0)
     parser.add_argument("--spring-timeout-sec", type=float, default=3.0)
     parser.add_argument("--ingest-key", default="")
     parser.add_argument("--dry-run-spring", action="store_true")
     parser.add_argument("--ops-host", default="0.0.0.0")
     parser.add_argument("--ops-port", type=int, default=8000)
+    parser.add_argument("--srt-listen-host", default="0.0.0.0")
+    parser.add_argument("--srt-listen-port", type=int, default=0)
+    parser.add_argument("--srt-latency-ms", type=int, default=120)
+    parser.add_argument("--srt-receiver-command", default="ffmpeg")
     return parser.parse_args()
 
 
 def build_ops_app(stats: IngressStats):
     from fastapi import FastAPI
-    from fastapi.responses import PlainTextResponse
+    from fastapi.responses import PlainTextResponse, Response
 
     app = FastAPI(title="HI-FIVE Python Ingress Ops")
 
@@ -39,6 +49,22 @@ def build_ops_app(stats: IngressStats):
     @app.get("/status")
     async def status() -> dict:
         return stats.snapshot()
+
+    @app.get("/video/status")
+    async def video_status() -> dict:
+        return stats.snapshot().get("video_receiver", {})
+
+    @app.get("/preview/latest.jpg")
+    async def latest_preview() -> Response:
+        payload, meta = stats.get_latest_preview()
+        if not payload:
+            return Response(status_code=404)
+        headers = {}
+        if meta.get("event_id"):
+            headers["X-Hifive-Preview-Event-Id"] = str(meta["event_id"])
+        if meta.get("ts_ms"):
+            headers["X-Hifive-Preview-Ts-Ms"] = str(meta["ts_ms"])
+        return Response(content=payload, media_type="image/jpeg", headers=headers)
 
     @app.get("/metrics", response_class=PlainTextResponse)
     async def metrics() -> str:
@@ -60,6 +86,34 @@ async def run_ops_api(stats: IngressStats, host: str, port: int) -> None:
     await server.serve()
 
 
+async def forward_ingress_status_loop(
+    stats: IngressStats,
+    forwarder: SpringJsonForwarder,
+    interval_sec: float,
+) -> None:
+    interval = max(0.2, interval_sec)
+    while True:
+        ts_ms = int(time.time() * 1000)
+        event_id = f"ingress-status-{ts_ms}"
+        snapshot = stats.snapshot()
+        snapshot["uptime_sec"] = int(snapshot.get("uptime_sec") or 0)
+        payload = {
+            "type": "ingress_status",
+            "schema_version": "hifive.ingress_status.v1",
+            "ts_ms": ts_ms,
+            "ingress_id": "python-webtransport-ingress",
+            **snapshot,
+        }
+        result = await forwarder.forward(payload, event_id)
+        if result.accepted:
+            stats.mark_ingress_status_forward(event_id, "accepted", result.status_code, result.detail)
+        elif result.retryable:
+            stats.mark_ingress_status_forward(event_id, "retry", result.status_code, result.detail)
+        else:
+            stats.mark_ingress_status_forward(event_id, "rejected", result.status_code, result.detail)
+        await asyncio.sleep(interval)
+
+
 async def async_main() -> None:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="INFO:     %(message)s")
@@ -69,12 +123,46 @@ async def async_main() -> None:
     from aioquic.quic.configuration import QuicConfiguration
 
     stats = IngressStats()
+    srt_receiver = SrtVideoReceiver(
+        SrtVideoReceiverOptions(
+            host=args.srt_listen_host,
+            port=args.srt_listen_port,
+            latency_ms=args.srt_latency_ms,
+            command=args.srt_receiver_command,
+        ),
+        stats,
+    )
+    srt_receiver.start()
     forwarder = SpringForwarder(
         endpoint=args.spring_url,
         timeout_sec=args.spring_timeout_sec,
         ingest_key=args.ingest_key,
         dry_run=args.dry_run_spring,
     )
+    edge_status_forwarder = None
+    if args.spring_edge_status_url or args.dry_run_spring:
+        edge_status_forwarder = SpringJsonForwarder(
+            endpoint=args.spring_edge_status_url,
+            timeout_sec=args.spring_timeout_sec,
+            ingest_key=args.ingest_key,
+            dry_run=args.dry_run_spring,
+        )
+    ingress_status_forwarder = None
+    if args.spring_ingress_status_url or args.dry_run_spring:
+        ingress_status_forwarder = SpringJsonForwarder(
+            endpoint=args.spring_ingress_status_url,
+            timeout_sec=args.spring_timeout_sec,
+            ingest_key=args.ingest_key,
+            dry_run=args.dry_run_spring,
+        )
+    evidence_forwarder = None
+    if args.spring_evidence_url or args.dry_run_spring:
+        evidence_forwarder = SpringEvidenceForwarder(
+            endpoint=args.spring_evidence_url,
+            timeout_sec=args.spring_timeout_sec,
+            ingest_key=args.ingest_key,
+            dry_run=args.dry_run_spring,
+        )
 
     configuration = QuicConfiguration(
         is_client=False,
@@ -91,10 +179,20 @@ async def async_main() -> None:
         create_protocol=WebTransportIngressFactory(
             path=args.wt_path,
             forwarder=forwarder,
+            edge_status_forwarder=edge_status_forwarder,
+            evidence_forwarder=evidence_forwarder,
             stats=stats,
         ).create(),
     )
     asyncio.create_task(run_ops_api(stats, args.ops_host, args.ops_port))
+    if args.ingress_status_forward_interval_sec > 0 and ingress_status_forwarder is not None:
+        asyncio.create_task(
+            forward_ingress_status_loop(
+                stats,
+                ingress_status_forwarder,
+                args.ingress_status_forward_interval_sec,
+            )
+        )
     print(f"WebTransport ingress listening on {args.host}:{args.port}{args.wt_path}")
     print(f"Ops API listening on http://{args.ops_host}:{args.ops_port}")
     await asyncio.Future()

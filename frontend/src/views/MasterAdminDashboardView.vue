@@ -1,50 +1,537 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { adminApi } from '@/api/admin'
+import { useDashboardApi } from '@/composables/useDashboardApi'
+import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
+import '@/dashboards/master/styles/master-dashboard.css'
+import MasterDashboardHomePage from '@/dashboards/master/pages/MasterDashboardHomePage.vue'
+import MasterFallbackPage from '@/dashboards/master/pages/MasterFallbackPage.vue'
+import MemberCompanyListPage from '@/dashboards/master/pages/MemberCompanyListPage.vue'
+import MemberAccountManagementPage from '@/dashboards/master/pages/MemberAccountManagementPage.vue'
+import MemberPermissionManagementPage from '@/dashboards/master/pages/MemberPermissionManagementPage.vue'
+import FeeSettlementManagementPage from '@/dashboards/master/pages/FeeSettlementManagementPage.vue'
+import BranchCenterManagementPage from '@/dashboards/master/pages/BranchCenterManagementPage.vue'
+import EdgeEquipmentManagementPage from '@/dashboards/master/pages/EdgeEquipmentManagementPage.vue'
+import TerminalDeviceManagementPage from '@/dashboards/master/pages/TerminalDeviceManagementPage.vue'
+import SystemControlPage from '@/dashboards/master/pages/SystemControlPage.vue'
+import IngressMonitoringPage from '@/dashboards/master/pages/IngressMonitoringPage.vue'
+import BackendDbMonitoringPage from '@/dashboards/master/pages/BackendDbMonitoringPage.vue'
+import SystemMonitoringFallbackPage from '@/dashboards/master/pages/SystemMonitoringFallbackPage.vue'
+import IncidentAlertPage from '@/dashboards/master/pages/IncidentAlertPage.vue'
+import NoticeManagementPage from '@/dashboards/master/pages/NoticeManagementPage.vue'
+import AuditLogPage from '@/dashboards/master/pages/AuditLogPage.vue'
+import MasterSettingsPage from '@/dashboards/master/pages/MasterSettingsPage.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const masterApiState = useDashboardApi({ scope: 'admin', pollMs: 3000 })
+
+const THEME_STORAGE_KEY = 'hifive.dashboard.theme'
 const nowText = ref('')
+const themeMode = ref('light')
 const activeMenu = ref('대시보드')
-const activeTab = ref('members')
+const activeTab = ref('companies')
 const selectedCenter = ref('서울 톨게이트')
+const expandedCenter = ref('')
+const showCenterModal = ref(false)
+const centerMetricPeriod = ref('daily')
 const search = ref('')
 const members = ref([])
+const companies = ref([])
 const memberMessage = ref('')
+const showCompanyModal = ref(false)
+const companyModalMessage = ref('')
+const savingCompany = ref(false)
+const companyForm = ref({
+  name: '',
+  owner: '',
+  phone: '',
+  email: '',
+  centers: 0,
+  status: '정상'
+})
+
 const kpiSection = ref(null)
 const mapSection = ref(null)
+const mapStage = ref(null)
 const centerSection = ref(null)
 const noticeSection = ref(null)
 const companySection = ref(null)
-let timer = null
+const isMapEditMode = ref(false)
+const mapPositionDirty = ref(false)
+const mapChangeCount = ref(0)
+const mapEditSnapshot = ref([])
+const draggingCenterName = ref('')
+const draggingLabelName = ref('')
+const isLightMode = computed(() => themeMode.value === 'light')
 
-const centers = [
-  { name: '서울 톨게이트', current: 1248, today: 12456, status: '정상', x: 48, y: 24, dashboardId: 'SEOUL-TOLL' },
-  { name: '수원 톨게이트', current: 987, today: 9876, status: '정상', x: 44, y: 34, dashboardId: 'SUWON-TOLL' },
-  { name: '대전 톨게이트', current: 765, today: 7654, status: '주의', x: 48, y: 49, dashboardId: 'DAEJEON-TOLL' },
-  { name: '대구 톨게이트', current: 532, today: 5321, status: '점검중', x: 62, y: 60, dashboardId: 'DAEGU-TOLL' },
-  { name: '부산 톨게이트', current: 1102, today: 11023, status: '정상', x: 68, y: 78, dashboardId: 'BUSAN-TOLL' },
-  { name: '광주 톨게이트', current: 624, today: 6120, status: '정상', x: 38, y: 69, dashboardId: 'GWANGJU-TOLL' },
-  { name: '강릉 톨게이트', current: 410, today: 4320, status: '정상', x: 69, y: 27, dashboardId: 'GANGNEUNG-TOLL' },
-  { name: '제주 톨게이트', current: 302, today: 2210, status: '정상', x: 37, y: 90, dashboardId: 'JEJU-TOLL' }
+function toggleThemeMode() {
+  themeMode.value = isLightMode.value ? 'dark' : 'light'
+  localStorage.setItem(THEME_STORAGE_KEY, themeMode.value)
+}
+
+let timer = null
+const MAP_MARKER_STORAGE_KEY = 'hifive.masterAdmin.mapMarkers.v1'
+
+const menuGroups = [
+  { label: '대시보드', icon: 'dashboard2.png' },
+  {
+    label: '회원사 관리',
+    icon: 'member_set.png',
+    children: ['회원사 목록', '계정 관리', '권한 관리', '요금 정산 관리']
+  },
+  { label: '시스템 관제', icon: 'system_set.png' },
+  { label: 'Edge 장비', icon: 'edge_set.png' },
+  { label: 'Ingress', icon: 'ingress.png' },
+  { label: '백엔드/DB', icon: 'be_db_set.png' },
+  { label: '장애 알림', icon: 'warning_set.png' },
+  { label: '지점 관리', icon: 'place_set.png' },
+  { label: '감사 로그', icon: 'log_set.png' },
+  { label: '설정', icon: 'setting.png' }
 ]
 
-const companies = [
+function getNavIcon(filename) {
+  return new URL(`../dashboards/icons/admin/${filename}`, import.meta.url).href
+}
+
+const centers = ref([
+  { name: '서울 톨게이트', current: 1248, today: 12456, status: '정상', x: 38.6, y: 27.6, labelX: -116, labelY: -18, dashboardId: 'SEOUL-TOLL' },
+  { name: '수원 톨게이트', current: 987, today: 9876, status: '정상', x: 37.8, y: 42.2, labelX: -116, labelY: -18, dashboardId: 'SUWON-TOLL' },
+  { name: '대전 톨게이트', current: 765, today: 7654, status: '주의', x: 42.1, y: 56.4, labelX: -116, labelY: -18, dashboardId: 'DAEJEON-TOLL' },
+  { name: '대구 톨게이트', current: 532, today: 5321, status: '점검중', x: 64.4, y: 61.0, labelX: 20, labelY: -18, dashboardId: 'DAEGU-TOLL' },
+  { name: '부산 톨게이트', current: 1102, today: 11023, status: '정상', x: 65.2, y: 75.8, labelX: 20, labelY: -18, dashboardId: 'BUSAN-TOLL' },
+  { name: '광주 톨게이트', current: 624, today: 6120, status: '정상', x: 37.8, y: 79.0, labelX: -116, labelY: -18, dashboardId: 'GWANGJU-TOLL' },
+  { name: '강릉 톨게이트', current: 410, today: 4320, status: '정상', x: 64.0, y: 18.7, labelX: 20, labelY: -18, dashboardId: 'GANGNEUNG-TOLL' },
+  { name: '제주 톨게이트', current: 302, today: 2210, status: '정상', x: 46.2, y: 96.0, labelX: 20, labelY: -18, dashboardId: 'JEJU-TOLL' }
+])
+
+const notices = [
+  { title: '[공지] 시스템 점검 안내 (05/25 00:00 ~ 02:00)', date: '2025-05-20' },
+  { title: '[안내] 요금 정산 시스템 업데이트 완료', date: '2025-05-19' },
+  { title: '[안내] GPS 단말기 펌웨어 업데이트 안내', date: '2025-05-18' },
+  { title: '[공지] 개인정보 처리방침 변경 안내', date: '2025-05-15' }
+]
+
+const topCenters = computed(() => centers.value.slice(0, 5))
+
+const dummyCompanies = [
   { name: '하이패스 서울(주)', owner: '김서울', phone: '02-1234-5678', email: 'seoul@hipass.com', centers: 5, status: '정상' },
   { name: '수원 하이패스(주)', owner: '이수원', phone: '031-234-5678', email: 'suwon@hipass.com', centers: 4, status: '정상' },
   { name: '대전 하이패스(주)', owner: '박대전', phone: '042-345-6789', email: 'daejeon@hipass.com', centers: 3, status: '주의' },
   { name: '대구 하이패스(주)', owner: '최대구', phone: '053-456-7890', email: 'daegu@hipass.com', centers: 4, status: '정상' },
-  { name: '부산 하이패스(주)', owner: '정부산', phone: '051-567-8901', email: 'busan@hipass.com', centers: 6, status: '정상' }
+  { name: '부산 하이패스(주)', owner: '정부산', phone: '051-567-8901', email: 'busan@hipass.com', centers: 6, status: '정상' },
+  { name: '광주 스마트톨링(주)', owner: '윤광주', phone: '062-111-2200', email: 'gwangju@hipass.com', centers: 2, status: '정상' },
+  { name: '강릉 톨링서비스(주)', owner: '한강릉', phone: '033-555-1900', email: 'gangneung@hipass.com', centers: 2, status: '정상' },
+  { name: '제주 하이로드(주)', owner: '오제주', phone: '064-700-1200', email: 'jeju@hipass.com', centers: 1, status: '정상' },
+  { name: '인천 스마트패스(주)', owner: '장인천', phone: '032-810-3300', email: 'incheon@hipass.com', centers: 3, status: '주의' },
+  { name: '울산 하이패스(주)', owner: '문울산', phone: '052-420-7788', email: 'ulsan@hipass.com', centers: 2, status: '정상' },
+  { name: '전주 톨링네트워크(주)', owner: '서전주', phone: '063-230-5588', email: 'jeonju@hipass.com', centers: 2, status: '비활성' },
+  { name: '청주 교통관리(주)', owner: '남청주', phone: '043-610-4411', email: 'cheongju@hipass.com', centers: 2, status: '정상' }
 ]
 
-const filteredCompanies = computed(() => companies.filter((company) => company.name.includes(search.value)))
-const filteredMembers = computed(() => members.value.filter((member) => {
-  const keyword = search.value.toLowerCase()
-  return !keyword || member.email?.toLowerCase().includes(keyword) || member.memberName?.toLowerCase().includes(keyword)
+const displayCompanies = computed(() => (companies.value.length >= 10 ? companies.value : dummyCompanies))
+
+const filteredCompanies = computed(() => {
+  const keyword = search.value.trim()
+  return displayCompanies.value.filter((company) => !keyword || company.name.includes(keyword))
+})
+
+const filteredMembers = computed(() => {
+  const keyword = search.value.trim().toLowerCase()
+  return members.value.filter((member) => {
+    return !keyword ||
+      member.email?.toLowerCase().includes(keyword) ||
+      member.memberName?.toLowerCase().includes(keyword)
+  })
+})
+
+const chartGridColor = 'rgba(140, 176, 220, 0.14)'
+const chartTextColor = '#aebfd4'
+
+function lineData(values, color = '#38d778', fill = false) {
+  return {
+    labels: values.map((_, index) => index + 1),
+    datasets: [{
+      data: values,
+      borderColor: color,
+      backgroundColor: fill ? `${color}22` : 'transparent',
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 4,
+      tension: 0.35,
+      fill
+    }]
+  }
+}
+
+function heartbeatData(values, color = '#38d778') {
+  return {
+    labels: values.map((_, index) => index + 1),
+    datasets: [{
+      data: values,
+      borderColor: color,
+      backgroundColor: 'transparent',
+      borderWidth: 2.4,
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      tension: 0,
+      fill: false
+    }]
+  }
+}
+
+function multiLineData(series) {
+  return {
+    labels: ['16:35', '16:45', '16:55', '17:05', '17:15', '17:25', '17:35'],
+    datasets: series.map((item) => ({
+      label: item.label,
+      data: item.values,
+      borderColor: item.color,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 4,
+      tension: 0.35
+    }))
+  }
+}
+
+const sparklineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 650, easing: 'easeOutQuart' },
+  plugins: { legend: { display: false }, tooltip: { enabled: false } },
+  scales: { x: { display: false }, y: { display: false } }
+}
+
+const compactLineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 750, easing: 'easeOutQuart' },
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { color: chartGridColor } },
+    y: { ticks: { color: chartTextColor, font: { size: 10 } }, grid: { color: chartGridColor } }
+  }
+}
+
+const doughnutOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 700, easing: 'easeOutQuart' },
+  cutout: '66%',
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: { x: { display: false }, y: { display: false } }
+}
+
+const dashboardSparklines = [
+  heartbeatData([12, 12, 7, 20, 8, 12, 12, 12], '#38d778'),
+  heartbeatData([11, 11, 6, 18, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([10, 10, 5, 17, 7, 10, 10, 10], '#38d778'),
+  heartbeatData([12, 12, 6, 21, 9, 12, 12, 12], '#38d778'),
+  heartbeatData([11, 11, 6, 19, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([8, 8, 15, 5, 18, 9, 16, 8], '#ffb928'),
+  heartbeatData([8, 8, 14, 6, 17, 10, 16, 8], '#ffb928'),
+  heartbeatData([11, 11, 6, 18, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([10, 10, 5, 17, 7, 10, 10, 10], '#38d778'),
+  heartbeatData([12, 12, 6, 20, 8, 12, 12, 12], '#38d778'),
+  heartbeatData([11, 11, 6, 18, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([10, 10, 5, 17, 7, 10, 10, 10], '#38d778'),
+  heartbeatData([11, 11, 6, 19, 8, 11, 11, 11], '#38d778'),
+  heartbeatData([8, 8, 15, 5, 18, 9, 16, 8], '#ffb928'),
+  heartbeatData([12, 12, 7, 20, 8, 12, 12, 12], '#38d778')
+]
+
+const edgeFleetDoughnutData = {
+  labels: ['Normal', 'Warning', 'Stale'],
+  datasets: [{ data: [78, 7, 5], backgroundColor: ['#38d778', '#ffb928', '#ff635c'], borderWidth: 0 }]
+}
+
+const edgeMetricCharts = [
+  { title: 'FPS', subtitle: '(frame/sec)', status: '정상', color: '#2f8cff', label: '평균 FPS', data: lineData([28, 31, 27, 29, 31, 30, 33, 29], '#2f8cff') },
+  { title: 'YOLO 처리 시간', subtitle: '(ms)', status: '정상', color: '#42d779', label: '평균 YOLO ms', data: lineData([25, 27, 24, 29, 30, 32, 31, 28], '#42d779') },
+  { title: 'OCR 처리 시간', subtitle: '(ms)', status: '주의', color: '#b28cff', label: '평균 OCR ms', data: lineData([54, 64, 59, 62, 61, 60, 58, 63], '#b28cff'), warn: true },
+  { title: 'Spool Count', subtitle: '(건)', status: '정상', color: '#ffb928', label: '현재 Spool', data: lineData([72, 64, 70, 75, 73, 72, 69, 67], '#ffb928') },
+  { title: 'Sent Event Count', subtitle: '(건/분)', status: '정상', color: '#26c8e8', label: '전송 이벤트', data: lineData([45, 43, 56, 62, 51, 44, 38, 42], '#26c8e8') }
+]
+
+const ingressCharts = [
+  { title: '수신 이벤트 (건)', data: lineData([6800, 7600, 8150, 7900, 8500, 9000, 9300], '#2f8cff') },
+  { title: 'ACK / RETRY (건)', data: multiLineData([{ label: 'ACK', values: [6700, 7400, 7800, 8250, 8800, 9050, 9200], color: '#42d779' }, { label: 'RETRY', values: [210, 230, 260, 300, 350, 410, 480], color: '#ffb928' }]) },
+  { title: 'REJECT / MALFORMED (건)', data: multiLineData([{ label: 'REJECT', values: [82, 96, 101, 112, 118, 130, 138], color: '#ff635c' }, { label: 'MALFORMED', values: [12, 13, 14, 15, 16, 17, 18], color: '#b28cff' }]) },
+  { title: '현재 연결 수 (개)', data: lineData([190, 205, 210, 208, 206, 202, 200], '#26c8e8') }
+]
+
+const incidentTimelineData = {
+  datasets: [
+    { label: '치명', data: [{ x: 72, y: 5 }, { x: 66, y: 3 }], backgroundColor: '#ff635c', pointRadius: 6 },
+    { label: '경고', data: [{ x: 28, y: 5 }, { x: 70, y: 4 }, { x: 52, y: 2 }, { x: 42, y: 1 }], backgroundColor: '#ffb928', pointRadius: 6 },
+    { label: '정보', data: [{ x: 32, y: 4 }, { x: 23, y: 3 }, { x: 69, y: 1 }], backgroundColor: '#3d8cff', pointRadius: 6 },
+    { label: '해제', data: [{ x: 92, y: 5 }, { x: 88, y: 4 }, { x: 92, y: 2 }, { x: 92, y: 1 }], backgroundColor: '#50d779', pointRadius: 6 }
+  ]
+}
+
+const incidentTimelineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { min: 0, max: 100, ticks: { display: false }, grid: { color: chartGridColor } },
+    y: { min: 0.5, max: 5.5, ticks: { display: false }, grid: { color: chartGridColor } }
+  }
+}
+
+const companyPermissionChartData = {
+  labels: ['MASTER', 'ADMIN', 'OPERATOR', 'LOCKED'],
+  datasets: [{ data: [1, 8, 26, 2], backgroundColor: ['#5ea8ff', '#38d778', '#ffb928', '#ff635c'], borderRadius: 6 }]
+}
+
+const companyPermissionChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { color: '#334155', font: { size: 11, weight: '700' } }, grid: { display: false } },
+    y: { ticks: { display: false }, grid: { color: chartGridColor } }
+  }
+}
+
+const subpageTitle = computed(() => {
+  if (activeMenu.value === '회원사 관리') return '회원사 목록'
+  return activeMenu.value
+})
+
+const subpageDescription = computed(() => {
+  const descriptions = {
+    '회원사 목록': '등록된 회원사 정보를 조회하고 수정, 권한 설정을 관리합니다.',
+    '계정 관리': '회원 계정의 로그인 정보, 상태, 허용 대시보드를 관리합니다.',
+    '권한 관리': '회원별 접근 가능 지점과 정산/단말/공지 권한을 설정합니다.',
+    '요금 정산 관리': '회원사별 정산 상태와 미정산 건을 확인합니다.',
+    '지점(관제센터) 관리': '전국 톨게이트 지점의 운영 상태와 대시보드 진입을 관리합니다.',
+    '단말기 관리': 'GPS/OCR 수집 단말 상태와 배치 지점을 관리합니다.',
+    '시스템 모니터링': '서버, DB, GPS 수신 상태를 점검합니다.',
+    '공지사항': '회원사와 지점에 노출할 공지사항을 관리합니다.',
+    '감사 로그': '관리자 작업 이력과 권한 변경 이력을 확인합니다.',
+    '설정': '마스터 관리자 콘솔의 기본 표시와 운영 정책을 설정합니다.'
+  }
+  return descriptions[subpageTitle.value] ?? '선택한 관리 항목의 상세 설정을 확인합니다.'
+})
+
+const deviceRows = [
+  { id: 'PICO2W-NEO7M-RC-01', center: '서울 톨게이트', type: 'GPS', status: '정상', lastSeen: '10:32:45' },
+  { id: 'EDGE-OCR-CAM-SEOUL-01', center: '서울 톨게이트', type: 'OCR', status: '정상', lastSeen: '10:32:41' },
+  { id: 'PICO2W-NEO7M-DAEJEON-01', center: '대전 톨게이트', type: 'GPS', status: '주의', lastSeen: '10:28:10' },
+  { id: 'EDGE-OCR-CAM-DAEGU-01', center: '대구 톨게이트', type: 'OCR', status: '점검중', lastSeen: '09:51:22' }
+]
+
+const auditRows = [
+  { time: '2026-05-08 10:24:11', actor: 'master', action: '서울 톨게이트 마커 위치 수정', result: '성공' },
+  { time: '2026-05-08 10:18:02', actor: 'master', action: '회원 대시보드 권한 변경', result: '성공' },
+  { time: '2026-05-08 09:42:33', actor: 'admin@hifive.com', action: '회원사 목록 조회', result: '성공' }
+]
+
+const recentAuditRows = [
+  { time: '17:34:58', actor: 'admin', target: '서울도로공사 / 서울 톨게이트 A', reason: '장애 원인 확인', result: '성공' },
+  { time: '17:29:33', actor: 'admin', target: '경기도로공사 / 수원 톨게이트 A', reason: '상태 점검', result: '성공' },
+  { time: '17:24:11', actor: 'admin', target: '대전교통공사 / 대전 톨게이트 B', reason: '주의 상태 확인', result: '성공' },
+  { time: '17:18:07', actor: 'operator02', target: '대구교통공사 / 대구 톨게이트 C', reason: '장애 처리 지원', result: '성공' },
+  { time: '17:12:45', actor: 'admin', target: '부산운영공사 / 부산 톨게이트 D', reason: '장기 점검', result: '성공' }
+]
+
+const recentAlerts = [
+  { level: '치명', tone: 'danger', title: '대구 톨게이트 C · 2번 레일 CCTV 수신 중단', time: '17:33:12' },
+  { level: '경고', tone: 'caution', title: '대전 톨게이트 B · OCR Task Drop 증가', time: '17:31:05' },
+  { level: '경고', tone: 'caution', title: '수원 톨게이트 A · Spool Count 85% 초과', time: '17:29:48' },
+  { level: '정보', tone: 'info', title: '부산 톨게이트 D · LAN → LTE 경로 전환', time: '17:27:21' },
+  { level: '정보', tone: 'info', title: 'Ingress · Retry 비율 일시 증가', time: '17:26:34' }
+]
+
+const companyByCenter = {
+  '서울 톨게이트': '서울도로공사',
+  '수원 톨게이트': '경기도로공사',
+  '대전 톨게이트': '대전교통공사',
+  '대구 톨게이트': '대구교통공사',
+  '부산 톨게이트': '부산운영공사',
+  '광주 톨게이트': '광주도로공사',
+  '강릉 톨게이트': '강원도로공사',
+  '제주 톨게이트': '제주교통공사'
+}
+
+const recentIssueByCenter = {
+  '대전 톨게이트': '1건',
+  '대구 톨게이트': '2건'
+}
+
+const centerDetailMeta = {
+  '서울 톨게이트': {
+    address: '서울특별시 서초구 양재대로 12',
+    lat: '37.56668',
+    lng: '126.97841',
+    edgeCount: 3,
+    metrics: {
+      daily: { label: '일간', traffic: 12456, settlement: 2450800, bars: [42, 58, 74, 92, 86, 68, 54] },
+      weekly: { label: '주간', traffic: 86420, settlement: 17155600, bars: [56, 68, 72, 88, 94, 80, 64] },
+      monthly: { label: '월간', traffic: 358420, settlement: 71135800, bars: [48, 64, 79, 84, 91, 88, 76] }
+    }
+  },
+  '수원 톨게이트': {
+    address: '경기도 수원시 영통구 중부대로 88',
+    lat: '37.26357',
+    lng: '127.02860',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 9876, settlement: 1896200, bars: [34, 44, 61, 78, 72, 62, 48] },
+      weekly: { label: '주간', traffic: 68450, settlement: 13005500, bars: [45, 54, 66, 74, 82, 73, 58] },
+      monthly: { label: '월간', traffic: 292380, settlement: 55552200, bars: [42, 58, 70, 76, 84, 79, 67] }
+    }
+  },
+  '대전 톨게이트': {
+    address: '대전광역시 유성구 북유성대로 154',
+    lat: '36.35041',
+    lng: '127.38455',
+    edgeCount: 3,
+    metrics: {
+      daily: { label: '일간', traffic: 7654, settlement: 1454260, bars: [28, 38, 50, 68, 61, 47, 36] },
+      weekly: { label: '주간', traffic: 52380, settlement: 9952200, bars: [38, 46, 59, 70, 66, 56, 44] },
+      monthly: { label: '월간', traffic: 218700, settlement: 41553000, bars: [36, 49, 61, 73, 70, 63, 54] }
+    }
+  },
+  '대구 톨게이트': {
+    address: '대구광역시 동구 팔공로 221',
+    lat: '35.87144',
+    lng: '128.60144',
+    edgeCount: 3,
+    metrics: {
+      daily: { label: '일간', traffic: 5321, settlement: 1010990, bars: [24, 32, 45, 54, 50, 41, 30] },
+      weekly: { label: '주간', traffic: 38210, settlement: 7259900, bars: [31, 40, 52, 62, 58, 48, 37] },
+      monthly: { label: '월간', traffic: 162400, settlement: 30856000, bars: [30, 43, 55, 66, 61, 53, 42] }
+    }
+  },
+  '부산 톨게이트': {
+    address: '부산광역시 금정구 중앙대로 2101',
+    lat: '35.17955',
+    lng: '129.07564',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 11023, settlement: 2094370, bars: [38, 52, 67, 80, 88, 74, 59] },
+      weekly: { label: '주간', traffic: 76230, settlement: 14483700, bars: [46, 58, 70, 84, 91, 79, 66] },
+      monthly: { label: '월간', traffic: 321500, settlement: 61085000, bars: [43, 60, 76, 86, 92, 84, 72] }
+    }
+  },
+  '광주 톨게이트': {
+    address: '광주광역시 광산구 무진대로 303',
+    lat: '35.15955',
+    lng: '126.85260',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 6120, settlement: 1162800, bars: [26, 36, 49, 61, 57, 44, 34] },
+      weekly: { label: '주간', traffic: 42100, settlement: 7999000, bars: [34, 45, 56, 68, 63, 53, 41] },
+      monthly: { label: '월간', traffic: 178300, settlement: 33877000, bars: [32, 47, 59, 70, 66, 58, 46] }
+    }
+  },
+  '강릉 톨게이트': {
+    address: '강원특별자치도 강릉시 경강로 2301',
+    lat: '37.75185',
+    lng: '128.87606',
+    edgeCount: 2,
+    metrics: {
+      daily: { label: '일간', traffic: 4320, settlement: 820800, bars: [20, 30, 42, 53, 49, 38, 28] },
+      weekly: { label: '주간', traffic: 30140, settlement: 5726600, bars: [28, 38, 49, 60, 56, 46, 35] },
+      monthly: { label: '월간', traffic: 129900, settlement: 24681000, bars: [27, 41, 52, 64, 60, 50, 39] }
+    }
+  },
+  '제주 톨게이트': {
+    address: '제주특별자치도 제주시 공항로 2',
+    lat: '33.49962',
+    lng: '126.53119',
+    edgeCount: 1,
+    metrics: {
+      daily: { label: '일간', traffic: 2210, settlement: 419900, bars: [16, 22, 31, 44, 40, 30, 23] },
+      weekly: { label: '주간', traffic: 15980, settlement: 3036200, bars: [24, 31, 43, 54, 50, 39, 30] },
+      monthly: { label: '월간', traffic: 68420, settlement: 12999800, bars: [22, 36, 48, 58, 54, 44, 34] }
+    }
+  }
+}
+
+const selectedCenterDetail = computed(() => {
+  const center = centers.value.find((item) => item.name === selectedCenter.value) ?? centers.value[0]
+  const meta = centerDetailMeta[center.name] ?? centerDetailMeta['서울 톨게이트']
+  const metric = meta.metrics[centerMetricPeriod.value] ?? meta.metrics.daily
+  return { ...center, ...meta, metric }
+})
+
+function expandCenterMetricValues(pattern, total, count) {
+  const source = pattern.length ? pattern : [1]
+  const weights = Array.from({ length: count }, (_, index) => source[index % source.length])
+  const sum = weights.reduce((acc, value) => acc + value, 0) || 1
+  return weights.map((value) => Math.round((total * value) / sum))
+}
+
+const centerMetricChartLabels = computed(() => {
+  if (centerMetricPeriod.value === 'daily') {
+    return Array.from({ length: 24 }, (_, index) => String(index + 1) + '\uc2dc')
+  }
+  if (centerMetricPeriod.value === 'weekly') {
+    return ['\uc6d4', '\ud654', '\uc218', '\ubaa9', '\uae08', '\ud1a0', '\uc77c']
+  }
+  return Array.from({ length: 12 }, (_, index) => String(index + 1) + '\uc6d4')
+})
+
+const centerMetricChartValues = computed(() => {
+  return expandCenterMetricValues(
+    selectedCenterDetail.value.metric.bars,
+    selectedCenterDetail.value.metric.settlement,
+    centerMetricChartLabels.value.length
+  )
+})
+
+const centerMetricChartData = computed(() => ({
+  labels: centerMetricChartLabels.value,
+  datasets: [{
+    label: '\uc815\uc0b0 \uae08\uc561',
+    data: centerMetricChartValues.value,
+    backgroundColor: 'rgba(47, 140, 255, 0.72)',
+    borderColor: '#66b7ff',
+    borderWidth: 1,
+    borderRadius: 5,
+    maxBarThickness: 26
+  }]
 }))
-const topCenters = computed(() => centers.slice(0, 5))
+
+const centerMetricChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 650, easing: 'easeOutQuart' },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context) => '\uc815\uc0b0 \uae08\uc561: \u20a9' + Number(context.parsed.y).toLocaleString()
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: { color: chartTextColor, font: { size: 10 }, maxRotation: 0, autoSkip: true },
+      grid: { display: false }
+    },
+    y: {
+      min: 0,
+      ticks: { display: false },
+      grid: { color: chartGridColor }
+    }
+  }
+}
+
+function centerOwner(centerName) {
+  return companyByCenter[centerName] ?? '담당 회원사'
+}
+
+function centerIssueCount(centerName) {
+  return recentIssueByCenter[centerName] ?? '0건'
+}
 
 function updateTime() {
   const now = new Date()
@@ -55,12 +542,136 @@ function updateTime() {
 function statusClass(status) {
   if (status === '정상') return 'ok'
   if (status === '주의') return 'caution'
-  return 'danger'
+  if (status === '점검중') return 'danger'
+  return 'muted'
+}
+
+function statusText(status) {
+  return status === '점검중' ? '점검중' : status
+}
+
+function applyMapMarkerPositions(markerPositions) {
+  if (!Array.isArray(markerPositions)) return
+
+  markerPositions.forEach((position) => {
+    const center = centers.value.find((item) => item.name === position.name)
+    if (!center) return
+
+    center.x = Number(position.x ?? center.x)
+    center.y = Number(position.y ?? center.y)
+    center.labelX = Number(position.labelX ?? center.labelX)
+    center.labelY = Number(position.labelY ?? center.labelY)
+  })
+}
+
+function createMapMarkerSnapshot() {
+  return centers.value.map(({ name, x, y, labelX, labelY }) => ({
+    name,
+    x,
+    y,
+    labelX,
+    labelY
+  }))
+}
+
+async function saveMapMarkerPositions() {
+  if (!mapPositionDirty.value) return
+
+  const markerPositions = createMapMarkerSnapshot()
+  localStorage.setItem(MAP_MARKER_STORAGE_KEY, JSON.stringify(markerPositions))
+
+  try {
+    await adminApi.saveMapMarkers(markerPositions)
+    mapPositionDirty.value = false
+    mapChangeCount.value = 0
+    mapEditSnapshot.value = createMapMarkerSnapshot()
+  } catch {
+    memberMessage.value = '지도 위치를 백엔드에 저장하지 못했습니다. 로그인 상태와 백엔드 실행 상태를 확인해 주세요.'
+  }
+}
+
+async function loadMapMarkerPositions() {
+  try {
+    const { data } = await adminApi.mapMarkers()
+    if (Array.isArray(data) && data.length > 0) {
+      applyMapMarkerPositions(data)
+      localStorage.setItem(MAP_MARKER_STORAGE_KEY, JSON.stringify(data))
+      return
+    }
+  } catch {
+    memberMessage.value = '저장된 지도 위치를 백엔드에서 불러오지 못해 브라우저 캐시를 사용합니다.'
+  }
+
+  const saved = localStorage.getItem(MAP_MARKER_STORAGE_KEY)
+  if (!saved) return
+
+  try {
+    const markerPositions = JSON.parse(saved)
+    applyMapMarkerPositions(markerPositions)
+  } catch {
+    localStorage.removeItem(MAP_MARKER_STORAGE_KEY)
+  }
 }
 
 async function fetchMembers() {
   const { data } = await adminApi.members()
   members.value = data
+}
+
+async function fetchCompanies() {
+  const { data } = await adminApi.companies()
+  companies.value = data
+}
+
+function openCompanyModal() {
+  companyForm.value = {
+    name: '',
+    owner: '',
+    phone: '',
+    email: '',
+    centers: 0,
+    status: '정상'
+  }
+  companyModalMessage.value = ''
+  showCompanyModal.value = true
+}
+
+async function createCompany() {
+  if (savingCompany.value) return
+
+  if (!companyForm.value.name || !companyForm.value.owner || !companyForm.value.phone || !companyForm.value.email) {
+    companyModalMessage.value = '회원사명, 대표자, 연락처, 이메일을 모두 입력해 주세요.'
+    return
+  }
+
+  if (Number(companyForm.value.centers) < 0) {
+    companyModalMessage.value = '지점 수는 0 이상으로 입력해 주세요.'
+    return
+  }
+
+  savingCompany.value = true
+  companyModalMessage.value = ''
+
+  try {
+    const { data } = await adminApi.createCompany({
+      ...companyForm.value,
+      centers: Number(companyForm.value.centers)
+    })
+    companies.value = [...companies.value, data]
+    showCompanyModal.value = false
+    memberMessage.value = `${data.name} 회원사가 추가되었습니다.`
+  } catch (error) {
+    const status = error?.response?.status
+    if (status === 403) {
+      companyModalMessage.value = '관리자 세션이 만료되었거나 권한이 없습니다. admin 계정으로 다시 로그인해 주세요.'
+    } else if (status === 400 || status === 500) {
+      companyModalMessage.value = '회원사 추가에 실패했습니다. 이메일 중복 여부와 입력값을 확인해 주세요.'
+    } else {
+      companyModalMessage.value = '백엔드 연결 상태를 확인해 주세요.'
+    }
+  } finally {
+    savingCompany.value = false
+  }
 }
 
 async function assignDashboard(member, dashboardId) {
@@ -69,152 +680,583 @@ async function assignDashboard(member, dashboardId) {
   memberMessage.value = `${data.memberName} 회원을 ${dashboardId || '미할당'} 대시보드에 연결했습니다.`
 }
 
+function activateMenu(menu) {
+  activeMenu.value = menu
+
+  if (menu === '대시보드') {
+    kpiSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    return
+  }
+
+  if (['회원사 관리', '회원사 목록', '계정 관리', '권한 관리', '요금 정산 관리'].includes(menu)) {
+    activeTab.value = menu === '계정 관리' ? 'accounts' : menu === '권한 관리' ? 'permissions' : 'companies'
+    return
+  }
+}
+
 function enterCenter(center) {
   selectedCenter.value = center.name
   router.push({ path: '/dashboard', query: { center: center.dashboardId } })
 }
 
-function activateMenu(menu) {
-  activeMenu.value = menu
-  if (menu === '대시보드') {
-    kpiSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+function enterCompactCenter(center) {
+  selectedCenter.value = center.name
+  router.push({ path: '/dashboard', query: { center: center.dashboardId } })
+}
+
+function showActionMessage(message) {
+  memberMessage.value = message
+  window.alert(message)
+}
+
+function openQuickCompanyAdd() {
+  activateMenu('회원사 목록')
+  openCompanyModal()
+}
+
+function openCenterAdd() {
+  activateMenu('지점 관리')
+  showActionMessage('지점 추가 화면을 준비했습니다.')
+}
+
+function openNoticeCreate() {
+  activateMenu('공지사항')
+  showActionMessage('공지사항 등록 화면을 준비했습니다.')
+}
+
+function openSystemNotice() {
+  activateMenu('시스템 모니터링')
+  showActionMessage('시스템 공지 등록 화면을 준비했습니다.')
+}
+
+function showMoreNotices() {
+  activateMenu('공지사항')
+}
+
+function zoomMap(action) {
+  const actionText = action === 'reset' ? '초기화' : action === 'in' ? '확대' : '축소'
+  showActionMessage(`지도 ${actionText} 기능을 적용했습니다.`)
+}
+
+function resetAccount(member) {
+  showActionMessage(`${member.memberName} 계정의 비밀번호 초기화를 요청했습니다.`)
+}
+
+function editAccount(member) {
+  showActionMessage(`${member.memberName} 계정 정보 수정 화면을 준비했습니다.`)
+}
+
+function toggleAccountLock(member) {
+  showActionMessage(`${member.memberName} 계정 잠금 상태를 변경했습니다.`)
+}
+
+function exportSettlementReport() {
+  showActionMessage('정산 리포트를 생성했습니다.')
+}
+
+function openDeviceRegister() {
+  activateMenu('단말기 관리')
+  showActionMessage('단말 등록 화면을 준비했습니다.')
+}
+
+function showDeviceDetail(device) {
+  showActionMessage(`${device.id} 단말 상세 정보를 확인했습니다.`)
+}
+
+function exportAuditLog() {
+  showActionMessage('감사 로그 내보내기를 시작했습니다.')
+}
+
+function saveMasterSettings() {
+  showActionMessage('관리자 대시보드 설정이 저장되었습니다.')
+}
+
+function toggleMapEditMode() {
+  if (!isMapEditMode.value) {
+    mapEditSnapshot.value = createMapMarkerSnapshot()
+    mapPositionDirty.value = false
+    mapChangeCount.value = 0
+    isMapEditMode.value = true
+  } else {
+    isMapEditMode.value = false
+  }
+  draggingCenterName.value = ''
+  draggingLabelName.value = ''
+}
+
+function resetMapEditPositions() {
+  applyMapMarkerPositions(mapEditSnapshot.value)
+  mapPositionDirty.value = false
+  mapChangeCount.value = 0
+  draggingCenterName.value = ''
+  draggingLabelName.value = ''
+}
+
+function cancelMapEditMode() {
+  resetMapEditPositions()
+  isMapEditMode.value = false
+}
+
+function toggleCenterDetail(center) {
+  if (isMapEditMode.value) return
+  selectedCenter.value = center.name
+  centerMetricPeriod.value = 'daily'
+  showCenterModal.value = true
+}
+
+function markMapDirty() {
+  if (!mapPositionDirty.value) {
+    mapChangeCount.value += 1
+  }
+  mapPositionDirty.value = true
+}
+
+function startMarkerDrag(event, center) {
+  if (!isMapEditMode.value) return
+  event.preventDefault()
+  event.stopPropagation()
+  draggingCenterName.value = center.name
+  selectedCenter.value = center.name
+  event.currentTarget.setPointerCapture?.(event.pointerId)
+  updateMarkerPosition(event)
+}
+
+function updateMarkerPosition(event) {
+  if (draggingLabelName.value) {
+    updateLabelPosition(event)
     return
   }
-  if (menu === '회원사 관리') {
-    activeTab.value = 'companies'
-    companySection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    return
-  }
-  if (menu === '지점(관제센터) 관리') {
-    centerSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    return
-  }
-  if (menu === '단말기 관리' || menu === '시스템 모니터링') {
-    mapSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    return
-  }
-  if (menu === '공지사항' || menu === '감사 로그' || menu === '설정') {
-    noticeSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  if (!draggingCenterName.value || !mapStage.value) return
+
+  const rect = mapStage.value.getBoundingClientRect()
+  const x = ((event.clientX - rect.left) / rect.width) * 100
+  const y = ((event.clientY - rect.top) / rect.height) * 100
+  const center = centers.value.find((item) => item.name === draggingCenterName.value)
+
+  if (!center) return
+  const nextX = Number(Math.min(96, Math.max(4, x)).toFixed(1))
+  const nextY = Number(Math.min(96, Math.max(4, y)).toFixed(1))
+  if (center.x !== nextX || center.y !== nextY) {
+    center.x = nextX
+    center.y = nextY
+    markMapDirty()
   }
 }
 
+function startLabelDrag(event, center) {
+  if (!isMapEditMode.value) return
+  event.preventDefault()
+  event.stopPropagation()
+  draggingLabelName.value = center.name
+  selectedCenter.value = center.name
+  event.currentTarget.setPointerCapture?.(event.pointerId)
+  updateLabelPosition(event)
+}
+
+function updateLabelPosition(event) {
+  if (!draggingLabelName.value || !mapStage.value) return
+
+  const rect = mapStage.value.getBoundingClientRect()
+  const center = centers.value.find((item) => item.name === draggingLabelName.value)
+  if (!center) return
+
+  const markerX = (center.x / 100) * rect.width
+  const markerY = (center.y / 100) * rect.height
+  const pointerX = event.clientX - rect.left
+  const pointerY = event.clientY - rect.top
+
+  const nextLabelX = Number(Math.min(180, Math.max(-180, pointerX - markerX)).toFixed(0))
+  const nextLabelY = Number(Math.min(90, Math.max(-90, pointerY - markerY)).toFixed(0))
+  if (center.labelX !== nextLabelX || center.labelY !== nextLabelY) {
+    center.labelX = nextLabelX
+    center.labelY = nextLabelY
+    markMapDirty()
+  }
+}
+
+function stopMarkerDrag() {
+  draggingCenterName.value = ''
+  draggingLabelName.value = ''
+}
+
+function notifyCompanyEdited() {
+  window.alert('회원사 정보가 수정되었습니다.')
+}
+
+function notifyPermissionSaved() {
+  window.alert('권한 정보가 저장되었습니다.')
+}
+
 function logout() {
+  window.alert('로그아웃 되었습니다.')
   auth.logout().finally(() => router.push('/'))
 }
 
 onMounted(() => {
+  void loadMapMarkerPositions()
   updateTime()
   timer = setInterval(updateTime, 1000)
   fetchMembers().catch(() => {
-    memberMessage.value = '회원 목록을 불러오지 못했습니다. admin 계정으로 로그인했는지 확인해 주세요.'
+    memberMessage.value = '회원 목록을 불러오지 못했습니다. 백엔드 실행 상태와 관리자 로그인을 확인해 주세요.'
+  })
+  fetchCompanies().catch(() => {
+    memberMessage.value = '회원사 목록을 불러오지 못했습니다. 백엔드 실행 상태를 확인해 주세요.'
   })
 })
 
-onBeforeUnmount(() => clearInterval(timer))
+onBeforeUnmount(() => {
+  clearInterval(timer)
+})
+const masterDashboardContext = {
+  MAP_MARKER_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  activateMenu,
+  activeMenu,
+  activeTab,
+  applyMapMarkerPositions,
+  assignDashboard,
+  auditRows,
+  auth,
+  cancelMapEditMode,
+  centerDetailMeta,
+  centerIssueCount,
+  centerMetricChartData,
+  centerMetricChartLabels,
+  centerMetricChartOptions,
+  centerMetricChartValues,
+  centerMetricPeriod,
+  centerOwner,
+  centerSection,
+  centers,
+  chartGridColor,
+  chartTextColor,
+  compactLineOptions,
+  companies,
+  companyByCenter,
+  companyForm,
+  companyModalMessage,
+  companyPermissionChartData,
+  companyPermissionChartOptions,
+  companySection,
+  createCompany,
+  createMapMarkerSnapshot,
+  dashboardSparklines,
+  deviceRows,
+  displayCompanies,
+  doughnutOptions,
+  draggingCenterName,
+  draggingLabelName,
+  dummyCompanies,
+  edgeFleetDoughnutData,
+  edgeMetricCharts,
+  editAccount,
+  enterCenter,
+  enterCompactCenter,
+  expandCenterMetricValues,
+  expandedCenter,
+  exportAuditLog,
+  exportSettlementReport,
+  fetchCompanies,
+  fetchMembers,
+  filteredCompanies,
+  filteredMembers,
+  heartbeatData,
+  incidentTimelineData,
+  incidentTimelineOptions,
+  ingressCharts,
+  isLightMode,
+  isMapEditMode,
+  kpiSection,
+  lineData,
+  loadMapMarkerPositions,
+  logout,
+  masterApiState,
+  mapChangeCount,
+  mapEditSnapshot,
+  mapPositionDirty,
+  mapSection,
+  mapStage,
+  markMapDirty,
+  memberMessage,
+  members,
+  menuGroups,
+  multiLineData,
+  noticeSection,
+  notices,
+  notifyCompanyEdited,
+  notifyPermissionSaved,
+  nowText,
+  openCenterAdd,
+  openCompanyModal,
+  openDeviceRegister,
+  openNoticeCreate,
+  openQuickCompanyAdd,
+  openSystemNotice,
+  recentAlerts,
+  recentAuditRows,
+  recentIssueByCenter,
+  resetAccount,
+  resetMapEditPositions,
+  router,
+  saveMapMarkerPositions,
+  saveMasterSettings,
+  savingCompany,
+  search,
+  selectedCenter,
+  selectedCenterDetail,
+  showActionMessage,
+  showCenterModal,
+  showCompanyModal,
+  showDeviceDetail,
+  showMoreNotices,
+  sparklineOptions,
+  startLabelDrag,
+  startMarkerDrag,
+  statusClass,
+  statusText,
+  stopMarkerDrag,
+  subpageDescription,
+  subpageTitle,
+  themeMode,
+  toggleAccountLock,
+  toggleCenterDetail,
+  toggleMapEditMode,
+  toggleThemeMode,
+  topCenters,
+  updateLabelPosition,
+  updateMarkerPosition,
+  updateTime,
+  zoomMap
+}
+
+provide('masterDashboard', masterDashboardContext)
+
 </script>
 
 <template>
-  <div class="master-shell">
-    <aside class="sidebar glass">
+  <div class="master-shell" :class="{ light: isLightMode }">
+    <aside class="sidebar">
       <div class="sidebar-brand">
-        <div class="logo-mark">H5</div>
-        <div><strong>HI-FIVE</strong><span>Master Console</span></div>
+        <img src="/hifive_logo.png" alt="HI-FIVE" class="sidebar-logo" />
+        <strong>HI-FIVE</strong>
       </div>
+
       <nav class="sidebar-nav">
-        <button v-for="menu in ['대시보드','회원사 관리','지점(관제센터) 관리','단말기 관리','시스템 모니터링','공지사항','감사 로그','설정']" :key="menu" :class="{ active: activeMenu === menu }" @click="activateMenu(menu)">{{ menu }}</button>
+        <div v-for="menu in menuGroups" :key="menu.label" class="nav-group">
+          <button
+            class="nav-main"
+            :class="{ active: activeMenu === menu.label || menu.children?.includes(activeMenu) }"
+            type="button"
+            @click="activateMenu(menu.label)"
+          >
+            <span class="nav-icon"><img :src="getNavIcon(menu.icon)" :alt="menu.label" /></span>
+            <span>{{ menu.label }}</span>
+          </button>
+
+          <div v-if="menu.children" class="nav-children">
+            <button
+              v-for="child in menu.children"
+              :key="child"
+              :class="{ active: activeMenu === child }"
+              type="button"
+              @click="activateMenu(child)"
+            >
+              {{ child }}
+            </button>
+          </div>
+        </div>
       </nav>
+
       <div class="quick-menu">
         <p>빠른 메뉴</p>
-        <button @click="activateMenu('회원사 관리')">회원사 추가</button>
-        <button @click="activateMenu('지점(관제센터) 관리')">지점 추가</button>
-        <button @click="activateMenu('공지사항')">공지사항 등록</button>
-        <button @click="activateMenu('시스템 모니터링')">시스템 공지</button>
+        <button type="button" @click="openQuickCompanyAdd">회원사 추가</button>
+        <button type="button" @click="openCenterAdd">지점 추가</button>
+        <button type="button" @click="openNoticeCreate">점검 공지</button>
+        <button type="button" @click="activateMenu('장애 알림')">장애 등록</button>
       </div>
+
+      <p class="copyright">© 2025 HI-FIVE All rights reserved.</p>
     </aside>
 
     <div class="content-shell">
-      <header class="topbar glass">
-        <div><p class="eyebrow">HI-FIVE</p><h1>Master Admin Dashboard</h1></div>
+      <header class="topbar">
+        <div class="topbar-title">
+          <span class="brand-diamond small"></span>
+          <strong>{{ activeMenu === 'Ingress' ? 'Ingress 관제' : activeMenu === '시스템 관제' ? 'Master Admin · 시스템 관제' : activeMenu === 'Edge 장비' ? 'Edge 장비 관제' : activeMenu === '백엔드/DB' ? 'Backend / DB 관제' : activeMenu === '장애 알림' ? '장애 알림' : activeMenu === '지점 관리' ? '지점 관리' : activeMenu === '감사 로그' ? '감사 로그' : activeMenu === '설정' ? '설정' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 관리' : '대시보드' }}</strong>
+          <span>{{ activeMenu === 'Ingress' ? 'Python Ingress 서비스 상태 및 이벤트 흐름을 모니터링합니다.' : activeMenu === 'Edge 장비' ? 'Jetson Edge 장비 상태 및 성능 모니터링' : activeMenu === '장애 알림' ? '시스템 및 서비스 이상 상황을 모니터링하고 대응합니다.' : activeMenu === '지점 관리' ? '스마트 톨링 지점 및 제어센터 등록/수정/관리' : activeMenu === '감사 로그' ? '관리자 작업, 권한 변경, 대리조회 이력을 추적합니다.' : activeMenu === '설정' ? '관리자 콘솔 운영 정책과 시스템 기본값을 관리합니다.' : ['회원사 관리', '회원사 목록'].includes(activeMenu) ? '회원사 계정, 권한, 지점 연결 상태를 통합 관리합니다.' : activeMenu === '시스템 관제' || activeMenu === '백엔드/DB' ? '' : 'Master Admin Dashboard' }}</span>
+        </div>
+
         <div class="header-tools">
-          <span class="pill">{{ nowText }}</span>
-          <span class="pill ok"><i></i>시스템 상태: 정상</span>
-          <span class="pill">최종 관리자: <strong>{{ auth.member?.memberName ?? 'admin' }}</strong></span>
-          <button class="home-btn" @click="router.push('/')">홈으로</button>
-          <button class="logout-btn" @click="logout">로그아웃</button>
+          <span class="clock">{{ nowText }}</span>
+          <span class="system-state global-ok"><i></i>전체 정상</span>
+          <span class="admin-chip"><b>{{ auth.member?.memberName ?? 'master' }}</b><small>최종 관리자</small></span>
+          <button class="theme-btn" type="button" :title="isLightMode ? '다크 모드' : '라이트 모드'" :aria-label="isLightMode ? '다크 모드' : '라이트 모드'" @click="toggleThemeMode">
+            <span>{{ isLightMode ? '☾' : '☀' }}</span>
+          </button>
+          <button class="home-btn" type="button" @click="router.push('/')">홈</button>
+          <button class="logout-btn" type="button" @click="logout">로그아웃</button>
         </div>
       </header>
 
       <main>
-        <section ref="kpiSection" class="kpi-grid">
-          <article class="kpi glass"><span class="icon">CO</span><p>전체 회원사</p><strong>24</strong><em>+2 전월 대비</em></article>
-          <article class="kpi glass"><span class="icon">CT</span><p>전체 지점(관제센터)</p><strong>38</strong><em>+4 전월 대비</em></article>
-          <article class="kpi glass"><span class="icon">TR</span><p>오늘 전체 통행</p><strong>128,456</strong><em>+8.7%</em></article>
-          <article class="kpi glass"><span class="icon warn">₩</span><p>미정산 건수</p><strong>1,248</strong><em class="down">-3.2%</em></article>
-          <article class="kpi glass"><span class="icon status-ok">OK</span><p>시스템 상태</p><strong>정상</strong><em>99.9% uptime</em></article>
-        </section>
+        <MasterDashboardHomePage v-if="activeMenu === '대시보드'" />
+        <MasterFallbackPage v-else-if="!['Ingress', '시스템 관제', 'Edge 장비', '백엔드/DB', '장애 알림', '지점 관리', '감사 로그', '설정', '회원사 관리', '회원사 목록'].includes(activeMenu)" />
+        <MemberCompanyListPage v-else-if="['회원사 관리', '회원사 목록'].includes(activeMenu)" />
+        <MemberAccountManagementPage v-else-if="activeMenu === '계정 관리'" />
+        <MemberPermissionManagementPage v-else-if="activeMenu === '권한 관리'" />
+        <FeeSettlementManagementPage v-else-if="activeMenu === '요금 정산 관리'" />
+        <BranchCenterManagementPage v-else-if="['지점(관제센터) 관리', '지점 관리'].includes(activeMenu)" />
+        <EdgeEquipmentManagementPage v-else-if="activeMenu === 'Edge 장비'" />
+        <TerminalDeviceManagementPage v-else-if="['단말기 관리'].includes(activeMenu)" />
+        <SystemControlPage v-else-if="activeMenu === '시스템 관제'" />
+        <IngressMonitoringPage v-else-if="activeMenu === 'Ingress'" />
+        <BackendDbMonitoringPage v-else-if="activeMenu === '백엔드/DB'" />
+        <SystemMonitoringFallbackPage v-else-if="['시스템 모니터링', '시스템 관제'].includes(activeMenu)" />
+        <IncidentAlertPage v-else-if="activeMenu === '장애 알림'" />
+        <NoticeManagementPage v-else-if="['공지사항'].includes(activeMenu)" />
+        <AuditLogPage v-else-if="activeMenu === '감사 로그'" />
+        <MasterSettingsPage v-else />
 
-        <section ref="mapSection" class="main-grid">
-          <article class="map-panel glass">
-            <div class="panel-head"><div><p class="eyebrow">NATIONWIDE MAP</p><h2>전국 지점 위치 현황</h2></div><div class="map-tools"><button>+</button><button>-</button></div></div>
-            <div class="map-body">
-              <div class="state-summary"><div><span class="dot ok"></span><strong>28</strong><p>정상</p></div><div><span class="dot caution"></span><strong>7</strong><p>주의</p></div><div><span class="dot danger"></span><strong>3</strong><p>점검중</p></div></div>
-              <div class="korea-map">
-                <button v-for="center in centers" :key="center.name" class="marker" :class="[statusClass(center.status), { selected: selectedCenter === center.name }]" :style="{ left: center.x + '%', top: center.y + '%' }" @click="selectedCenter = center.name"><span>{{ center.name }}</span></button>
+        <div v-if="showCenterModal" class="modal-backdrop" @click.self="showCenterModal = false">
+          <article class="center-detail-modal glass">
+            <div class="modal-head">
+              <div>
+                <p class="subpage-kicker">TOLLING CENTER</p>
+                <h3>{{ selectedCenterDetail.name }}</h3>
               </div>
+              <span class="center-modal-status" :class="statusClass(selectedCenterDetail.status)">
+                {{ statusText(selectedCenterDetail.status) }}
+              </span>
+              <button class="modal-close" type="button" @click="showCenterModal = false">×</button>
             </div>
-          </article>
 
-          <div class="right-stack">
-            <article ref="centerSection" class="glass panel">
-              <div class="panel-head"><div><p class="eyebrow">TOP 5 CENTER</p><h2>지점별 실시간 통행 현황 상위 5</h2></div></div>
-              <table><thead><tr><th>지점명</th><th>현재 통행</th><th>오늘 통행</th><th>상태</th><th>대시보드</th></tr></thead>
-                <tbody><tr v-for="center in topCenters" :key="center.name" :class="{ selected: selectedCenter === center.name }"><td>{{ center.name }}</td><td>{{ center.current.toLocaleString() }}</td><td>{{ center.today.toLocaleString() }}</td><td><span class="status" :class="statusClass(center.status)">{{ center.status }}</span></td><td><button class="small-btn" @click="enterCenter(center)">진입</button></td></tr></tbody>
-              </table>
-            </article>
-            <article ref="noticeSection" class="glass panel">
-              <div class="panel-head"><div><p class="eyebrow">NOTICE</p><h2>시스템 공지사항</h2></div><button class="ghost-btn">더보기</button></div>
-              <ul class="notice-list"><li><span>[공지] 시스템 점검 안내 (05/25 00:00 ~ 02:00)</span><time>05/20</time></li><li><span>[안내] 요금 정산 시스템 업데이트 완료</span><time>05/18</time></li><li><span>[안내] GPS 단말기 펌웨어 업데이트 안내</span><time>05/16</time></li><li><span>[공지] 개인정보 처리방침 변경 안내</span><time>05/12</time></li></ul>
-            </article>
-          </div>
-        </section>
+            <section class="center-modal-summary">
+              <dl>
+                <div>
+                  <dt>지점명</dt>
+                  <dd>{{ selectedCenterDetail.name }}</dd>
+                </div>
+                <div>
+                  <dt>담당 회원사</dt>
+                  <dd>{{ centerOwner(selectedCenterDetail.name) }}</dd>
+                </div>
+                <div>
+                  <dt>Edge 대수</dt>
+                  <dd>{{ selectedCenterDetail.edgeCount }}대</dd>
+                </div>
+                <div>
+                  <dt>최근 장애</dt>
+                  <dd>{{ centerIssueCount(selectedCenterDetail.name) }}</dd>
+                </div>
+                <div class="wide">
+                  <dt>위치 주소</dt>
+                  <dd>{{ selectedCenterDetail.address }}</dd>
+                </div>
+                <div>
+                  <dt>위도</dt>
+                  <dd>{{ selectedCenterDetail.lat }}</dd>
+                </div>
+                <div>
+                  <dt>경도</dt>
+                  <dd>{{ selectedCenterDetail.lng }}</dd>
+                </div>
+              </dl>
+              <button class="center-dashboard-btn" type="button" @click="enterCenter(selectedCenterDetail)">
+                관제 대시보드 진입
+              </button>
+            </section>
 
-        <section ref="companySection" class="company-grid">
-          <article class="glass panel donut-panel">
-            <div class="panel-head"><div><p class="eyebrow">COMPANY STATUS</p><h2>회원사 통계</h2></div></div>
-            <div class="donut-wrap"><div class="donut"><span>24<small>전체</small></span></div><div class="legend"><p><i class="ok-bg"></i>정상 <strong>18</strong></p><p><i class="caution-bg"></i>주의 <strong>4</strong></p><p><i class="inactive-bg"></i>비활성 <strong>2</strong></p></div></div>
-          </article>
+            <section class="center-modal-metrics">
+              <div class="center-period-tabs">
+                <button
+                  v-for="period in ['daily', 'weekly', 'monthly']"
+                  :key="period"
+                  type="button"
+                  :class="{ active: centerMetricPeriod === period }"
+                  @click="centerMetricPeriod = period"
+                >
+                  {{ selectedCenterDetail.metrics[period].label }}
+                </button>
+              </div>
 
-          <article class="glass panel company-panel">
-            <div class="panel-head"><div><p class="eyebrow">MEMBER ADMIN</p><h2>회원 및 대시보드 연결 관리</h2></div><input v-model.trim="search" class="search-input" type="search" placeholder="회원사명, 이름, 이메일 검색" /></div>
-            <div class="tab-row"><button :class="{ active: activeTab === 'companies' }" @click="activeTab = 'companies'">회원사 목록</button><button :class="{ active: activeTab === 'accounts' }" @click="activeTab = 'accounts'">계정 관리</button><button :class="{ active: activeTab === 'permissions' }" @click="activeTab = 'permissions'">권한 관리</button></div>
-            <p v-if="memberMessage" class="message">{{ memberMessage }}</p>
-            <table v-if="activeTab === 'companies'"><thead><tr><th>회원사명</th><th>대표자</th><th>연락처</th><th>이메일</th><th>지점 수</th><th>상태</th><th>관리</th></tr></thead><tbody><tr v-for="company in filteredCompanies" :key="company.email"><td>{{ company.name }}</td><td>{{ company.owner }}</td><td>{{ company.phone }}</td><td>{{ company.email }}</td><td>{{ company.centers }}</td><td><span class="status" :class="statusClass(company.status)">{{ company.status }}</span></td><td><button class="small-btn" @click="alert('회원사 정보가 수정되었습니다.')">수정</button><button class="small-btn" @click="alert('권한 정보가 저장되었습니다.')">권한</button></td></tr></tbody></table>
-            <table v-else-if="activeTab === 'accounts'"><thead><tr><th>이메일</th><th>이름</th><th>역할</th><th>허용 대시보드</th><th>계정 상태</th><th>관리</th></tr></thead><tbody><tr v-for="member in filteredMembers" :key="member.email"><td>{{ member.email }}</td><td>{{ member.memberName }}</td><td>{{ member.role }}</td><td>{{ member.assignedDashboardId ?? '-' }}</td><td><span class="status ok">정상</span></td><td><button class="small-btn">비밀번호 초기화</button><button class="small-btn">수정</button><button class="small-btn">잠금</button></td></tr></tbody></table>
-            <table v-else><thead><tr><th>회원</th><th>계정 ID</th><th>권한 등급</th><th>접근 가능 지점</th><th>정산 권한</th><th>관리</th></tr></thead><tbody><tr v-for="member in filteredMembers" :key="member.email"><td>{{ member.memberName }}</td><td>{{ member.email }}</td><td>{{ member.role }}</td><td><select :value="member.assignedDashboardId" @change="assignDashboard(member, $event.target.value)"><option value="">미할당</option><option v-for="center in centers" :key="center.dashboardId" :value="center.dashboardId">{{ center.name }}</option></select></td><td>{{ member.role === 'MASTER_ADMIN' ? '전체' : '허용' }}</td><td><button class="small-btn" @click="alert('권한 정보가 저장되었습니다.')">권한 수정</button></td></tr></tbody></table>
+              <div class="center-metric-cards">
+                <article>
+                  <span>통행량</span>
+                  <strong>{{ selectedCenterDetail.metric.traffic.toLocaleString() }}</strong>
+                  <small>{{ selectedCenterDetail.metric.label }} 기준</small>
+                </article>
+                <article>
+                  <span>정산 금액</span>
+                  <strong>₩{{ selectedCenterDetail.metric.settlement.toLocaleString() }}</strong>
+                  <small>정산 후보 포함</small>
+                </article>
+              </div>
+
+              <div class="center-bar-chart">
+                <ChartJsPanel
+                  type="bar"
+                  :data="centerMetricChartData"
+                  :options="centerMetricChartOptions"
+                  :height="132"
+                />
+              </div>
+            </section>
           </article>
-        </section>
+        </div>
+
+        <div v-if="showCompanyModal" class="modal-backdrop" @click.self="showCompanyModal = false">
+          <form class="company-modal glass" @submit.prevent="createCompany">
+            <div class="modal-head">
+              <div>
+                <p class="subpage-kicker">COMPANY</p>
+                <h3>회원사 추가</h3>
+              </div>
+              <button class="modal-close" type="button" @click="showCompanyModal = false">×</button>
+            </div>
+
+            <div class="modal-grid">
+              <label>
+                <span>회원사명</span>
+                <input v-model.trim="companyForm.name" required type="text" placeholder="예: 인천 하이패스(주)" />
+              </label>
+              <label>
+                <span>대표자</span>
+                <input v-model.trim="companyForm.owner" required type="text" placeholder="대표자명" />
+              </label>
+              <label>
+                <span>연락처</span>
+                <input v-model.trim="companyForm.phone" required type="text" placeholder="032-123-4567" />
+              </label>
+              <label>
+                <span>이메일</span>
+                <input v-model.trim="companyForm.email" required type="email" placeholder="company@hipass.com" />
+              </label>
+              <label>
+                <span>지점 수</span>
+                <input v-model.number="companyForm.centers" min="0" required type="number" />
+              </label>
+              <label>
+                <span>상태</span>
+                <select v-model="companyForm.status">
+                  <option>정상</option>
+                  <option>주의</option>
+                  <option>비활성</option>
+                </select>
+              </label>
+            </div>
+
+            <p v-if="companyModalMessage" class="modal-message">{{ companyModalMessage }}</p>
+
+            <div class="modal-actions">
+              <button class="small-btn" type="button" @click="showCompanyModal = false">취소</button>
+              <button class="small-btn add-btn" type="button" :disabled="savingCompany" @click="createCompany">
+                {{ savingCompany ? '저장 중...' : '저장' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </main>
     </div>
   </div>
 </template>
-
-<style scoped>
-.master-shell{min-height:100vh;min-width:1280px;display:grid;grid-template-columns:280px 1fr;gap:22px;padding:22px;color:#eaf4ff;background:radial-gradient(circle at 15% 8%,rgba(56,190,245,.14),transparent 28%),linear-gradient(135deg,#030711,#07142a 52%,#030711)}
-.glass{border:1px solid rgba(79,171,255,.22);border-radius:18px;background:linear-gradient(145deg,rgba(13,24,49,.8),rgba(8,16,35,.58));box-shadow:0 18px 60px rgba(0,0,0,.32);backdrop-filter:blur(18px)}button,input,select{font:inherit}.sidebar{padding:20px;display:flex;flex-direction:column}.sidebar-brand{display:flex;align-items:center;gap:14px}.logo-mark,.icon{display:grid;place-items:center;border-radius:14px;background:#38bef5;color:#06111f;font-weight:900}.logo-mark{width:48px;height:48px}.sidebar-brand span{display:block;color:#8ca5c8;font-size:12px}.sidebar-nav{display:grid;gap:8px;margin-top:26px}.sidebar-nav button,.quick-menu button,.logout-btn,.home-btn,.small-btn,.ghost-btn,.tab-row button,.map-tools button{border:1px solid rgba(79,171,255,.22);border-radius:10px;background:rgba(7,15,31,.56);color:#dcecff;cursor:pointer}.sidebar-nav button{padding:12px;text-align:left}.sidebar-nav button.active,.tab-row button.active,.small-btn:hover,.home-btn:hover{background:rgba(56,190,245,.18);box-shadow:0 0 18px rgba(56,190,245,.2)}.quick-menu{margin-top:auto;display:grid;gap:8px}.quick-menu p{color:#38bef5;font-size:12px;font-weight:800}.quick-menu button{padding:10px}.topbar{height:82px;display:flex;align-items:center;justify-content:space-between;padding:0 22px}.eyebrow{margin:0 0 5px;color:#38bef5;font-size:11px;font-weight:800;letter-spacing:.22em}h1,h2{margin:0}.header-tools{display:flex;align-items:center;gap:10px}.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(115,179,255,.2);border-radius:999px;background:rgba(7,15,31,.72);font-size:13px}.pill i,.dot{width:8px;height:8px;border-radius:50%;background:#33e6a1}.logout-btn,.home-btn{height:36px;padding:0 14px}.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:18px}.kpi{padding:18px}.icon{width:42px;height:42px}.icon.warn{background:#ffd166}.icon.ok{background:#33e6a1}.kpi p{color:#8ca5c8;font-size:12px}.kpi strong{display:block;font-size:28px}.kpi em{color:#33e6a1;font-size:12px}.kpi em.down{color:#ff5d6c}.main-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:18px}.panel,.map-panel{padding:20px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}.map-body{display:grid;grid-template-columns:120px 1fr;gap:16px}.state-summary{display:grid;gap:10px}.state-summary div{padding:12px;border-radius:12px;background:rgba(3,10,24,.42)}.state-summary strong{display:block;font-size:22px}.state-summary p{margin:2px 0 0;color:#8ca5c8;font-size:12px}.korea-map{position:relative;height:430px;border:1px solid rgba(79,171,255,.14);border-radius:16px;background:linear-gradient(rgba(70,125,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(70,125,255,.1) 1px,transparent 1px),#061326;background-size:30px 30px}.map-shape.main{position:absolute;left:33%;top:8%;width:34%;height:76%;border-radius:48% 38% 44% 34%;background:rgba(56,190,245,.08);border:1px solid rgba(56,190,245,.22);transform:rotate(-12deg)}.map-shape.jeju{position:absolute;left:32%;top:88%;width:18%;height:6%;border-radius:50%;background:rgba(56,190,245,.08);border:1px solid rgba(56,190,245,.22)}.marker{position:absolute;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);border:0}.marker span{position:absolute;left:16px;top:-6px;white-space:nowrap;font-size:11px;color:#cfe5ff}.marker.selected{box-shadow:0 0 0 8px rgba(56,190,245,.18)}.ok,.marker.ok{color:#33e6a1!important;background:#33e6a1}.caution,.marker.caution{color:#ffd166!important;background:#ffd166}.danger,.marker.danger{color:#ff5d6c!important;background:#ff5d6c}.right-stack{display:grid;gap:18px}table{width:100%;border-collapse:collapse;background:rgba(2,9,22,.22);border-radius:14px;overflow:hidden}th,td{padding:12px;border-bottom:1px solid rgba(137,181,230,.08);text-align:left;font-size:13px}th{color:#7294bd;font-size:11px;letter-spacing:.12em}tr.selected{background:rgba(56,190,245,.14)}.status{display:inline-flex;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.06);font-size:11px;font-weight:900}.small-btn{height:30px;margin-right:6px;padding:0 10px}.notice-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}.notice-list li{display:flex;justify-content:space-between;color:#cfe5ff;font-size:13px}.notice-list time{color:#8ca5c8}.company-grid{display:grid;grid-template-columns:330px 1fr;gap:18px;margin-top:18px}.donut-wrap{display:flex;align-items:center;gap:22px}.donut{width:160px;height:160px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#33e6a1 0 75%,#ffd166 75% 91%,#4f5d75 91% 100%)}.donut span{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:#07142a;font-size:30px;font-weight:900}.donut small{display:block;font-size:12px;color:#8ca5c8}.legend p{display:flex;gap:8px;align-items:center}.legend i{width:10px;height:10px;border-radius:50%}.ok-bg{background:#33e6a1}.caution-bg{background:#ffd166}.inactive-bg{background:#4f5d75}.search-input{height:38px;min-width:260px;padding:0 12px;border-radius:10px;border:1px solid rgba(79,171,255,.22);background:rgba(7,15,31,.56);color:#fff}.tab-row{display:flex;gap:8px;margin-bottom:14px}.tab-row button{height:34px;padding:0 12px}.message{color:#8ca5c8;font-size:13px}select{height:32px;border-radius:8px;background:#07142a;color:#eaf4ff;border:1px solid rgba(79,171,255,.3)}
-.header-tools .pill{color:#dcecff!important}
-.header-tools .pill.ok{color:#33e6a1!important;background:rgba(51,230,161,.1)}
-.icon.status-ok{background:#33e6a1!important;color:#06111f!important}
-.kpi .icon.status-ok{color:#06111f!important}
-.status.ok{background:rgba(51,230,161,.1);color:#33e6a1!important}
-.status.caution{background:rgba(255,209,102,.12);color:#ffd166!important}
-.status.danger{background:rgba(255,93,108,.12);color:#ff5d6c!important}
-.korea-map{
-  background:
-    linear-gradient(rgba(6,19,38,.16),rgba(6,19,38,.72)),
-    url('/korea_road_backmap.png'),
-    #061326 !important;
-  background-position:center !important;
-  background-size:cover,contain,auto !important;
-  background-repeat:no-repeat,no-repeat,no-repeat !important;
-}
-</style>
