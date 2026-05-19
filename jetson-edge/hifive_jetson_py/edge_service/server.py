@@ -326,6 +326,8 @@ class EdgeServiceManager:
             str(options.srt_width),
             "--srt-height",
             str(options.srt_height),
+            "--srt-encoder",
+            options.srt_encoder,
             "--evidence-jpeg-quality",
             str(options.evidence_jpeg_quality),
             "--output-dir",

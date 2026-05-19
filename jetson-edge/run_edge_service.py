@@ -48,6 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--srt-fps", type=int, default=30)
     parser.add_argument("--srt-width", type=int, default=720)
     parser.add_argument("--srt-height", type=int, default=720)
+    parser.add_argument("--srt-encoder", choices=("x264", "openh264"), default="x264")
     parser.add_argument("--evidence-upload", action="store_true")
     parser.add_argument("--evidence-jpeg-quality", type=int, default=85)
     parser.add_argument("--parser-lib", default="/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so")
@@ -101,6 +102,7 @@ def main() -> None:
         srt_fps=args.srt_fps,
         srt_width=args.srt_width,
         srt_height=args.srt_height,
+        srt_encoder=args.srt_encoder,
         evidence_upload=args.evidence_upload,
         evidence_jpeg_quality=args.evidence_jpeg_quality,
         parser_lib=args.parser_lib,

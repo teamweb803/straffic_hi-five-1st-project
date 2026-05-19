@@ -76,6 +76,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--srt-fps", type=int, default=30)
     parser.add_argument("--srt-width", type=int, default=720)
     parser.add_argument("--srt-height", type=int, default=720)
+    parser.add_argument("--srt-encoder", choices=("x264", "openh264"), default="x264")
     parser.add_argument("--preview-datagram-fps", type=float, default=0.0)
     parser.add_argument("--preview-jpeg-quality", type=int, default=45)
     parser.add_argument("--evidence-upload", action="store_true")
@@ -138,6 +139,7 @@ def main() -> None:
             srt_fps=args.srt_fps,
             srt_width=args.srt_width,
             srt_height=args.srt_height,
+            srt_encoder=args.srt_encoder,
         ),
     )
     config = replace(config, pipeline_text=artifacts.pipeline_text, probe_element_name="post_yolo_probe")
@@ -220,7 +222,7 @@ def main() -> None:
     print(f"yolo_engine={config.yolo.engine_path}")
     print(f"ocr_engine={config.ocr.engine_path}")
     print(f"transport={config.transport.kind} host={config.transport.ingress_host} port={config.transport.ingress_port}")
-    print(f"srt_output={'enabled' if args.srt_host and args.srt_port > 0 else 'disabled'} host={args.srt_host} port={args.srt_port} fps={args.srt_fps} size={args.srt_width}x{args.srt_height}")
+    print(f"srt_output={'enabled' if args.srt_host and args.srt_port > 0 else 'disabled'} host={args.srt_host} port={args.srt_port} fps={args.srt_fps} size={args.srt_width}x{args.srt_height} encoder={args.srt_encoder}")
     print(f"edge_status_interval_sec={args.status_interval_sec}")
     print(f"repeat_video={args.repeat}")
     print(f"evidence_upload={args.evidence_upload}")

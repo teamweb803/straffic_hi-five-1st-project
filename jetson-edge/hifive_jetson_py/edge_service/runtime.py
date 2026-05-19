@@ -65,6 +65,7 @@ class EdgeServiceRuntimeOptions:
     srt_fps: int = 30
     srt_width: int = 720
     srt_height: int = 720
+    srt_encoder: str = "x264"
     evidence_upload: bool = False
     evidence_jpeg_quality: int = 85
     parser_lib: str = "/home/jetson/hifive/deepstream_plugins/libnvdsinfer_custom_hifive.so"
