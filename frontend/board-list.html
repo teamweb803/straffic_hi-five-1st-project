@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>개발일지 | Hi-Five</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/subpage.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="inner header-inner">
+        <a class="brand" href="./index.html" aria-label="HiFive">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span>Hi-Five</span>
+        </a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="./about.html">소개</a>
+          <a href="./service.html">서비스</a>
+          <a href="./board-list.html" class="active">개발일지</a>
+          <a href="./index.html#contact">문의하기</a>
+        </nav>
+        <div class="header-actions">
+          <a class="login-button" href="./login.html" aria-label="로그인">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5M15 12H3"></path></svg>
+            <span>로그인</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="sub-hero">
+        <img class="sub-hero-bg" src="./assets/img/hero.png" alt="" />
+        <div class="sub-hero-shade"></div>
+        <div class="inner">
+          <nav class="breadcrumb"><a href="./index.html">홈</a><span>›</span><span>개발일지</span></nav>
+          <span class="eyebrow">DEV LOG</span>
+          <h1>Hi-Five의 개발 이야기</h1>
+          <p class="lead">기술 트렌드, 개발 노트, 팀 소식을 한 곳에서 만나보세요.</p>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <div class="inner">
+          <!-- 카테고리 탭 -->
+          <nav class="tab-nav">
+            <a href="#" class="active">전체</a>
+            <a href="#">공지</a>
+            <a href="#">개발 노트</a>
+            <a href="#">기술 리뷰</a>
+            <a href="#">팀 소식</a>
+          </nav>
+
+          <!-- 검색/필터 툴바 -->
+          <div class="board-toolbar">
+            <div class="board-search">
+              <select aria-label="검색 조건">
+                <option>제목 + 내용</option>
+                <option>제목</option>
+                <option>작성자</option>
+                <option>태그</option>
+              </select>
+              <input type="text" placeholder="검색어를 입력하세요" />
+              <button class="btn primary sm" type="button">검색</button>
+            </div>
+            <a class="btn primary" href="./board-write.html">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              글쓰기
+            </a>
+          </div>
+
+          <!-- 게시판 테이블 -->
+          <table class="board-table">
+            <colgroup>
+              <col style="width: 70px" />
+              <col style="width: 100px" />
+              <col />
+              <col style="width: 130px" />
+              <col style="width: 110px" />
+              <col style="width: 80px" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>번호</th>
+                <th>분류</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성일</th>
+                <th>조회</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>—</td>
+                <td><span class="tag-chip notice">공지</span></td>
+                <td class="title-cell"><a href="./board-detail.html">공지글 제목 영역</a></td>
+                <td>관리자</td>
+                <td>YYYY.MM.DD</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td><span class="tag-chip">개발 노트</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다 <i style="color:#e2493e;font-style:normal;font-weight:800;">[3]</i></a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>123</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td><span class="tag-chip review">기술 리뷰</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>87</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td><span class="tag-chip news">팀 소식</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>54</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><span class="tag-chip">개발 노트</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>210</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><span class="tag-chip review">기술 리뷰</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>76</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td><span class="tag-chip">개발 노트</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>42</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><span class="tag-chip news">팀 소식</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>91</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><span class="tag-chip">개발 노트</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>33</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><span class="tag-chip review">기술 리뷰</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>118</td>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td><span class="tag-chip news">팀 소식</span></td>
+                <td class="title-cell"><a href="./board-detail.html">게시글 제목이 들어가는 자리입니다</a></td>
+                <td>홍길동</td>
+                <td>YYYY.MM.DD</td>
+                <td>205</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 페이지네이션 -->
+          <div class="pagination" role="navigation" aria-label="페이지 이동">
+            <a href="#" aria-label="처음">«</a>
+            <a href="#" aria-label="이전">‹</a>
+            <a href="#" class="active">1</a>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#">4</a>
+            <a href="#">5</a>
+            <a href="#" aria-label="다음">›</a>
+            <a href="#" aria-label="마지막">»</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="inner footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand-white" href="./index.html" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span>HiFive</span>
+          </a>
+          <p>HiFive는 위성 GPS 기반 Hi-Pass 시스템을 주제로<br />5명의 팀원이 함께 기획·개발한 팀 프로젝트입니다.</p>
+          <small>© 2024 Hi-Five Team. All Rights Reserved.</small>
+        </div>
+        <nav class="footer-nav" aria-label="하단 메뉴">
+          <div><h4>소개</h4><a href="./about.html#why">기획 배경</a><a href="./about.html#project">프로젝트 소개</a><a href="./about.html#members">팀원 소개</a><a href="./about.html#timeline">개발 일정</a></div>
+          <div><h4>서비스</h4><a href="./service.html#frontend">프론트엔드</a><a href="./service.html#backend">백엔드</a><a href="./service.html#infra">DB · 인프라</a><a href="./service.html#tools">협업 도구</a></div>
+          <div><h4>개발일지</h4><a href="./board-list.html">전체 글</a><a href="./board-list.html">공지</a><a href="./board-list.html">개발 노트</a><a href="./board-write.html">글쓰기</a></div>
+          <div><h4>문의</h4><a href="./index.html#contact">문의하기</a><a href="./login.html">로그인</a><a href="./signup.html">회원가입</a></div>
+        </nav>
+        <div class="footer-side">
+          <div class="policy"><a href="#">개인정보처리방침</a><span></span><a href="#">이용약관</a></div>
+          <button class="family" type="button"><span>Family Site</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></button>
+          <div class="social"><a href="#" aria-label="LinkedIn">in</a><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12s0-3.5-.4-5a2.8 2.8 0 0 0-2-2C17.8 4.5 12 4.5 12 4.5s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C2 8.5 2 12 2 12s0 3.5.4 5a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-5 .4-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg></a></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

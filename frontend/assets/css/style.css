@@ -80,8 +80,15 @@ img {
 .header-inner {
   height: 76px;
   display: grid;
-  grid-template-columns: 190px 1fr 110px;
+  grid-template-columns: 190px 1fr auto;
   align-items: center;
+}
+
+.header-actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .brand {
@@ -173,40 +180,34 @@ img {
   width: 100%;
 }
 
-.language {
-  justify-self: end;
+.login-button {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   height: 34px;
-  padding: 0 12px;
-  border: 1px solid #dfe7f1;
+  padding: 0 14px;
+  border: 1px solid #b8cbe1;
   border-radius: 999px;
-  color: #1a2a44;
-  background: #f7faff;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  transition: background .2s ease, border-color .2s ease;
-}
-
-.language:hover {
-  background: #eff5ff;
-  border-color: #c7d6ea;
-}
-
-.language svg:first-child {
-  width: 15px;
-  height: 15px;
   color: #0b4383;
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
 }
 
-.language .chev {
-  width: 12px;
-  height: 12px;
-  stroke-width: 2.4;
-  color: #5e7596;
+.login-button:hover {
+  background: linear-gradient(135deg, #0c59b6 0%, #0b4383 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(11, 67, 131, .22);
+}
+
+.login-button svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
 }
 
 /* Hero — 고정 높이 500px */
@@ -303,6 +304,7 @@ img {
   display: flex;
   width: fit-content;
   margin: 28px auto 0;
+  transform: translateX(-132px);
   min-width: 168px;
 }
 

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>게시글 상세 | Hi-Five</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/subpage.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="inner header-inner">
+        <a class="brand" href="./index.html" aria-label="HiFive">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span>Hi-Five</span>
+        </a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="./about.html">소개</a>
+          <a href="./service.html">서비스</a>
+          <a href="./board-list.html" class="active">개발일지</a>
+          <a href="./index.html#contact">문의하기</a>
+        </nav>
+        <div class="header-actions">
+          <a class="login-button" href="./login.html" aria-label="로그인">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5M15 12H3"></path></svg>
+            <span>로그인</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="sub-hero" style="height: 220px;">
+        <img class="sub-hero-bg" src="./assets/img/hero.png" alt="" />
+        <div class="sub-hero-shade"></div>
+        <div class="inner">
+          <nav class="breadcrumb">
+            <a href="./index.html">홈</a><span>›</span>
+            <a href="./board-list.html">개발일지</a><span>›</span>
+            <span>게시글 보기</span>
+          </nav>
+          <span class="eyebrow">DEV LOG</span>
+          <h1 style="font-size: 28px;">개발일지</h1>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <div class="inner" style="max-width: 880px; margin: 0 auto;">
+
+          <!-- 게시글 헤더 -->
+          <header class="post-header">
+            <span class="tag-chip">개발 노트</span>
+            <h2>게시글 제목이 들어가는 자리입니다</h2>
+            <div class="post-meta">
+              <span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+                <b>홍길동</b>
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>
+                YYYY.MM.DD
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+                조회 123
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-3-6L20 4v6h-6"/></svg>
+                좋아요 24
+              </span>
+            </div>
+          </header>
+
+          <!-- 본문 -->
+          <article class="post-body">
+            <div class="ph" style="min-height: 320px;">
+              게시글 본문 내용
+              <small>WYSIWYG 에디터로 작성된 HTML이 들어가는 자리입니다.</small>
+            </div>
+          </article>
+
+          <!-- 좋아요 / 공유 -->
+          <div class="post-actions">
+            <button class="like-button" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"/></svg>
+              좋아요 <b style="color:#0b4383;">24</b>
+            </button>
+            <button class="like-button" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>
+              공유
+            </button>
+          </div>
+
+          <!-- 이전글/다음글 -->
+          <nav class="post-nav" aria-label="게시글 이동">
+            <a href="./board-detail.html">
+              <b>↑ 이전글</b>
+              <span>이전 게시글 제목 자리</span>
+              <em>YYYY.MM.DD</em>
+            </a>
+            <a href="./board-detail.html">
+              <b>↓ 다음글</b>
+              <span>다음 게시글 제목 자리</span>
+              <em>YYYY.MM.DD</em>
+            </a>
+          </nav>
+
+          <!-- 하단 액션 -->
+          <div class="post-footer-actions">
+            <a class="btn ghost square" href="./board-list.html">← 목록으로</a>
+            <div style="display: flex; gap: 8px;">
+              <a class="btn secondary square" href="./board-write.html">수정</a>
+              <button class="btn ghost square" type="button">삭제</button>
+              <a class="btn primary square" href="./board-write.html">글쓰기</a>
+            </div>
+          </div>
+
+          <!-- 댓글 -->
+          <section class="comments">
+            <h3>댓글 <i>3</i></h3>
+
+            <form class="comment-form">
+              <textarea placeholder="댓글을 입력하세요"></textarea>
+              <button class="btn primary square" type="button" style="height: auto; align-self: stretch;">등록</button>
+            </form>
+
+            <ul class="comment-list">
+              <li class="comment">
+                <div class="comment-meta">
+                  <b>닉네임</b>
+                  <time>YYYY.MM.DD HH:MM</time>
+                </div>
+                <p>댓글 내용이 들어가는 자리입니다.</p>
+              </li>
+              <li class="comment">
+                <div class="comment-meta">
+                  <b>닉네임</b>
+                  <time>YYYY.MM.DD HH:MM</time>
+                </div>
+                <p>댓글 내용이 들어가는 자리입니다.</p>
+              </li>
+              <li class="comment">
+                <div class="comment-meta">
+                  <b>닉네임</b>
+                  <time>YYYY.MM.DD HH:MM</time>
+                </div>
+                <p>댓글 내용이 들어가는 자리입니다.</p>
+              </li>
+            </ul>
+          </section>
+
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="inner footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand-white" href="./index.html" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span>HiFive</span>
+          </a>
+          <p>HiFive는 위성 GPS 기반 Hi-Pass 시스템을 주제로<br />5명의 팀원이 함께 기획·개발한 팀 프로젝트입니다.</p>
+          <small>© 2024 Hi-Five Team. All Rights Reserved.</small>
+        </div>
+        <nav class="footer-nav" aria-label="하단 메뉴">
+          <div><h4>소개</h4><a href="./about.html#why">기획 배경</a><a href="./about.html#project">프로젝트 소개</a><a href="./about.html#members">팀원 소개</a><a href="./about.html#timeline">개발 일정</a></div>
+          <div><h4>서비스</h4><a href="./service.html#frontend">프론트엔드</a><a href="./service.html#backend">백엔드</a><a href="./service.html#infra">DB · 인프라</a><a href="./service.html#tools">협업 도구</a></div>
+          <div><h4>개발일지</h4><a href="./board-list.html">전체 글</a><a href="./board-list.html">공지</a><a href="./board-list.html">개발 노트</a><a href="./board-write.html">글쓰기</a></div>
+          <div><h4>문의</h4><a href="./index.html#contact">문의하기</a><a href="./login.html">로그인</a><a href="./signup.html">회원가입</a></div>
+        </nav>
+        <div class="footer-side">
+          <div class="policy"><a href="#">개인정보처리방침</a><span></span><a href="#">이용약관</a></div>
+          <button class="family" type="button"><span>Family Site</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></button>
+          <div class="social"><a href="#" aria-label="LinkedIn">in</a><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12s0-3.5-.4-5a2.8 2.8 0 0 0-2-2C17.8 4.5 12 4.5 12 4.5s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C2 8.5 2 12 2 12s0 3.5.4 5a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-5 .4-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg></a></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

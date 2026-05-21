@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>글쓰기 | Hi-Five</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/subpage.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="inner header-inner">
+        <a class="brand" href="./index.html" aria-label="HiFive">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span>Hi-Five</span>
+        </a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="./about.html">소개</a>
+          <a href="./service.html">서비스</a>
+          <a href="./board-list.html" class="active">개발일지</a>
+          <a href="./index.html#contact">문의하기</a>
+        </nav>
+        <div class="header-actions">
+          <a class="login-button" href="./login.html" aria-label="로그인">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5M15 12H3"></path></svg>
+            <span>로그인</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="sub-hero" style="height: 220px;">
+        <img class="sub-hero-bg" src="./assets/img/hero.png" alt="" />
+        <div class="sub-hero-shade"></div>
+        <div class="inner">
+          <nav class="breadcrumb">
+            <a href="./index.html">홈</a><span>›</span>
+            <a href="./board-list.html">개발일지</a><span>›</span>
+            <span>글쓰기</span>
+          </nav>
+          <span class="eyebrow">WRITE A POST</span>
+          <h1 style="font-size: 28px;">새 개발일지 작성</h1>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <div class="inner" style="max-width: 880px; margin: 0 auto;">
+          <form class="form" onsubmit="return false;">
+
+            <div class="form-row">
+              <label for="post-category">분류 <span class="required">*</span></label>
+              <select id="post-category" class="form-control">
+                <option value="">— 분류 선택 —</option>
+                <option>공지</option>
+                <option>개발 노트</option>
+                <option>기술 리뷰</option>
+                <option>팀 소식</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="post-title">제목 <span class="required">*</span></label>
+              <input type="text" id="post-title" placeholder="제목을 입력하세요" />
+            </div>
+
+            <div class="form-row">
+              <label for="post-tags">태그</label>
+              <input type="text" id="post-tags" placeholder="쉼표로 구분 (예: GPS, Hi-Pass, AI)" />
+              <span class="field-help">최대 5개까지 입력할 수 있습니다.</span>
+            </div>
+
+            <div class="form-row">
+              <label for="post-body">본문 <span class="required">*</span></label>
+              <div class="ph" style="min-height: 60px; border-radius: 8px 8px 0 0; border-bottom: 0; padding: 14px;">
+                에디터 툴바 영역 (B · I · U · 링크 · 이미지 · 코드 · …)
+              </div>
+              <textarea id="post-body" style="border-radius: 0 0 8px 8px; min-height: 340px; margin-top: -1px;" placeholder="내용을 입력하세요"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label>첨부파일</label>
+              <div class="ph" style="min-height: 100px;">
+                파일을 끌어다 놓거나 클릭하여 업로드
+                <small>최대 10MB · jpg · png · pdf · zip</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label>옵션</label>
+              <div style="display: flex; gap: 22px; padding: 4px 0;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #43566f; font-size: 13px;">
+                  <input type="checkbox" /> 비밀글
+                </label>
+                <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #43566f; font-size: 13px;">
+                  <input type="checkbox" /> 댓글 허용
+                </label>
+                <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #43566f; font-size: 13px;">
+                  <input type="checkbox" /> 상단 고정
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <a class="btn ghost square" href="./board-list.html">취소</a>
+              <button class="btn secondary square" type="button">임시저장</button>
+              <button class="btn primary square" type="submit">등록</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="inner footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand-white" href="./index.html" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span>HiFive</span>
+          </a>
+          <p>HiFive는 위성 GPS 기반 Hi-Pass 시스템을 주제로<br />5명의 팀원이 함께 기획·개발한 팀 프로젝트입니다.</p>
+          <small>© 2024 Hi-Five Team. All Rights Reserved.</small>
+        </div>
+        <nav class="footer-nav" aria-label="하단 메뉴">
+          <div><h4>소개</h4><a href="./about.html#why">기획 배경</a><a href="./about.html#project">프로젝트 소개</a><a href="./about.html#members">팀원 소개</a><a href="./about.html#timeline">개발 일정</a></div>
+          <div><h4>서비스</h4><a href="./service.html#frontend">프론트엔드</a><a href="./service.html#backend">백엔드</a><a href="./service.html#infra">DB · 인프라</a><a href="./service.html#tools">협업 도구</a></div>
+          <div><h4>개발일지</h4><a href="./board-list.html">전체 글</a><a href="./board-list.html">공지</a><a href="./board-list.html">개발 노트</a><a href="./board-write.html">글쓰기</a></div>
+          <div><h4>문의</h4><a href="./index.html#contact">문의하기</a><a href="./login.html">로그인</a><a href="./signup.html">회원가입</a></div>
+        </nav>
+        <div class="footer-side">
+          <div class="policy"><a href="#">개인정보처리방침</a><span></span><a href="#">이용약관</a></div>
+          <button class="family" type="button"><span>Family Site</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></button>
+          <div class="social"><a href="#" aria-label="LinkedIn">in</a><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12s0-3.5-.4-5a2.8 2.8 0 0 0-2-2C17.8 4.5 12 4.5 12 4.5s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C2 8.5 2 12 2 12s0 3.5.4 5a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-5 .4-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg></a></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인 | Hi-Five</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/subpage.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="inner header-inner">
+        <a class="brand" href="./index.html" aria-label="HiFive">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span>Hi-Five</span>
+        </a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="./about.html">소개</a>
+          <a href="./service.html">서비스</a>
+          <a href="./board-list.html">개발일지</a>
+          <a href="./index.html#contact">문의하기</a>
+        </nav>
+        <div class="header-actions">
+          <a class="login-button" href="./login.html" aria-label="로그인">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5M15 12H3"></path></svg>
+            <span>로그인</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="auth-main">
+      <div class="auth-wrap">
+
+        <!-- 좌측 브랜드 패널 (index hero/contact 톤) -->
+        <aside class="auth-side">
+          <a href="./index.html" class="brand brand-white" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </span>
+            <span style="font-size: 26px;">Hi-Five</span>
+          </a>
+
+          <h2>위성 GPS 기반<br />차세대 Hi-Pass 시스템에<br />다시 오신 것을 환영합니다.</h2>
+          <p class="side-lead">로그인하시고 Hi-Five의 모든 서비스를 이용해 보세요.</p>
+
+          <ul>
+            <li>실시간 통합 관제 데이터 열람</li>
+            <li>개발일지 작성 및 댓글 참여</li>
+            <li>비즈니스 협력 · 제휴 문의</li>
+          </ul>
+        </aside>
+
+        <!-- 우측 폼 -->
+        <section class="auth-card" aria-labelledby="login-title">
+          <h1 id="login-title">로그인</h1>
+          <p class="subtitle">Hi-Five 계정으로 로그인해주세요.</p>
+
+          <form class="auth-form" onsubmit="return false;">
+            <div class="form-row">
+              <label for="login-email">이메일</label>
+              <input type="email" id="login-email" placeholder="이메일을 입력하세요" autocomplete="email" />
+            </div>
+            <div class="form-row">
+              <label for="login-pw">비밀번호</label>
+              <input type="password" id="login-pw" placeholder="비밀번호를 입력하세요" autocomplete="current-password" />
+            </div>
+
+            <div class="auth-options">
+              <label><input type="checkbox" /> 로그인 상태 유지</label>
+              <a href="./find-password.html">비밀번호 찾기</a>
+            </div>
+
+            <button class="btn primary full lg" type="submit">로그인</button>
+          </form>
+
+          <div class="auth-divider">소셜 계정으로 로그인</div>
+
+          <div class="social-login">
+            <button class="social-btn" type="button"><span class="ic kakao"></span> 카카오로 시작하기</button>
+            <button class="social-btn" type="button"><span class="ic naver"></span> 네이버로 시작하기</button>
+            <button class="social-btn" type="button"><span class="ic google"></span> Google로 시작하기</button>
+          </div>
+
+          <div class="auth-footer">
+            아직 회원이 아니신가요?<a href="./signup.html">회원가입</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="inner footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand-white" href="./index.html" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span>HiFive</span>
+          </a>
+          <p>HiFive는 위성 GPS 기반 Hi-Pass 시스템을 주제로<br />5명의 팀원이 함께 기획·개발한 팀 프로젝트입니다.</p>
+          <small>© 2024 Hi-Five Team. All Rights Reserved.</small>
+        </div>
+        <nav class="footer-nav" aria-label="하단 메뉴">
+          <div><h4>소개</h4><a href="./about.html#why">기획 배경</a><a href="./about.html#project">프로젝트 소개</a><a href="./about.html#members">팀원 소개</a><a href="./about.html#timeline">개발 일정</a></div>
+          <div><h4>서비스</h4><a href="./service.html#frontend">프론트엔드</a><a href="./service.html#backend">백엔드</a><a href="./service.html#infra">DB · 인프라</a><a href="./service.html#tools">협업 도구</a></div>
+          <div><h4>개발일지</h4><a href="./board-list.html">전체 글</a><a href="./board-list.html">공지</a><a href="./board-list.html">개발 노트</a><a href="./board-write.html">글쓰기</a></div>
+          <div><h4>문의</h4><a href="./index.html#contact">문의하기</a><a href="./login.html">로그인</a><a href="./signup.html">회원가입</a></div>
+        </nav>
+        <div class="footer-side">
+          <div class="policy"><a href="#">개인정보처리방침</a><span></span><a href="#">이용약관</a></div>
+          <button class="family" type="button"><span>Family Site</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></button>
+          <div class="social"><a href="#" aria-label="LinkedIn">in</a><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12s0-3.5-.4-5a2.8 2.8 0 0 0-2-2C17.8 4.5 12 4.5 12 4.5s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C2 8.5 2 12 2 12s0 3.5.4 5a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-5 .4-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg></a></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

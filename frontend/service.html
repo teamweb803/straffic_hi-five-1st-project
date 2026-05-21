@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>기술 스택 | Hi-Five</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/subpage.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="inner header-inner">
+        <a class="brand" href="./index.html" aria-label="HiFive">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span>Hi-Five</span>
+        </a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="./about.html">소개</a>
+          <a href="./service.html" class="active">서비스</a>
+          <a href="./board-list.html">개발일지</a>
+          <a href="./index.html#contact">문의하기</a>
+        </nav>
+        <div class="header-actions">
+          <a class="login-button" href="./login.html" aria-label="로그인">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <path d="M10 17l5-5-5-5M15 12H3"></path>
+            </svg>
+            <span>로그인</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ===== Sub Hero ===== -->
+      <section class="sub-hero">
+        <img class="sub-hero-bg" src="./assets/img/hero.png" alt="" />
+        <div class="sub-hero-shade"></div>
+        <div class="inner">
+          <nav class="breadcrumb"><a href="./index.html">홈</a><span>›</span><span>기술 스택</span></nav>
+          <span class="eyebrow">TECH STACK</span>
+          <h1>프로젝트를 만든<br />기술 스택</h1>
+          <p class="lead">Hi-Five 팀이 사용한 프레임워크 · 라이브러리 · 도구를 소개합니다.</p>
+        </div>
+      </section>
+
+      <!-- ===== Tab Nav ===== -->
+      <section class="page-section" style="padding: 28px 0 0;">
+        <div class="inner">
+          <nav class="tab-nav" aria-label="기술 카테고리">
+            <a href="#overview" class="active">전체</a>
+            <a href="#frontend">프론트엔드</a>
+            <a href="#backend">백엔드</a>
+            <a href="#infra">DB · 인프라</a>
+            <a href="#tools">협업 도구</a>
+          </nav>
+        </div>
+      </section>
+
+      <!-- ===== 기술 스택 개요 ===== -->
+      <section class="page-section" id="overview" style="padding-top: 40px;">
+        <div class="inner">
+          <div class="intro-row">
+            <div class="intro-title">
+              <span class="eyebrow">OVERVIEW</span>
+              <h2 style="margin: 13px 0 0; font-size: 26px; line-height: 1.4; letter-spacing: -0.065em; font-weight: 900; color: #10213a;">
+                현대적이고 검증된<br />기술 조합
+              </h2>
+            </div>
+            <div class="intro-body">
+              빠른 개발 속도와 안정적인 운영을 위해<br />
+              생산성이 높고 커뮤니티 지원이 활발한 기술을 선택했습니다.<br />
+              각 기술을 선택한 이유와 활용 방식을 함께 설명합니다.
+            </div>
+          </div>
+
+          <!-- 카테고리별 카운트 -->
+          <div class="kpi-grid" style="margin-top: 36px;">
+            <div class="kpi-card">
+              <span class="kpi-label">프론트엔드</span>
+              <strong class="kpi-value">0종</strong>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">백엔드</span>
+              <strong class="kpi-value">0종</strong>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">DB · 인프라</span>
+              <strong class="kpi-value">0종</strong>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">협업 도구</span>
+              <strong class="kpi-value">0종</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Frontend ===== -->
+      <section class="page-section tinted" id="frontend">
+        <div class="inner">
+          <div class="section-heading">
+            <span class="eyebrow">FRONTEND</span>
+            <h2>프론트엔드</h2>
+            <p>사용자 화면을 구성하는 기술입니다.</p>
+          </div>
+          <div class="grid cols-2">
+            <article class="tech-card">
+              <div class="tech-logo">R</div>
+              <div class="tech-body">
+                <p class="tech-meta">UI Library</p>
+                <h4>React</h4>
+                <p>컴포넌트 기반 UI 라이브러리. 빠른 렌더링과 풍부한 생태계로 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">TS</div>
+              <div class="tech-body">
+                <p class="tech-meta">Language</p>
+                <h4>TypeScript</h4>
+                <p>정적 타입으로 안전한 코드 작성. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">⚡</div>
+              <div class="tech-body">
+                <p class="tech-meta">Build Tool</p>
+                <h4>Vite</h4>
+                <p>빠른 개발 서버와 번들링. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">🎨</div>
+              <div class="tech-body">
+                <p class="tech-meta">Styling</p>
+                <h4>Tailwind CSS</h4>
+                <p>유틸리티 퍼스트 CSS. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Backend ===== -->
+      <section class="page-section" id="backend">
+        <div class="inner">
+          <div class="section-heading">
+            <span class="eyebrow">BACKEND</span>
+            <h2>백엔드</h2>
+            <p>서버, API, 비즈니스 로직을 담당하는 기술입니다.</p>
+          </div>
+          <div class="grid cols-2">
+            <article class="tech-card">
+              <div class="tech-logo">SB</div>
+              <div class="tech-body">
+                <p class="tech-meta">Framework</p>
+                <h4>Spring Boot</h4>
+                <p>자바 기반 백엔드 프레임워크. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">JV</div>
+              <div class="tech-body">
+                <p class="tech-meta">Language</p>
+                <h4>Java 17</h4>
+                <p>LTS 버전의 안정적인 자바. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">JP</div>
+              <div class="tech-body">
+                <p class="tech-meta">ORM</p>
+                <h4>Spring Data JPA</h4>
+                <p>객체-관계 매핑으로 DB 처리. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">🔒</div>
+              <div class="tech-body">
+                <p class="tech-meta">Auth</p>
+                <h4>Spring Security + JWT</h4>
+                <p>인증 / 인가 처리. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== DB · 인프라 (다크 섹션) ===== -->
+      <section class="page-section dark" id="infra">
+        <div class="inner">
+          <div class="section-heading">
+            <span class="eyebrow">DATABASE &amp; INFRASTRUCTURE</span>
+            <h2>데이터베이스 · 인프라</h2>
+            <p>데이터 저장과 배포를 담당하는 기술입니다.</p>
+          </div>
+          <div class="grid cols-2">
+            <article class="tech-card" style="background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12);">
+              <div class="tech-logo" style="background: linear-gradient(135deg, rgba(46,199,255,.25), rgba(12,89,182,.35)); color: #fff;">My</div>
+              <div class="tech-body">
+                <p class="tech-meta" style="color: #2ec7ff;">RDBMS</p>
+                <h4 style="color:#fff;">MySQL</h4>
+                <p style="color: rgba(255,255,255,.72);">관계형 데이터베이스. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card" style="background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12);">
+              <div class="tech-logo" style="background: linear-gradient(135deg, rgba(46,199,255,.25), rgba(12,89,182,.35)); color: #fff;">Re</div>
+              <div class="tech-body">
+                <p class="tech-meta" style="color: #2ec7ff;">Cache</p>
+                <h4 style="color:#fff;">Redis</h4>
+                <p style="color: rgba(255,255,255,.72);">인메모리 캐시. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card" style="background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12);">
+              <div class="tech-logo" style="background: linear-gradient(135deg, rgba(46,199,255,.25), rgba(12,89,182,.35)); color: #fff;">AWS</div>
+              <div class="tech-body">
+                <p class="tech-meta" style="color: #2ec7ff;">Cloud</p>
+                <h4 style="color:#fff;">AWS EC2 · S3 · RDS</h4>
+                <p style="color: rgba(255,255,255,.72);">클라우드 인프라. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+            <article class="tech-card" style="background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12);">
+              <div class="tech-logo" style="background: linear-gradient(135deg, rgba(46,199,255,.25), rgba(12,89,182,.35)); color: #fff;">D</div>
+              <div class="tech-body">
+                <p class="tech-meta" style="color: #2ec7ff;">Container</p>
+                <h4 style="color:#fff;">Docker</h4>
+                <p style="color: rgba(255,255,255,.72);">컨테이너 기반 배포. 사용 이유를 입력하세요.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 협업 도구 ===== -->
+      <section class="page-section" id="tools">
+        <div class="inner">
+          <div class="section-heading">
+            <span class="eyebrow">COLLABORATION</span>
+            <h2>협업 도구</h2>
+            <p>팀원 간 소통과 작업 관리에 사용한 도구입니다.</p>
+          </div>
+          <div class="grid cols-3">
+            <article class="tech-card">
+              <div class="tech-logo">GH</div>
+              <div class="tech-body">
+                <p class="tech-meta">VCS</p>
+                <h4>GitHub</h4>
+                <p>소스 코드 관리 및 협업.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">📝</div>
+              <div class="tech-body">
+                <p class="tech-meta">Documentation</p>
+                <h4>Notion</h4>
+                <p>기획 문서 · 회의록 관리.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">F</div>
+              <div class="tech-body">
+                <p class="tech-meta">Design</p>
+                <h4>Figma</h4>
+                <p>UI 디자인 · 프로토타입.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">💬</div>
+              <div class="tech-body">
+                <p class="tech-meta">Communication</p>
+                <h4>Discord · Slack</h4>
+                <p>실시간 커뮤니케이션.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">📋</div>
+              <div class="tech-body">
+                <p class="tech-meta">Issue Tracking</p>
+                <h4>GitHub Issues / Jira</h4>
+                <p>업무 분담 · 진행 관리.</p>
+              </div>
+            </article>
+            <article class="tech-card">
+              <div class="tech-logo">📮</div>
+              <div class="tech-body">
+                <p class="tech-meta">API</p>
+                <h4>Postman</h4>
+                <p>API 테스트 · 문서화.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CTA Band → 문의하기 (index #contact) ===== -->
+      <section class="cta-band">
+        <div class="inner">
+          <h2>기술 스택에 대해 더 궁금한가요?</h2>
+          <p>개발 과정의 자세한 내용은 개발일지에서, 직접 문의는 아래 버튼에서 확인하세요.</p>
+          <div style="display: flex; justify-content: center; gap: 10px;">
+            <a class="btn glass lg" href="./board-list.html">개발일지 보기</a>
+            <a class="btn glass lg" href="./index.html#contact">문의하기 →</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="inner footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand-white" href="./index.html" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span>HiFive</span>
+          </a>
+          <p>HiFive는 위성 GPS 기반 Hi-Pass 시스템을 주제로<br />5명의 팀원이 함께 기획·개발한 팀 프로젝트입니다.</p>
+          <small>© 2024 Hi-Five Team. All Rights Reserved.</small>
+        </div>
+        <nav class="footer-nav" aria-label="하단 메뉴">
+          <div><h4>소개</h4><a href="./about.html#why">기획 배경</a><a href="./about.html#project">프로젝트 소개</a><a href="./about.html#members">팀원 소개</a><a href="./about.html#timeline">개발 일정</a></div>
+          <div><h4>서비스</h4><a href="./service.html#frontend">프론트엔드</a><a href="./service.html#backend">백엔드</a><a href="./service.html#infra">DB · 인프라</a><a href="./service.html#tools">협업 도구</a></div>
+          <div><h4>개발일지</h4><a href="./board-list.html">전체 글</a><a href="./board-list.html">공지</a><a href="./board-list.html">개발 노트</a><a href="./board-write.html">글쓰기</a></div>
+          <div><h4>문의</h4><a href="./index.html#contact">문의하기</a><a href="./login.html">로그인</a><a href="./signup.html">회원가입</a></div>
+        </nav>
+        <div class="footer-side">
+          <div class="policy"><a href="#">개인정보처리방침</a><span></span><a href="#">이용약관</a></div>
+          <button class="family" type="button"><span>Family Site</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></button>
+          <div class="social"><a href="#" aria-label="LinkedIn">in</a><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12s0-3.5-.4-5a2.8 2.8 0 0 0-2-2C17.8 4.5 12 4.5 12 4.5s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C2 8.5 2 12 2 12s0 3.5.4 5a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-5 .4-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg></a></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

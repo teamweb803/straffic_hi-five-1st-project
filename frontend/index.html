@@ -3,356 +3,328 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hi-Five | 위성 GPS 기반 스마트 하이패스</title>
-  <link rel="stylesheet" href="./style.css" />
+  <title>Hi-Five | 위성 GPS 기반 Hi-Pass 시스템</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
 </head>
 <body>
-  <div class="reference-layer" aria-hidden="true">
-    <img src="./assets/reference-4th-mockup.png" alt="" />
-  </div>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="inner header-inner">
+        <a class="brand" href="#top" aria-label="HiFive">
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </span>
+          <span>Hi-Five</span>
+        </a>
 
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="logo" href="#top">
-        <span class="logo-icon"><i></i><i></i><i></i><i></i><i></i></span>
-        <strong>Hi-Five</strong>
-      </a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="./about.html">소개</a>
+          <a href="./service.html">서비스</a>
+          <a href="./board-list.html">개발일지</a>
+          <a href="#contact">문의하기</a>
+        </nav>
 
-      <nav class="nav-menu">
-        <a href="#about">소개</a>
-        <a href="#service">서비스</a>
-        <a href="#effect">도입효과</a>
-        <a href="#team">팀소개</a>
-        <a href="#devlog">개발일지</a>
-        <a href="#contact">문의하기</a>
-      </nav>
-
-      <div class="language">
-        <span class="globe"></span>
-        <b>KOR</b>
-        <span>⌄</span>
-      </div>
-    </div>
-  </header>
-
-  <main id="top">
-    <section class="hero" id="about">
-      <img src="./assets/hero-highway.png" class="hero-bg" alt="" />
-      <div class="hero-overlay"></div>
-
-      <div class="container hero-inner">
-        <div class="hero-copy">
-          <h1>위성으로 연결된 길,<br />더 빠르고, 더 안전한 대한민국</h1>
-          <p>
-            Hi-Five 위성 GPS 기반 Hi-Pass 시스템으로<br />
-            전국 고속도로의 스마트한 통행과 결제를 혁신합니다.
-          </p>
-          <a class="outline-button" href="#service">Hi-Five 소개 <span>→</span></a>
-
-          <div class="hero-features">
-            <div class="hero-feature">
-              <span>✦</span>
-              <b>위성 GPS 기반</b>
-              <small>정밀 통행 인식</small>
-            </div>
-            <div class="hero-feature">
-              <span>▣</span>
-              <b>Hi-Pass</b>
-              <small>스마트 결제</small>
-            </div>
-            <div class="hero-feature">
-              <span>☁</span>
-              <b>통합 관제 플랫폼</b>
-              <small>실시간 모니터링</small>
-            </div>
-            <div class="hero-feature">
-              <span>◇</span>
-              <b>안정적·신뢰성 높은</b>
-              <small>국가 인프라 운영</small>
-            </div>
-          </div>
+        <div class="header-actions">
+          <a class="login-button" href="./login.html" aria-label="로그인">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <path d="M10 17l5-5-5-5M15 12H3"></path>
+            </svg>
+            <span>로그인</span>
+          </a>
         </div>
+      </div>
+    </header>
 
-        <div class="hero-ui">
-          <div class="map-pin pin-one">
-            <i></i>
-            <div>
-              <b>서울 ⇄ 부산</b>
-              <small>정상 운행</small>
-            </div>
+    <main id="top">
+      <section class="hero" id="company">
+        <img class="hero-bg" src="./assets/img/hero.png" alt="HiFive 위성 기반 Hi-Pass 시스템" />
+        <div class="hero-shade"></div>
+
+        <div class="inner hero-inner">
+          <div class="hero-copy">
+            <h1>KPS와 AI로 완성하는<br />차세대 스마트 하이패스</h1>
+            <p>차량과 도로, 결제 데이터를 하나로 연결해<br />미래형 고속도로 인프라를 현실로 만듭니다.</p>
+            <a class="pill-button hero-button" href="#service">HiFive 소개 <span aria-hidden="true">&rarr;</span></a>
           </div>
 
-          <div class="map-pin pin-two">
-            <i></i>
-            <div>
-              <b>대전 톨게이트</b>
-              <small>정상 처리 2.1초</small>
-            </div>
+          <div class="hero-features" aria-label="핵심 기능">
+            <article>
+              <span class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="m5 22 5 5 5-5-5-5-5 5ZM17 10l5 5 5-5-5-5-5 5ZM12 19l7-7M10 17 7 8M15 22l9 3"></path>
+                </svg>
+              </span>
+              <strong>위성 GPS 기반</strong>
+              <small>정밀 통행 인식</small>
+            </article>
+            <article>
+              <span class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <rect x="7" y="6" width="18" height="20" rx="3"></rect>
+                  <path d="M11 11h10M11 15h6M10 22h12M12 19l2-2 3 3 3-4"></path>
+                </svg>
+              </span>
+              <strong>Hi-Pass</strong>
+              <small>스마트 결제</small>
+            </article>
+            <article>
+              <span class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M10 23h14a5 5 0 0 0 .5-10 7.5 7.5 0 0 0-14.2-2.8A6.5 6.5 0 0 0 10 23Z"></path>
+                  <path d="M16 16v8M12 20h8"></path>
+                </svg>
+              </span>
+              <strong>통합 관제 플랫폼</strong>
+              <small>실시간 모니터링</small>
+            </article>
+            <article>
+              <span class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M16 4 7 8v6c0 6 3.8 10.8 9 13 5.2-2.2 9-7 9-13V8l-9-4Z"></path>
+                  <path d="m11.5 16 3 3 6-7"></path>
+                </svg>
+              </span>
+              <strong>안정성·신뢰성</strong>
+              <small>국가 인프라 운영</small>
+            </article>
           </div>
 
           <div class="hero-stats">
             <div>
-              <small>일 통행 처리</small>
+              <span>일 통행 처리</span>
               <strong>1,250만 건+</strong>
             </div>
             <div>
-              <small>전국 커버리지</small>
+              <span>전국 커버리지</span>
               <strong>100%</strong>
             </div>
             <div>
-              <small>시스템 가동률</small>
-              <strong>99.999%</strong>
+              <span>시스템 가동률</span>
+              <strong>99.99%</strong>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="mission">
-      <div class="container mission-inner">
-        <div class="mission-title">
-          <span>우리의 미션</span>
-          <h2>국가 교통 인프라의 혁신으로<br />국민의 이동을 더 가치 있게</h2>
-        </div>
-
-        <p class="mission-desc">
-          Hi-Five는 위성, 통신, 빅데이터 기술을 결합하여<br />
-          고속도로의 효율적인 운영과 안전한 이동 경험을 제공하고,<br />
-          미래 모빌리티 생태계를 선도합니다.
-        </p>
-
-        <img class="mission-art" src="./assets/mission-lineart.png" alt="고속도로와 도시 라인 일러스트" />
-      </div>
-    </section>
-
-    <section class="service" id="service">
-      <div class="container service-grid">
-        <article class="service-card card-dark">
-          <h3>통합 관제 플랫폼</h3>
-          <p>전국 고속도로의 통행 관제·감시·데이터를<br />하나의 플랫폼에서 실시간 통합 관제</p>
-
-          <div class="dashboard-frame">
-            <img src="./assets/control-dashboard.png" alt="통합 관제 플랫폼 대시보드" />
+      <section class="mission">
+        <div class="inner mission-inner">
+          <div class="mission-title">
+            <span>우리의 미션</span>
+            <h2>국가 교통 인프라의 혁신으로<br />국민의 이동을 더 가치 있게</h2>
           </div>
-
-          <a href="#">자세히 보기 <span>→</span></a>
-        </article>
-
-        <article class="service-card card-map">
-          <h3>전국 커버리지</h3>
-          <p>위성 기반의 정밀한 전국 고속도로 커버리지로<br />끊김 없는 서비스 제공</p>
-
-          <div class="map-frame">
-            <img src="./assets/korea-network-map.png" alt="전국 커버리지 지도" />
-          </div>
-
-          <ul class="legend">
-            <li><i></i>운영 중</li>
-            <li><i></i>구축 예정</li>
-            <li><i></i>확장 예정</li>
-          </ul>
-
-          <a href="#">자세히 보기 <span>→</span></a>
-        </article>
-
-        <article class="service-card card-data">
-          <h3>데이터로 비즈니스 가치를 창출</h3>
-          <p>정밀한 통행 데이터와 AI 분석으로 교통 흐름 예측,<br />수요 분석 및 수익 최적화 지원</p>
-
-          <div class="data-top">
-            <div>
-              <small>일 통행량</small>
-              <strong>12,580,000 <em>건+</em></strong>
-              <span>▲ 7.2% (전일 대비)</span>
-            </div>
-            <div class="donut"></div>
-            <ul>
-              <li>승용차 72%</li>
-              <li>화물차 24%</li>
-              <li>기타 4%</li>
-            </ul>
-          </div>
-
-          <div class="bar-panel">
-            <b>시간대별 통행량</b>
-            <div class="bar-list">
-              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-            </div>
-            <small>0시&nbsp;&nbsp;&nbsp;&nbsp;4시&nbsp;&nbsp;&nbsp;&nbsp;8시&nbsp;&nbsp;&nbsp;&nbsp;12시&nbsp;&nbsp;&nbsp;&nbsp;16시&nbsp;&nbsp;&nbsp;&nbsp;20시</small>
-          </div>
-
-          <a href="#">자세히 보기 <span>→</span></a>
-        </article>
-
-        <article class="service-card card-stable">
-          <h3>운영 안정성</h3>
-          <p>이중화된 시스템과 24/7 모니터링으로<br />최고 수준의 안정성 보장</p>
-
-          <div class="stable-list">
-            <div><span>☻</span><b>시스템 가동률<br /><em>99.999%</em></b></div>
-            <div><span>◴</span><b>24/7 관제 센터<br /><em>365일 무중단 운영</em></b></div>
-            <div><span>▣</span><b>재해 복구 시스템<br /><em>이중화 및 백업 체계</em></b></div>
-            <div><span>◇</span><b>보안 인증<br /><em>ISMS-P, ISO/IEC 27001</em></b></div>
-          </div>
-
-          <a href="#">자세히 보기 <span>→</span></a>
-        </article>
-      </div>
-    </section>
-
-    <section class="effect" id="effect">
-      <div class="container effect-inner">
-        <div>
-          <span class="orange-label">도입효과</span>
-          <h2>GPS 결제와 번호판 추적을 결합한<br />이중 정산 구조</h2>
-          <p>
-            GPS 신호가 없거나 결제가 실패한 경우에도 YOLO 번호판 탐지와 OCR 번호판 인식을 통해
-            차량 이동을 추적하고 후불 정산으로 전환합니다.
+          <p class="mission-text">
+            Hi-Five는 위성, 통신, 빅데이터 기술을 결합하여<br />
+            고속도로의 효율적인 운영과 안전한 이동 경험을 제공하고,<br />
+            미래 모빌리티 생태계를 선도합니다.
           </p>
+          <img class="mission-art" src="./assets/img/mission-lineart.png" alt="" />
         </div>
+      </section>
 
-        <div class="effect-cards">
-          <article>
-            <b>요금 누수 방지</b>
-            <small>결제 실패 차량 후불 정산</small>
+      <section class="services" id="service">
+        <div class="inner service-grid">
+          <article class="service-card control-card">
+            <h3>통합 관제 플랫폼</h3>
+            <p>전국 고속도로의 통행 관제·장애 데이터를<br />하나의 플랫폼에서 실시간 통합 관제</p>
+            <div class="dashboard-shot">
+              <img src="./assets/img/control-dashboard.png" alt="통합 관제 대시보드" />
+            </div>
+            <a class="small-button dark-button" href="#">자세히 보기 <span aria-hidden="true">&rarr;</span></a>
           </article>
-          <article>
-            <b>무정차 통행</b>
-            <small>GPS 기반 이동 중 결제</small>
+
+          <article class="service-card coverage-card">
+            <h3>전국 커버리지</h3>
+            <p>위성 기반의 정밀한 전국 고속도로 커버리지로<br />끊김 없는 서비스 제공</p>
+            <div class="korea-map">
+              <img src="./assets/img/korea-network-map.png" alt="전국 네트워크 지도" />
+            </div>
+            <ul class="map-legend">
+              <li><i class="blue"></i>운영 중</li>
+              <li><i class="orange"></i>구축 예정</li>
+              <li><i class="soft-blue"></i>확장 예정</li>
+            </ul>
+            <a class="small-button" href="#">자세히 보기 <span aria-hidden="true">&rarr;</span></a>
           </article>
-          <article>
-            <b>실시간 추적</b>
-            <small>번호판 기반 차량 경로 관리</small>
+
+          <article class="service-card data-card" id="effect">
+            <h3>데이터로 비즈니스 가치를 창출</h3>
+            <p>정밀한 통행 데이터와 AI 분석으로 교통 흐름 예측,<br />수요 분석 및 수익 최적화 지원</p>
+            <div class="data-summary">
+              <div class="traffic-number">
+                <span>월 통행량</span>
+                <strong>12,580,000 <small>건+</small></strong>
+                <em>▲ 7.2% (전월 대비)</em>
+              </div>
+              <div class="vehicle-share">
+                <div class="donut" aria-hidden="true"></div>
+                <ul>
+                  <li><i class="blue"></i>승용차 <b>72%</b></li>
+                  <li><i class="soft-blue"></i>화물차 <b>24%</b></li>
+                  <li><i class="gray"></i>기타 <b>4%</b></li>
+                </ul>
+              </div>
+            </div>
+            <div class="bar-chart">
+              <b>시간대별 통행량</b>
+              <div class="bars" aria-hidden="true">
+                <i style="height:18%"></i><i style="height:30%"></i><i style="height:42%"></i><i style="height:56%"></i>
+                <i style="height:70%"></i><i style="height:82%"></i><i style="height:97%"></i><i style="height:90%"></i>
+                <i style="height:76%"></i><i style="height:64%"></i><i style="height:50%"></i><i style="height:34%"></i>
+              </div>
+              <span>0시&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4시&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8시&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12시&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16시&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20시</span>
+            </div>
+            <a class="small-button" href="#">자세히 보기 <span aria-hidden="true">&rarr;</span></a>
           </article>
-          <article>
-            <b>엣지 AI 확장</b>
-            <small>카메라별 Jetson Orin Nano 배치</small>
+
+          <article class="service-card stable-card">
+            <h3>운영 안정성</h3>
+            <p>이중화된 시스템과 24/7 모니터링으로<br />최고 수준의 안정성 보장</p>
+            <ul class="stable-list">
+              <li>
+                <span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20a8 8 0 1 0-8-8M12 7v5l3 2"></path></svg>
+                </span>
+                <p><b>시스템 가동률</b><em>99.999%</em></p>
+              </li>
+              <li>
+                <span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 16 0M4 12v4h4v-4H4Zm12 0v4h4v-4h-4Z"></path></svg>
+                </span>
+                <p><b>24/7 관제 센터</b><em>365일 무중단 운영</em></p>
+              </li>
+              <li>
+                <span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20h12V8l-6-4-6 4v12ZM9 20v-7h6v7"></path></svg>
+                </span>
+                <p><b>재해 복구 시스템</b><em>이중화 및 백업 체계</em></p>
+              </li>
+              <li>
+                <span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6l-7-3Z"></path><path d="m8.5 12 2.5 2.5 5-5"></path></svg>
+                </span>
+                <p><b>보안 인증</b><em>ISMS-P, ISO/IEC 27001</em></p>
+              </li>
+            </ul>
+            <a class="small-button" href="#">자세히 보기 <span aria-hidden="true">&rarr;</span></a>
           </article>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="partners-section">
-      <div class="container partners-inner">
-        <div>
-          <span>함께하는 파트너</span>
-          <p>국가 인프라의 동반자로서 함께 성장합니다.</p>
+      <section class="partners" id="team">
+        <div class="inner partners-inner">
+          <div class="partners-copy">
+            <span>함께하는 파트너</span>
+            <p>국가 인프라의 동반자로서 함께 성장합니다.</p>
+          </div>
+          <div class="partner-logos" aria-label="파트너 로고">
+            <span class="ministry"><i></i>국토교통부</span>
+            <span class="ex"><b>ex</b> 한국도로공사</span>
+            <span class="transport"><i></i>한국교통연구원</span>
+            <span class="kt">kt</span>
+            <span class="lgu">LG U<sup>+</sup></span>
+            <span class="sk">SK telecom</span>
+          </div>
         </div>
-        <div class="partner-logos">
-          <b>국토교통부</b>
-          <b>ex 한국도로공사</b>
-          <b>한국교통연구원</b>
-          <b>kt</b>
-          <b>LG U+</b>
-          <b>SK telecom</b>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="contact" id="contact">
-      <div class="container contact-inner">
-        <div class="contact-main">
-          <h2>문의 및 상담</h2>
-          <p>Hi-Five가 만드는 스마트한 고속도로,<br />지금 바로 문의하세요.</p>
-          <a class="outline-button" href="#">문의하기 <span>→</span></a>
+      <section class="contact" id="contact">
+        <div class="inner contact-inner">
+          <div class="contact-copy">
+            <h2>문의 및 상담</h2>
+            <p>Hi-Five가 만드는 스마트한 고속도로,<br />지금 바로 문의하세요.</p>
+            <a class="pill-button contact-button" href="#">문의하기 <span aria-hidden="true">&rarr;</span></a>
+          </div>
+
+          <address class="contact-info">
+            <p>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.5v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 3.8 2 2 0 0 1 4 1.6h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.7 9.3a16 16 0 0 0 7 7l1.2-1.2a2 2 0 0 1 1.8-.6l3 .5a2 2 0 0 1 1.3 1.5Z"></path></svg>
+              <span>02-1234-5678</span>
+            </p>
+            <p>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"></path><path d="m4 7 8 6 8-6"></path></svg>
+              <span>contact@hifive.co.kr</span>
+            </p>
+            <p>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+              <span>서울 강남구 테헤란로 253<br />에스빌딩 6층 78</span>
+            </p>
+          </address>
+
+          <article class="proposal-card">
+            <img src="./assets/img/img02.png" alt="" />
+            <div>
+              <h3>제품 및 사업 문의</h3>
+              <p>기술 제휴, 서비스 연계, 비즈니스 협력 등<br />다양한 제안을 기다립니다.</p>
+              <a class="pill-button proposal-button" href="#">제휴 문의하기 <span aria-hidden="true">&rarr;</span></a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="log">
+      <div class="inner footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand-white" href="#top" aria-label="HiFive">
+            <span class="brand-mark" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </span>
+            <span>HiFive</span>
+          </a>
+          <p>HiFive는 위성 GPS 기반 Hi-Pass 시스템을 주제로<br />5명의 팀원이 함께 기획·개발한 팀 프로젝트입니다.</p>
+          <small>© 2024 Hi-Five Team. All Rights Reserved.</small>
         </div>
 
-        <div class="contact-info">
-          <p><span>☎</span>02-1234-5678</p>
-          <p><span>✉</span>contact@hifive.co.kr</p>
-          <p><span>⌖</span>서울 강남구 테헤란로 253<br />에스빌딩 6층 78</p>
-        </div>
-
-        <div class="business-card">
-          <img src="./assets/contact-highway.png" alt="" />
+        <nav class="footer-nav" aria-label="하단 메뉴">
           <div>
-            <h3>제품 및 사업 문의</h3>
-            <p>기술 제휴, 서비스 연계, 비즈니스 협력 등<br />다양한 제안을 기다립니다.</p>
-            <a href="#">제휴 문의하기 <span>→</span></a>
+            <h4>소개</h4>
+            <a href="./about.html#why">기획 배경</a>
+            <a href="./about.html#project">프로젝트 소개</a>
+            <a href="./about.html#members">팀원 소개</a>
+            <a href="./about.html#timeline">개발 일정</a>
+          </div>
+          <div>
+            <h4>서비스</h4>
+            <a href="./service.html#frontend">프론트엔드</a>
+            <a href="./service.html#backend">백엔드</a>
+            <a href="./service.html#infra">DB · 인프라</a>
+            <a href="./service.html#tools">협업 도구</a>
+          </div>
+          <div>
+            <h4>개발일지</h4>
+            <a href="./board-list.html">전체 글</a>
+            <a href="./board-list.html">공지</a>
+            <a href="./board-list.html">개발 노트</a>
+            <a href="./board-write.html">글쓰기</a>
+          </div>
+          <div>
+            <h4>문의</h4>
+            <a href="#contact">문의하기</a>
+            <a href="./login.html">로그인</a>
+            <a href="./signup.html">회원가입</a>
+          </div>
+        </nav>
+
+        <div class="footer-side">
+          <div class="policy">
+            <a href="#">개인정보처리방침</a>
+            <span></span>
+            <a href="#">이용약관</a>
+          </div>
+          <button class="family" type="button">
+            <span>Family Site</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg>
+          </button>
+          <div class="social">
+            <a href="#" aria-label="LinkedIn">in</a>
+            <a href="#" aria-label="YouTube">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12s0-3.5-.4-5a2.8 2.8 0 0 0-2-2C17.8 4.5 12 4.5 12 4.5s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C2 8.5 2 12 2 12s0 3.5.4 5a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-5 .4-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg>
+            </a>
           </div>
         </div>
       </div>
-    </section>
-
-    <section class="team-dev" id="team">
-      <div class="container team-dev-inner">
-        <article>
-          <span>Team</span>
-          <h2>팀소개</h2>
-          <p>기획, AI 모델, OCR, GPS 결제, 엣지 장비, 웹 프론트엔드 파트로 역할을 나누어 개발합니다.</p>
-        </article>
-
-        <article id="devlog">
-          <span>Development Log</span>
-          <h2>개발일지</h2>
-          <ol>
-            <li>프로젝트 기획 및 요구사항 정의</li>
-            <li>YOLO 번호판 탐지 모델 구성</li>
-            <li>OCR 번호판 인식 및 추적 로직 설계</li>
-            <li>GPS 결제 실패 시 후불 정산 프로세스 구현</li>
-          </ol>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <a class="logo logo-white" href="#top">
-          <span class="logo-icon"><i></i><i></i><i></i><i></i><i></i></span>
-          <strong>Hi-Five</strong>
-        </a>
-        <p>
-          Hi-Five는 위성 GPS 기반 Hi-Pass 시스템으로<br />
-          전국 고속도로의 효율적 운영과 안전한 이동을 지원하는<br />
-          스마트 교통 인프라 기업입니다.
-        </p>
-        <small>© 2024 Hi-Five. All Rights Reserved.</small>
-      </div>
-
-      <div class="footer-col">
-        <h4>소개</h4>
-        <a>프로젝트 개요</a>
-        <a>비전과 가치</a>
-        <a>시스템 구조</a>
-      </div>
-
-      <div class="footer-col">
-        <h4>서비스</h4>
-        <a>Hi-Pass 서비스</a>
-        <a>위성 통행 인식</a>
-        <a>통합 관제</a>
-      </div>
-
-      <div class="footer-col">
-        <h4>도입효과</h4>
-        <a>핵심 기술</a>
-        <a>솔루션 소개</a>
-        <a>R&D</a>
-      </div>
-
-      <div class="footer-col">
-        <h4>문의하기</h4>
-        <a>공지사항</a>
-        <a>자료실</a>
-        <a>자주 묻는 질문</a>
-      </div>
-
-      <div class="footer-side">
-        <p>개인정보처리방침&nbsp;&nbsp;|&nbsp;&nbsp;이용약관</p>
-        <button>Family Site <span>⌄</span></button>
-        <div class="sns">
-          <i>in</i>
-          <i>▶</i>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <button class="top-button" type="button">TOP</button>
-  <button class="compare-button" type="button" title="기준 시안 오버레이 보기">REF</button>
-
-  <script src="./script.js"></script>
+    </footer>
+  </div>
 </body>
 </html>
