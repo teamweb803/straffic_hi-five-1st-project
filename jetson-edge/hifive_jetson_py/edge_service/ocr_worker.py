@@ -64,6 +64,8 @@ class OcrWorker:
             if not task.readable:
                 track.candidate_text = ""
                 track.candidate_started_at = 0.0
+                track.candidate_confidence = 0.0
+                track.candidate_task = None
                 return None
 
             if not self._can_emit(decoded):
@@ -72,15 +74,19 @@ class OcrWorker:
             if decoded.text != track.candidate_text:
                 track.candidate_text = str(decoded.text)
                 track.candidate_started_at = now
+                track.candidate_confidence = 0.0
+                track.candidate_task = None
+                self._update_best_candidate(track, task, decoded, crop_bgr)
                 track.live_text = ""
                 return None
 
+            self._update_best_candidate(track, task, decoded, crop_bgr)
             if now - track.candidate_started_at < self.stable_sec:
                 return None
 
             track.stable_text = str(decoded.text)
             track.live_text = track.stable_text
-            track.stable_confidence = float(decoded.confidence)
+            track.stable_confidence = float(track.candidate_confidence or decoded.confidence)
             restored = self.tracker.restore_display_id_by_ocr(track, track.stable_text, task.frame_num)
             if not restored:
                 self.tracker.ensure_display_id(track)
@@ -91,8 +97,9 @@ class OcrWorker:
                 return None
 
             track.event_sent = True
+            best_task = track.candidate_task or task
             return ReadyPlateEvent(
-                task=replace(task, display_id=track.display_id, crop=crop_bgr.copy(), shared_crop=None),
+                task=replace(best_task, display_id=track.display_id, shared_crop=None),
                 text=track.stable_text,
                 confidence=track.stable_confidence,
             )
@@ -115,6 +122,14 @@ class OcrWorker:
         if not self.allow_invalid and not bool(decoded.valid_pattern):
             return False
         return True
+
+    def _update_best_candidate(self, track, task: OcrTask, decoded, crop_bgr) -> None:
+        confidence = float(decoded.confidence)
+        if track.candidate_task is not None and confidence < track.candidate_confidence:
+            return
+        canvas_snapshot = task.canvas_snapshot.copy() if task.canvas_snapshot is not None else None
+        track.candidate_confidence = confidence
+        track.candidate_task = replace(task, crop=crop_bgr.copy(), canvas_snapshot=canvas_snapshot, shared_crop=None)
 
 
 def put_latest_ocr_task(

@@ -222,6 +222,13 @@ def main() -> None:
     print(f"yolo_engine={config.yolo.engine_path}")
     print(f"ocr_engine={config.ocr.engine_path}")
     print(f"transport={config.transport.kind} host={config.transport.ingress_host} port={config.transport.ingress_port}")
+    print(
+        "transport_failover="
+        f"{'enabled' if config.transport.failover_enabled and config.transport.standby_ingress_host else 'disabled'} "
+        f"standby_host={config.transport.standby_ingress_host or '-'} "
+        f"standby_port={config.transport.standby_ingress_port or config.transport.ingress_port} "
+        f"recheck_sec={config.transport.failover_recheck_sec}"
+    )
     print(f"srt_output={'enabled' if args.srt_host and args.srt_port > 0 else 'disabled'} host={args.srt_host} port={args.srt_port} fps={args.srt_fps} size={args.srt_width}x{args.srt_height} encoder={args.srt_encoder}")
     print(f"edge_status_interval_sec={args.status_interval_sec}")
     print(f"repeat_video={args.repeat}")

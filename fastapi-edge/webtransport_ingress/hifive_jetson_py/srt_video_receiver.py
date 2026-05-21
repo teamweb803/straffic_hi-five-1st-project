@@ -21,9 +21,11 @@ class SrtVideoReceiverOptions:
     latency_ms: int = 120
     command: str = "ffmpeg"
     hls_dir: str = "runtime/video_hls"
-    hls_segment_seconds: float = 0.5
-    hls_list_size: int = 18
-    hls_delete_threshold: int = 18
+    hls_segment_seconds: float = 1.0
+    hls_list_size: int = 24
+    hls_delete_threshold: int = 24
+    hls_output_fps: int = 0
+    hls_reencode_bitrate_kbps: int = 1800
 
 
 class SrtVideoReceiver:
@@ -258,30 +260,34 @@ class SrtVideoReceiver:
 
     def _ffmpeg_args(self, command_path: str) -> list[str]:
         hls_time = max(0.2, float(self.options.hls_segment_seconds))
-        hls_list_size = max(6, int(self.options.hls_list_size))
-        hls_delete_threshold = max(2, int(self.options.hls_delete_threshold))
+        hls_list_size = max(4, int(self.options.hls_list_size))
+        hls_delete_threshold = max(4, int(self.options.hls_delete_threshold))
+        video_output_args = self._video_output_args()
         return [
             command_path,
             "-hide_banner",
             "-loglevel",
             "info",
             "-fflags",
-            "+genpts+nobuffer",
-            "-flags",
-            "low_delay",
-            "-use_wallclock_as_timestamps",
-            "1",
+            "+genpts+discardcorrupt",
             "-analyzeduration",
             "2000000",
             "-probesize",
-            "10000000",
+            "4000000",
+            "-use_wallclock_as_timestamps",
+            "1",
             "-i",
             self._uri(),
             "-map",
             "0:v:0",
             "-an",
-            "-c:v",
-            "copy",
+            *video_output_args,
+            "-flush_packets",
+            "1",
+            "-muxdelay",
+            "0",
+            "-muxpreload",
+            "0",
             "-f",
             "hls",
             "-hls_time",
@@ -293,10 +299,42 @@ class SrtVideoReceiver:
             "-hls_start_number_source",
             "epoch_us",
             "-hls_flags",
-            "append_list+delete_segments+omit_endlist+program_date_time+independent_segments+temp_file+discont_start",
+            "delete_segments+omit_endlist+program_date_time+independent_segments+temp_file",
             "-hls_segment_filename",
             str(self._hls_dir / "segment_%d.ts"),
             str(self._hls_dir / "master.m3u8"),
+        ]
+
+    def _video_output_args(self) -> list[str]:
+        output_fps = max(0, int(self.options.hls_output_fps))
+        if output_fps <= 0:
+            return ["-c:v", "copy"]
+
+        output_fps = min(60, max(1, output_fps))
+        bitrate_kbps = max(256, int(self.options.hls_reencode_bitrate_kbps))
+        return [
+            "-vf",
+            f"fps={output_fps}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-tune",
+            "zerolatency",
+            "-pix_fmt",
+            "yuv420p",
+            "-b:v",
+            f"{bitrate_kbps}k",
+            "-maxrate",
+            f"{bitrate_kbps}k",
+            "-bufsize",
+            f"{bitrate_kbps * 2}k",
+            "-g",
+            str(output_fps),
+            "-keyint_min",
+            str(output_fps),
+            "-sc_threshold",
+            "0",
         ]
 
     def _uri(self) -> str:

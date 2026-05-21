@@ -35,9 +35,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--srt-latency-ms", type=int, default=120)
     parser.add_argument("--srt-receiver-command", default="ffmpeg")
     parser.add_argument("--srt-hls-dir", default="runtime/video_hls")
-    parser.add_argument("--srt-hls-segment-sec", type=float, default=0.5)
-    parser.add_argument("--srt-hls-list-size", type=int, default=18)
-    parser.add_argument("--srt-hls-delete-threshold", type=int, default=18)
+    parser.add_argument("--srt-hls-segment-sec", type=float, default=1.0)
+    parser.add_argument("--srt-hls-list-size", type=int, default=24)
+    parser.add_argument("--srt-hls-delete-threshold", type=int, default=24)
+    parser.add_argument("--srt-hls-output-fps", type=int, default=0)
+    parser.add_argument("--srt-hls-reencode-bitrate-kbps", type=int, default=1800)
     return parser.parse_args()
 
 
@@ -209,6 +211,8 @@ async def async_main() -> None:
             hls_segment_seconds=args.srt_hls_segment_sec,
             hls_list_size=args.srt_hls_list_size,
             hls_delete_threshold=args.srt_hls_delete_threshold,
+            hls_output_fps=args.srt_hls_output_fps,
+            hls_reencode_bitrate_kbps=args.srt_hls_reencode_bitrate_kbps,
         ),
         stats,
     )

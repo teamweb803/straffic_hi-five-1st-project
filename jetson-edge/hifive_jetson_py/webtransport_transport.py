@@ -48,6 +48,8 @@ class WebTransportIngressSender:
     failover_recheck_sec: float = 1.0
 
     def __post_init__(self) -> None:
+        if self.failover_enabled and not self.standby_host:
+            raise ValueError("failover_enabled requires standby_host")
         self._inflight: set[Path] = set()
         self._lock = threading.Lock()
         self._primary = WebTransportEndpoint(
@@ -201,7 +203,7 @@ class WebTransportIngressSender:
                         self._outage_failure_route = ""
                         self._append_network_transition_locked(
                             ts_ms=now_ms,
-                            transition="communication_recovered",
+                            transition="lte_to_lan",
                             from_path=previous_active,
                             to_endpoint=self._primary,
                             source="watchdog",
@@ -228,7 +230,7 @@ class WebTransportIngressSender:
                         standby = self._active_endpoint_locked()
                         self._append_network_transition_locked(
                             ts_ms=now_ms,
-                            transition="watchdog_failover",
+                            transition="lan_to_lte",
                             from_path=previous_active,
                             to_endpoint=standby,
                             source="watchdog",
@@ -356,51 +358,69 @@ class WebTransportIngressSender:
         endpoint: WebTransportEndpoint,
         previous_active: str,
     ) -> None:
+        success_ms = int(time.time() * 1000)
+        success_mono = time.monotonic()
+        success_route = self._route_snapshot(endpoint.host)
         with self._lock:
             outage_started = self._outage_started_monotonic
             failed_event_id = self._outage_failed_event_id
             failure_route = self._outage_failure_route
             outage_started_ms = self._outage_started_ms
+            outage_ms = int((success_mono - outage_started) * 1000) if outage_started is not None else 0
             self._active_label = endpoint.label
             if endpoint.label == self._standby_label:
                 self._next_primary_probe_at = time.monotonic() + max(0.1, self.failover_recheck_sec)
+                if previous_active != endpoint.label:
+                    self._append_network_transition_locked(
+                        ts_ms=success_ms,
+                        transition="lan_to_lte",
+                        from_path=previous_active,
+                        to_endpoint=endpoint,
+                        source=source,
+                        failed_event_id=failed_event_id or event_id,
+                        recovered_event_id=event_id,
+                        outage_started_ms=outage_started_ms or success_ms,
+                        outage_ms=outage_ms,
+                        route_before_failure=failure_route,
+                        route_after_recovery=success_route,
+                    )
+                    print(
+                        "network_failover "
+                        f"event_id={event_id} from={previous_active} to={endpoint.label} "
+                        f"outage_ms={outage_ms} route={success_route}"
+                    )
+                # Keep outage state while the primary LAN path is still failing.
+                return
             else:
                 self._next_primary_probe_at = 0.0
 
-        recovered_ms = int(time.time() * 1000)
-        outage_ms = int((time.monotonic() - outage_started) * 1000) if outage_started is not None else 0
-        recovered_route = self._route_snapshot(endpoint.host)
-        if outage_started is None and previous_active == endpoint.label:
-            return
-        log_event_id = self._network_log_event_id(recovered_ms, event_id)
-        payload = {
-            "type": "network_transition",
-            "transition": "communication_recovered" if outage_started is not None else "path_switched",
-            "transport": "webtransport",
-            "from_path": previous_active,
-            "to_path": endpoint.label,
-            "host": endpoint.host,
-            "port": endpoint.port,
-            "source": source,
-            "failed_event_id": failed_event_id,
-            "recovered_event_id": event_id,
-            "outage_started_ms": outage_started_ms,
-            "recovered_ms": recovered_ms,
-            "outage_ms": outage_ms,
-            "route_before_failure": failure_route,
-            "route_after_recovery": recovered_route,
-        }
-        body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-        with self._lock:
+            if previous_active == endpoint.label:
+                self._outage_started_monotonic = None
+                self._outage_started_ms = 0
+                self._outage_failed_event_id = ""
+                self._outage_failure_route = ""
+                return
+            self._append_network_transition_locked(
+                ts_ms=success_ms,
+                transition="lte_to_lan",
+                from_path=previous_active,
+                to_endpoint=endpoint,
+                source=source,
+                failed_event_id=failed_event_id,
+                recovered_event_id=event_id,
+                outage_started_ms=outage_started_ms,
+                outage_ms=outage_ms,
+                route_before_failure=failure_route,
+                route_after_recovery=success_route,
+            )
             self._outage_started_monotonic = None
             self._outage_started_ms = 0
             self._outage_failed_event_id = ""
             self._outage_failure_route = ""
-            self._pending_network_logs.append((log_event_id, body))
         print(
-            "network_outage_recovered "
+            "network_lan_recovered "
             f"event_id={event_id} from={previous_active} to={endpoint.label} "
-            f"outage_ms={outage_ms} route={recovered_route}"
+            f"outage_ms={outage_ms} route={success_route}"
         )
 
     def _flush_network_logs(self) -> None:
@@ -459,11 +479,14 @@ class WebTransportIngressSender:
     ) -> None:
         log_event_id = self._network_log_event_id(ts_ms, recovered_event_id)
         payload = {
+            "transition_id": log_event_id,
             "type": "network_transition",
             "transition": transition,
+            "reason": transition,
             "transport": "webtransport",
             "from_path": from_path,
             "to_path": to_endpoint.label,
+            "active_path": to_endpoint.label,
             "host": to_endpoint.host,
             "port": to_endpoint.port,
             "source": source,
@@ -614,7 +637,9 @@ class WebTransportIngressSender:
                 self.transmit()
                 ack_data = await asyncio.wait_for(self.ack, timeout=timeout_sec)
                 ack = decode_ack(ack_data)
-                return ack.accepted and ack.event_id == event_id_value
+                if ack.event_id != event_id_value:
+                    return False
+                return ack.accepted or ack.status == "reject"
 
         configuration = QuicConfiguration(
             is_client=True,

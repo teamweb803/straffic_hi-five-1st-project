@@ -203,7 +203,7 @@ def _srt_branch(
     return (
         "visual_tee. ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! "
         f"nvvideoconvert ! video/x-raw,format=I420,width={stream_width},height={stream_height} ! "
-        f"videorate drop-only=true ! video/x-raw,format=I420,width={stream_width},height={stream_height},framerate={stream_fps}/1 ! "
+        f"videorate ! video/x-raw,format=I420,width={stream_width},height={stream_height},framerate={stream_fps}/1 ! "
         f"{encoder_part} ! "
         "h264parse config-interval=-1 ! mpegtsmux alignment=7 ! "
         f"srtsink uri=\"{uri}\" wait-for-connection=true sync=true"
