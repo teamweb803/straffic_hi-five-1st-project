@@ -1,0 +1,11 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.log
+*.stderr.log
+*.stdout.log
+.DS_Store
+Thumbs.db
+
