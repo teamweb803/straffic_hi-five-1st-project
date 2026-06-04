@@ -143,6 +143,8 @@ class DeepStreamRuntime:
             rect.border_width = 0
             text = obj_meta.text_params
             text.display_text = ""
+            text.set_bg_clr = 0
+            text.text_bg_clr.set(0.0, 0.0, 0.0, 0.0)
 
     def _apply_display_overlay(self, pyds, batch_meta, frame_meta, tracks: list[Any]) -> None:
         display_meta = pyds.nvds_acquire_display_meta_from_pool(batch_meta)
@@ -151,9 +153,9 @@ class DeepStreamRuntime:
         display_meta.num_rects = rect_count
 
         labels = [
-            (self._status_line(), 8, 24, 17, _rgba(1.0, 0.85, 0.0)),
-            ("Lane 1", 884, 24, 13, _rgba(0.95, 0.95, 0.95)),
-            ("Lane 2", 884, 504, 13, _rgba(0.95, 0.95, 0.95)),
+            (self._status_line(), 8, 24, 17, _rgba(1.0, 0.85, 0.0), True),
+            ("Lane 1", 884, 24, 13, _rgba(0.95, 0.95, 0.95), True),
+            ("Lane 2", 884, 504, 13, _rgba(0.95, 0.95, 0.95), True),
         ]
         for index, track in enumerate(visible_tracks[:rect_count]):
             bbox = getattr(track, "yolo_bbox", None)
@@ -183,11 +185,11 @@ class DeepStreamRuntime:
                 label = f"#{display_id}\n{label_text}\n{bbox.h}px"
             else:
                 label = f"#{display_id}\n{bbox.h}px" if display_id > 0 else f"{bbox.h}px"
-            labels.append((label, max(0, bbox.x), min(940, max(0, bbox.y + bbox.h + 18)), 14, color))
+            labels.append((label, max(0, bbox.x), min(940, max(0, bbox.y + bbox.h + 18)), 14, color, True))
 
         labels = labels[:MAX_DISPLAY_META_ITEMS]
         display_meta.num_labels = len(labels)
-        for index, (label, x, y, font_size, color) in enumerate(labels):
+        for index, (label, x, y, font_size, color, has_bg) in enumerate(labels):
             text = display_meta.text_params[index]
             text.display_text = label
             text.x_offset = x
@@ -195,7 +197,7 @@ class DeepStreamRuntime:
             text.font_params.font_name = "Serif"
             text.font_params.font_size = font_size
             text.font_params.font_color.set(*color)
-            text.set_bg_clr = 1
+            text.set_bg_clr = 1 if has_bg else 0
             text.text_bg_clr.set(0.0, 0.0, 0.0, 0.65)
         pyds.nvds_add_display_meta_to_frame(frame_meta, display_meta)
 

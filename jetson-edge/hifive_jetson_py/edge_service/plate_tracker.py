@@ -9,6 +9,7 @@ from .types import DetectionSnapshot, PlateTrack
 
 LANE_BAND_HEIGHT = 480
 YOLO_CANVAS_WIDTH = 960
+CONFIRMED_TRACK_REATTACH_GRACE_FRAMES = 3
 
 
 class PlateBBoxTracker:
@@ -107,6 +108,8 @@ class PlateBBoxTracker:
             age = frame_num - track.last_seen_frame
             if age > self.memory_frames:
                 continue
+            if track.stable_text and age > CONFIRMED_TRACK_REATTACH_GRACE_FRAMES:
+                continue
             score = track_match_score(track, detection, age, self.memory_frames)
             if score > best_score:
                 best_score = score
@@ -135,6 +138,8 @@ class PlateBBoxTracker:
 
 
 def track_match_score(track: PlateTrack, detection: DetectionSnapshot, age_frames: int, memory_frames: int) -> float:
+    if track.global_lane_no != detection.global_lane_no:
+        return -1.0
     yolo_score = plate_match_score(track.yolo_bbox, detection.yolo_bbox, age_frames, memory_frames)
     original_score = plate_match_score(track.bbox, detection.original_bbox, age_frames, memory_frames)
     score = max(yolo_score, original_score + 0.15)
