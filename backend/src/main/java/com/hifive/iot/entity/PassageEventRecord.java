@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -35,8 +34,7 @@ public class PassageEventRecord {
 	@Column(name = "payload_format", nullable = false, length = 20)
 	private String payloadFormat;
 
-	@Lob
-	@Column(name = "payload_bytes", nullable = false)
+	@Column(name = "payload_bytes", nullable = false, columnDefinition = "bytea")
 	private byte[] payloadBytes;
 
 	@Column(name = "payload_size_bytes", nullable = false)
