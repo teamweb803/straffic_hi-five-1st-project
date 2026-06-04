@@ -37,7 +37,8 @@ public class OperatorDashboardController {
 	public Map<String, Object> summary() {
 		LocalDateTime from = LocalDate.now().atStartOfDay();
 		LocalDateTime to = LocalDate.now().plusDays(1).atStartOfDay();
-		long todayPassageCount = passageEventRepository.findTop50ByOrderByEventTimeDesc().stream()
+		var recentValidPassages = passageEventRepository.findTop50ByEventTimeIsNotNullAndPlateTextIsNotNullAndLaneNoIsNotNullOrderByEventTimeDesc();
+		long todayPassageCount = recentValidPassages.stream()
 			.filter(event -> event.getReceivedAt().isAfter(from) && event.getReceivedAt().isBefore(to))
 			.count();
 		return Map.of(
@@ -45,7 +46,7 @@ public class OperatorDashboardController {
 			"reviewPendingCount", inspectionTaskRepository.countByStatus("PENDING"),
 			"settlementReadyCount", settlementCandidateRepository.countByStatus("READY"),
 			"aliveEdgeCount", edgeStatusLatestRepository.countByAliveTrue(),
-			"recentPassages", passageEventRepository.findTop50ByOrderByEventTimeDesc(),
+			"recentPassages", recentValidPassages,
 			"fieldAlerts", alertRepository.findTop50ByOrderByCreatedAtDesc()
 		);
 	}

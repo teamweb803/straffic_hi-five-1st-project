@@ -6,7 +6,6 @@ import java.util.List;
 import com.hifive.iot.dto.IngressStatusRequest;
 import com.hifive.iot.entity.IngressStatusHistory;
 import com.hifive.iot.entity.IngressStatusLatest;
-import com.hifive.iot.repository.IngressStatusHistoryRepository;
 import com.hifive.iot.repository.IngressStatusLatestRepository;
 
 import org.springframework.stereotype.Service;
@@ -15,11 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class IngressStatusService {
 	private final IngressStatusLatestRepository latestRepository;
-	private final IngressStatusHistoryRepository historyRepository;
 
-	public IngressStatusService(IngressStatusLatestRepository latestRepository, IngressStatusHistoryRepository historyRepository) {
+	public IngressStatusService(IngressStatusLatestRepository latestRepository) {
 		this.latestRepository = latestRepository;
-		this.historyRepository = historyRepository;
 	}
 
 	@Transactional
@@ -29,9 +26,6 @@ public class IngressStatusService {
 			.orElseGet(() -> new IngressStatusLatest(ingressId));
 		apply(latest, request);
 		IngressStatusLatest saved = latestRepository.save(latest);
-		IngressStatusHistory history = new IngressStatusHistory(ingressId);
-		apply(history, request);
-		historyRepository.save(history);
 		return saved;
 	}
 
@@ -40,7 +34,7 @@ public class IngressStatusService {
 	}
 
 	public List<IngressStatusHistory> recentEvents() {
-		return historyRepository.findTop100ByOrderByReceivedAtDesc();
+		return List.of();
 	}
 
 	private void apply(IngressStatusLatest status, IngressStatusRequest request) {

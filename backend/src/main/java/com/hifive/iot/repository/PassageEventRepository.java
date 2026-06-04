@@ -11,4 +11,6 @@ public interface PassageEventRepository extends JpaRepository<PassageEventRecord
 	java.util.Optional<PassageEventRecord> findByEventId(String eventId);
 
 	java.util.List<PassageEventRecord> findTop50ByOrderByEventTimeDesc();
+
+	java.util.List<PassageEventRecord> findTop50ByEventTimeIsNotNullAndPlateTextIsNotNullAndLaneNoIsNotNullOrderByEventTimeDesc();
 }

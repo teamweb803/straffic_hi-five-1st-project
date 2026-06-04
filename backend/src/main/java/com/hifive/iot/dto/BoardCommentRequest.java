@@ -1,7 +1,6 @@
 package com.hifive.iot.dto;
 
-public record BoardPostRequest(
-	String title,
+public record BoardCommentRequest(
 	String content
 ) {
 }

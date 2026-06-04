@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -35,8 +34,7 @@ public class PassageEventRecord {
 	@Column(name = "payload_format", nullable = false, length = 20)
 	private String payloadFormat;
 
-	@Lob
-	@Column(name = "payload_bytes", nullable = false)
+	@Column(name = "payload_bytes", nullable = false, columnDefinition = "bytea")
 	private byte[] payloadBytes;
 
 	@Column(name = "payload_size_bytes", nullable = false)
@@ -66,13 +64,8 @@ public class PassageEventRecord {
 	@Column(name = "global_lane_no")
 	private Integer globalLaneNo;
 
-<<<<<<< HEAD
 	@Column(name = "local_track_id", length = 80)
 	private String localTrackId;
-=======
-	@Column(name = "local_track_id")
-	private Long localTrackId;
->>>>>>> 7079a4460c30b6df7d5d303fd0835c75520e4038
 
 	@Column(name = "vehicle_pass_id", length = 120)
 	private String vehiclePassId;
@@ -150,11 +143,7 @@ public class PassageEventRecord {
 		String direction,
 		Integer laneNo,
 		Integer globalLaneNo,
-<<<<<<< HEAD
 		String localTrackId,
-=======
-		Long localTrackId,
->>>>>>> 7079a4460c30b6df7d5d303fd0835c75520e4038
 		String vehiclePassId,
 		Double vehicleConfidence,
 		String plateText,
@@ -247,11 +236,7 @@ public class PassageEventRecord {
 		return globalLaneNo;
 	}
 
-<<<<<<< HEAD
 	public String getLocalTrackId() {
-=======
-	public Long getLocalTrackId() {
->>>>>>> 7079a4460c30b6df7d5d303fd0835c75520e4038
 		return localTrackId;
 	}
 

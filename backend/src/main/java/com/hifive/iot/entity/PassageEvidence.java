@@ -29,6 +29,16 @@ public class PassageEvidence {
 		this.createdAt = LocalDateTime.now();
 	}
 
+	public void updateEventImageUrl(String eventImageUrl, String storagePath) {
+		this.eventImageUrl = eventImageUrl;
+		this.storagePath = storagePath;
+	}
+
+	public void updateCropImageUrl(String cropImageUrl, String storagePath) {
+		this.cropImageUrl = cropImageUrl;
+		this.storagePath = storagePath;
+	}
+
 	public String getEventId() { return eventId; }
 	public String getEventImageUrl() { return eventImageUrl; }
 	public String getCropImageUrl() { return cropImageUrl; }

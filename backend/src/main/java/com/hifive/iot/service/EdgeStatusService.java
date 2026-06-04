@@ -5,9 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.hifive.iot.dto.EdgeStatusRequest;
-import com.hifive.iot.entity.EdgeStatusHistory;
 import com.hifive.iot.entity.EdgeStatusLatest;
-import com.hifive.iot.repository.EdgeStatusHistoryRepository;
 import com.hifive.iot.repository.EdgeStatusLatestRepository;
 
 import org.springframework.stereotype.Service;
@@ -17,11 +15,9 @@ import org.springframework.util.StringUtils;
 @Service
 public class EdgeStatusService {
 	private final EdgeStatusLatestRepository latestRepository;
-	private final EdgeStatusHistoryRepository historyRepository;
 
-	public EdgeStatusService(EdgeStatusLatestRepository latestRepository, EdgeStatusHistoryRepository historyRepository) {
+	public EdgeStatusService(EdgeStatusLatestRepository latestRepository) {
 		this.latestRepository = latestRepository;
-		this.historyRepository = historyRepository;
 	}
 
 	@Transactional
@@ -45,12 +41,7 @@ public class EdgeStatusService {
 		EdgeStatusLatest latest = latestRepository.findByDeviceId(request.deviceId())
 			.orElseGet(() -> new EdgeStatusLatest(request.deviceId()));
 		apply(latest, request, statusTs, ageMs, stale, alive, sourceRunning, dropRatio, spoolWarning, health, receivedAt);
-		EdgeStatusLatest saved = latestRepository.save(latest);
-
-		EdgeStatusHistory history = new EdgeStatusHistory(request.deviceId());
-		apply(history, request, statusTs, ageMs, stale, alive, sourceRunning, dropRatio, spoolWarning, health, receivedAt);
-		historyRepository.save(history);
-		return saved;
+		return latestRepository.save(latest);
 	}
 
 	public List<EdgeStatusLatest> latest() {

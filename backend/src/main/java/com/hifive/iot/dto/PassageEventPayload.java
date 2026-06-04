@@ -12,7 +12,7 @@ public record PassageEventPayload(
 	String direction,
 	Integer laneNo,
 	Integer globalLaneNo,
-	Long localTrackId,
+	String localTrackId,
 	String vehiclePassId,
 	Double vehicleConfidence,
 	String plateText,

@@ -20,7 +20,7 @@ public class OperatorPassageService {
 	}
 
 	public List<PassageEventResponse> list() {
-		return passageEventRepository.findTop50ByOrderByEventTimeDesc().stream()
+		return passageEventRepository.findTop50ByEventTimeIsNotNullAndPlateTextIsNotNullAndLaneNoIsNotNullOrderByEventTimeDesc().stream()
 			.map(event -> PassageEventResponse.from(event, evidenceRepository.findByEventId(event.getEventId()).orElse(null)))
 			.toList();
 	}

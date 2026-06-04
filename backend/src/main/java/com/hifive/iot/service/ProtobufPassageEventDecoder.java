@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,33 +20,33 @@ public class ProtobufPassageEventDecoder {
 	public PassageEventPayload decode(byte[] payload) {
 		try {
 			Map<Integer, Object> fields = readFields(payload);
-			Map<Integer, Object> timestamp = message(fields, 6);
-			Map<Integer, Object> bbox = message(fields, 17);
+			Map<Integer, Object> plate = message(fields, 12);
+			Map<Integer, Object> bbox = message(fields, 14);
 			return new PassageEventPayload(
 				string(fields, 1),
 				string(fields, 2),
 				string(fields, 3),
 				string(fields, 4),
 				string(fields, 5),
-				timestamp(timestamp),
-				string(fields, 7),
-				integer(fields, 8),
-				integer(fields, 9),
-				longValue(fields, 10),
+				timestampString(fields, 10),
 				string(fields, 11),
-				float64(fields, 12),
-				string(fields, 13),
-				float64(fields, 14),
-				integer(fields, 15),
-				float64(fields, 16),
+				integer(fields, 6),
+				integer(fields, 7),
+				string(fields, 8),
+				string(fields, 9),
+				float64(fields, 20),
+				string(plate, 1),
+				float64(plate, 2),
+				integer(plate, 3),
+				float64(plate, 4),
 				float64(bbox, 1),
 				float64(bbox, 2),
 				float64(bbox, 3),
 				float64(bbox, 4),
-				string(bbox, 5),
-				bool(fields, 18),
-				string(fields, 19),
-				string(fields, 20)
+				string(bbox, 6),
+				bool(fields, 15),
+				string(fields, 16),
+				string(fields, 18)
 			);
 		} catch (IOException | RuntimeException exception) {
 			throw new IllegalArgumentException("invalid protobuf or required field missing");
@@ -166,5 +167,13 @@ public class ProtobufPassageEventDecoder {
 			Instant.ofEpochSecond(seconds, nanos == null ? 0 : nanos),
 			ZoneId.systemDefault()
 		);
+	}
+
+	private LocalDateTime timestampString(Map<Integer, Object> fields, int key) {
+		String value = string(fields, key);
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+		return OffsetDateTime.parse(value).toLocalDateTime();
 	}
 }
