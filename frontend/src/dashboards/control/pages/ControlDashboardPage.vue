@@ -11,16 +11,14 @@ const {
   getKpiIcon,
   getAdminIcon,
   operatorVideoStreamUrl,
-  operatorVideoStreamKey,
   operatorVideoIsLive,
   operatorVideoStatusText,
-  scheduleOperatorVideoReconnect,
+  updateRenderedVideoFps,
   operatorVideoFpsValue,
   dashboardDetections,
   statusCards,
-  filteredGpsJudgements,
+  recentGpsJudgements,
   fieldAlerts,
-  filteredTrafficRows,
   equipmentCards,
   equipmentLaneRows,
   equipmentAlerts,
@@ -50,12 +48,11 @@ const {
             <div class="yolo-frame">
               <HlsLiveVideo
                 v-if="operatorVideoStreamUrl"
-                :key="operatorVideoStreamKey"
                 class="dashboard-live-frame"
                 :src="operatorVideoStreamUrl"
                 :live="operatorVideoIsLive"
                 alt="YOLO 실시간 화면"
-                @error="scheduleOperatorVideoReconnect"
+                @fps="updateRenderedVideoFps"
               />
               <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section
@@ -99,10 +96,10 @@ const {
               </div>
               <table>
                 <thead>
-                  <tr><th>차량번호</th><th>방향</th><th>차선</th><th>통과 시각</th><th>GPS 판정</th><th>결제 판정</th></tr>
+                  <tr><th>차량번호</th><th>인식 방향</th><th>운행 방향</th><th>통과 시각</th><th>GPS 판정</th><th>결제 판정</th></tr>
                 </thead>
                 <tbody>
-                  <tr v-for="row in filteredGpsJudgements" :key="`${row.plate}-${row.time}`">
+                  <tr v-for="row in recentGpsJudgements" :key="`${row.plate}-${row.time}`">
                     <td><i class="row-dot" :class="row.tone"></i>{{ row.plate }}</td>
                     <td><span class="pill">{{ row.direction }}</span></td>
                     <td><span class="pill">{{ row.laneText }}</span></td>
@@ -132,26 +129,5 @@ const {
           </section>
         </section>
 
-        <article class="panel recent-panel">
-          <div class="panel-head">
-            <h2>최근 통행</h2>
-            <button type="button">전체 보기 ›</button>
-          </div>
-          <table>
-            <thead>
-              <tr><th>차량번호</th><th>차선</th><th>방향</th><th>통과시각</th><th>GPS 판정</th><th>상태</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in filteredTrafficRows" :key="`${row.plate}-${row.time}`">
-                <td>{{ row.plate }}</td>
-                <td><span class="pill">{{ row.lane }}번 레일</span></td>
-                <td><span class="pill">{{ row.direction }}</span></td>
-                <td>{{ row.time }}</td>
-                <td><span class="state" :class="row.tone">{{ row.gps }}</span></td>
-                <td><span class="pay" :class="row.tone">{{ row.status }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </article>
       </section>
 </template>

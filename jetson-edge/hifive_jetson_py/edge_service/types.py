@@ -41,6 +41,8 @@ class PlateTrack:
     stable_confidence: float = 0.0
     candidate_text: str = ""
     candidate_started_at: float = 0.0
+    candidate_confidence: float = 0.0
+    candidate_task: Any | None = None
 
 
 @dataclass(frozen=True)

@@ -156,6 +156,26 @@ const {
 
 const liveEdges = computed(() => masterApiState?.adminEdges?.value ?? [])
 const liveEdge = computed(() => liveEdges.value[0] ?? {})
+const edgeCompactLineOptions = computed(() => {
+  const tickColor = isLightMode.value ? '#334155' : chartTextColor
+  const gridColor = isLightMode.value ? 'rgba(100, 116, 139, 0.20)' : chartGridColor
+
+  return {
+    ...compactLineOptions,
+    scales: {
+      x: {
+        ...compactLineOptions.scales.x,
+        ticks: { ...compactLineOptions.scales.x.ticks, color: tickColor, font: { size: 10, weight: '700' } },
+        grid: { ...compactLineOptions.scales.x.grid, color: gridColor }
+      },
+      y: {
+        ...compactLineOptions.scales.y,
+        ticks: { ...compactLineOptions.scales.y.ticks, color: tickColor, font: { size: 10, weight: '700' } },
+        grid: { ...compactLineOptions.scales.y.grid, color: gridColor }
+      }
+    }
+  }
+})
 </script>
 
 <template>
@@ -193,11 +213,11 @@ const liveEdge = computed(() => liveEdges.value[0] ?? {})
               <article class="edge-panel edge-detail-panel">
                 <div class="edge-detail-head"><h3>JETSON-27 상세</h3><span>● Alive</span></div>
                 <dl class="edge-detail-list">
-                  <dt>지점</dt><dd>서울 톨링 A</dd><dt>차선</dt><dd>1번 레일 (L1)</dd><dt>현재 입력 Source</dt><dd>CAM-01 (L1)</dd><dt>마지막 상태 갱신</dt><dd>2025-05-11 17:36:47 (2초 전)</dd><dt>Jetson 상태 State</dt><dd class="ok">정상 (2분 미만)</dd>
+                  <dt>지점</dt><dd>서울 톨링 A</dd><dt>차선</dt><dd>1번 레일 (L1)</dd><dt>입력</dt><dd>CAM-01</dd><dt>갱신</dt><dd>17:36:47 (2초 전)</dd><dt>상태</dt><dd class="ok">정상</dd>
                 </dl>
                 <h4>실시간 상태 요약</h4>
                 <div class="edge-live-grid">
-                  <div><i>▧</i><span>Processed Frames</span><strong>12,842,321 프레임</strong></div><div><i>◉</i><span>Spool Count</span><strong>12 건</strong></div><div><i>⌘</i><span>OCR Task Count</span><strong>582,411 건</strong></div><div><i>⌁</i><span>Active Path</span><strong>LAN</strong></div><div><i>×</i><span>Dropped OCR Task</span><strong class="danger">1,274 건</strong></div><div><i>◷</i><span>Uptime</span><strong>12일 04:32:11</strong></div><div><i>＋</i><span>Sent Event Count</span><strong>45,672 건</strong></div><div><i>!</i><span>최근 오류</span><strong>-</strong></div>
+                  <div><i>▧</i><span>FPS 처리</span><strong>12.8M</strong></div><div><i>◉</i><span>Spool</span><strong>12건</strong></div><div><i>⌘</i><span>OCR Task</span><strong>582K</strong></div><div><i>⌁</i><span>Path</span><strong>LAN</strong></div><div><i>×</i><span>OCR Drop</span><strong class="danger">1.2K</strong></div><div><i>◷</i><span>Uptime</span><strong>12일 04:32</strong></div><div><i>＋</i><span>Sent</span><strong>-</strong></div><div><i>!</i><span>오류</span><strong>-</strong></div>
                 </div>
                 <section class="edge-recent-error"><h4>최근 오류 <small>(최근 1건)</small></h4><p>- 오류 없음 -</p></section>
                 <footer class="edge-actions"><button>원격 재시작</button><button>로그 보기</button><button>상태 이력</button></footer>
@@ -209,7 +229,7 @@ const liveEdge = computed(() => liveEdges.value[0] ?? {})
                 <h3>{{ chart.title }} <small>{{ chart.subtitle }}</small></h3>
                 <b :class="{ warn: chart.warn }">{{ chart.status }}</b>
                 <strong v-if="chart.total">{{ chart.total }}</strong>
-                <ChartJsPanel type="line" :data="chart.data" :options="compactLineOptions" :height="128" />
+                <ChartJsPanel type="line" :data="chart.data" :options="edgeCompactLineOptions" :height="128" />
                 <span>{{ chart.label }}</span>
               </article>
             </section>

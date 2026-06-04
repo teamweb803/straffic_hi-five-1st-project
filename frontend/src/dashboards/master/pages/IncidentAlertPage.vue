@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
 
 const masterDashboard = inject('masterDashboard')
@@ -152,6 +152,24 @@ const {
   y,
   zoomMap
 } = masterDashboard
+
+const incidentTimelineDisplayOptions = computed(() => {
+  const gridColor = isLightMode.value ? '#c1d1e3' : chartGridColor
+
+  return {
+    ...incidentTimelineOptions,
+    scales: {
+      x: {
+        ...incidentTimelineOptions.scales.x,
+        grid: { ...incidentTimelineOptions.scales.x.grid, color: gridColor, lineWidth: 1 }
+      },
+      y: {
+        ...incidentTimelineOptions.scales.y,
+        grid: { ...incidentTimelineOptions.scales.y.grid, color: gridColor, lineWidth: 1 }
+      }
+    }
+  }
+})
 </script>
 
 <template>
@@ -216,9 +234,8 @@ const {
                 <div class="timeline-legend"><span class="critical">치명</span><span class="warn">경고</span><span class="info">정보</span><span class="done">해제</span></div>
                 <div class="timeline-chart">
                   <div class="timeline-labels"><span>Jetson Edge</span><span>Python Ingress</span><span>Backend (Spring)</span><span>PostgreSQL DB</span><span>Network</span></div>
-                  <div class="timeline-board chart-timeline"><ChartJsPanel type="scatter" :data="incidentTimelineData" :options="incidentTimelineOptions" :height="150" /></div>
+                  <div class="timeline-board chart-timeline"><ChartJsPanel type="scatter" :data="incidentTimelineData" :options="incidentTimelineDisplayOptions" :height="200" /></div>
                 </div>
-                <button class="timeline-btn" type="button">타임라인 범례 보기</button>
               </article>
 
               <article class="incident-panel incident-history">

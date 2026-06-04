@@ -110,6 +110,8 @@ class YoloWorker:
             track.live_valid = False
             track.candidate_text = ""
             track.candidate_started_at = 0.0
+            track.candidate_confidence = 0.0
+            track.candidate_task = None
 
     def _normalize_results(self, results) -> list[YoloInputDetection]:
         normalized: list[YoloInputDetection] = []

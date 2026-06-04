@@ -49,7 +49,7 @@
 }
 
 .master-shell.light .ingress-kpi i img {
-  filter: none;
+  filter: brightness(0) invert(1);
 }
 
 .ingress-kpi span {
@@ -319,9 +319,9 @@
 
 .master-shell.light .ingress-kpi,
 .master-shell.light .ingress-panel {
-  background: rgba(255, 255, 255, 0.82);
-  border-color: rgba(58, 126, 204, 0.3);
-  box-shadow: 0 12px 30px rgba(49, 91, 137, 0.12);
+  background: #FAFAFA;
+  border-color: #D1D5DB;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
 .master-shell.light .ingress-panel h3,
@@ -331,7 +331,7 @@
 .master-shell.light .ingress-info-list strong,
 .master-shell.light .ingress-info-panel footer b,
 .master-shell.light .ingress-table td {
-  color: #102033;
+  color: #111827;
 }
 
 .master-shell.light .ingress-kpi span,
@@ -340,7 +340,7 @@
 .master-shell.light .ingress-info-panel footer span,
 .master-shell.light .ingress-footnote,
 .master-shell.light .ingress-table th {
-  color: #53677f;
+  color: #6B7280;
 }
 
 .master-shell.light .line-chart {
