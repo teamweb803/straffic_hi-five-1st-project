@@ -174,7 +174,7 @@ const {
                 <div class="settings-form-grid">
                   <label><span>기본 지도 편집</span><select><option>허용</option><option>승인 후 허용</option><option>차단</option></select><small>지점 마커 위치와 라벨 편집 권한</small></label>
                   <label><span>대시보드 자동 새로고침</span><select><option>30초</option><option>1분</option><option>5분</option><option>수동</option></select><small>관리자/관제 대시보드 데이터 갱신 주기</small></label>
-                  <label><span>공지 노출 범위</span><select><option>전체 회원사</option><option>선택 회원사</option><option>내부 관리자만</option></select><small>시스템 공지와 점검 공지 기본 대상</small></label>
+                  <label><span>공지 노출 범위</span><select><option>전체 센터</option><option>선택 센터</option><option>내부 관리자만</option></select><small>시스템 공지와 점검 공지 기본 대상</small></label>
                   <label><span>기본 진입 대시보드</span><select><option>관리자 대시보드</option><option>시스템 관제</option><option>장애 알림</option></select><small>로그인 후 최초 진입 화면</small></label>
                   <label><span>위험 알림 기준</span><select><option>치명 즉시 알림</option><option>경고 이상 알림</option><option>전체 알림</option></select><small>상단 알림 버튼과 장애 알림 집계 기준</small></label>
                   <label><span>라이트/다크 모드</span><select :value="themeMode" @change="themeMode = $event.target.value"><option value="dark">Dark</option><option value="light">Light</option></select><small>현재 브라우저에 저장되는 UI 테마</small></label>
@@ -221,7 +221,7 @@ const {
                   <thead><tr><th>시간</th><th>관리자</th><th>항목</th><th>이전 값</th><th>변경 값</th><th>결과</th></tr></thead>
                   <tbody>
                     <tr><td>10:24:11</td><td>admin</td><td>자동 새로고침</td><td>1분</td><td>30초</td><td><span class="settings-badge ok">성공</span></td></tr>
-                    <tr><td>09:52:44</td><td>admin</td><td>공지 노출 범위</td><td>선택 회원사</td><td>전체 회원사</td><td><span class="settings-badge ok">성공</span></td></tr>
+                    <tr><td>09:52:44</td><td>admin</td><td>공지 노출 범위</td><td>선택 센터</td><td>전체 센터</td><td><span class="settings-badge ok">성공</span></td></tr>
                     <tr><td>09:20:31</td><td>operator02</td><td>지도 편집</td><td>허용</td><td>승인 후 허용</td><td><span class="settings-badge warn">검토</span></td></tr>
                     <tr><td>08:48:10</td><td>system</td><td>백업 정책</td><td>대기</td><td>활성</td><td><span class="settings-badge ok">성공</span></td></tr>
                   </tbody>

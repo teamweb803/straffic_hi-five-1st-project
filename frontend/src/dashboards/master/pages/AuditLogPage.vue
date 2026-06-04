@@ -180,7 +180,7 @@ const {
                 <table class="audit-log-table">
                   <thead><tr><th></th><th>발생시각</th><th>작업자</th><th>대상</th><th>작업 유형</th><th>작업 내용</th><th>IP</th><th>결과</th></tr></thead>
                   <tbody>
-                    <tr class="selected"><td><span class="radio on"></span></td><td>2026-05-12 10:24:11</td><td>admin</td><td>하이패스 서울(주)</td><td><b class="audit-badge info">권한</b></td><td>회원사 관제 대시보드 접근 권한 수정</td><td>192.168.0.89</td><td><b class="audit-badge ok">성공</b></td></tr>
+                    <tr class="selected"><td><span class="radio on"></span></td><td>2026-05-12 10:24:11</td><td>admin</td><td>하이패스 서울(주)</td><td><b class="audit-badge info">권한</b></td><td>센터 관제 대시보드 접근 권한 수정</td><td>192.168.0.89</td><td><b class="audit-badge ok">성공</b></td></tr>
                     <tr><td><span class="radio"></span></td><td>2026-05-12 10:18:02</td><td>admin</td><td>수원 톨게이트</td><td><b class="audit-badge info">지점</b></td><td>대시보드 연결 지점 변경</td><td>192.168.0.89</td><td><b class="audit-badge ok">성공</b></td></tr>
                     <tr><td><span class="radio"></span></td><td>2026-05-12 09:42:33</td><td>operator02</td><td>대전 톨게이트 B</td><td><b class="audit-badge warn">대리조회</b></td><td>장애 원인 확인 목적 대리조회</td><td>192.168.0.121</td><td><b class="audit-badge ok">성공</b></td></tr>
                     <tr><td><span class="radio"></span></td><td>2026-05-12 09:21:08</td><td>admin</td><td>GPS 영역</td><td><b class="audit-badge info">설정</b></td><td>서울 톨링 A GPS 결제 영역 수정</td><td>192.168.0.89</td><td><b class="audit-badge ok">성공</b></td></tr>
@@ -232,7 +232,7 @@ const {
               <article class="audit-panel audit-recent-card">
                 <div class="audit-panel-head"><h3>최근 대리조회 감사</h3><button type="button">전체 감사 로그 보기</button></div>
                 <table class="audit-log-table compact">
-                  <thead><tr><th>시간</th><th>관리자</th><th>회원사 / 지점</th><th>사유</th><th>결과</th></tr></thead>
+                  <thead><tr><th>시간</th><th>관리자</th><th>센터 / 지점</th><th>사유</th><th>결과</th></tr></thead>
                   <tbody>
                     <tr v-for="audit in recentAuditRows" :key="`${audit.time}-${audit.target}`"><td>{{ audit.time }}</td><td>{{ audit.actor }}</td><td>{{ audit.target }}</td><td>{{ audit.reason }}</td><td><span class="audit-badge ok">{{ audit.result }}</span></td></tr>
                   </tbody>

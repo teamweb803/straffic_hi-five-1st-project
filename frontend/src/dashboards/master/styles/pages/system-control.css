@@ -433,9 +433,9 @@
 
 .master-shell.light .system-kpi,
 .master-shell.light .system-panel {
-  background: rgba(255, 255, 255, 0.82);
-  border-color: rgba(58, 126, 204, 0.3);
-  box-shadow: 0 12px 30px rgba(49, 91, 137, 0.12);
+  background: #FAFAFA;
+  border-color: #D1D5DB;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
 .master-shell.light .system-panel h3,
@@ -448,7 +448,7 @@
 .master-shell.light .ingress-mini-grid strong,
 .master-shell.light .backend-mini-grid strong,
 .master-shell.light .system-alert-table td {
-  color: #102033;
+  color: #111827;
 }
 
 .master-shell.light .system-kpi span,
@@ -457,30 +457,30 @@
 .master-shell.light .ingress-mini-grid span,
 .master-shell.light .backend-mini-grid span,
 .master-shell.light .system-alert-table th {
-  color: #53677f;
+  color: #6B7280;
 }
 
 .master-shell.light .pipeline-node,
 .master-shell.light .edge-metrics div,
 .master-shell.light .ingress-mini-grid div,
 .master-shell.light .backend-mini-grid div {
-  background: rgba(246, 250, 255, 0.86);
-  border-color: rgba(58, 126, 204, 0.26);
+  background: #F3F4F6;
+  border-color: #D1D5DB;
 }
 
 .master-shell.light .system-kpi i img {
-  filter: none;
+  filter: brightness(0) invert(1);
 }
 
 .master-shell.light .system-donut {
-  box-shadow: inset 0 0 0 28px rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 0 0 28px #F3F4F6;
 }
 
 .master-shell.light .system-donut strong,
 .master-shell.light .system-donut span,
 .master-shell.light .forward-result,
 .master-shell.light .donut-wrap h4 {
-  color: #102033;
+  color: #111827;
 }
 .api-sync-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .api-sync-strip article{min-width:0;border:1px solid rgba(42,133,227,.28);border-radius:7px;background:rgba(6,22,42,.72);padding:12px 14px;color:#dbeafe}

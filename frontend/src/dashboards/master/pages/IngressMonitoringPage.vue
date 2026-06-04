@@ -156,6 +156,26 @@ const {
 
 const liveIngress = computed(() => masterApiState?.adminIngressStatus?.value ?? {})
 const liveEvents = computed(() => masterApiState?.adminIngressEvents?.value ?? [])
+const ingressCompactLineOptions = computed(() => {
+  const tickColor = isLightMode.value ? '#334155' : chartTextColor
+  const gridColor = isLightMode.value ? 'rgba(100, 116, 139, 0.20)' : chartGridColor
+
+  return {
+    ...compactLineOptions,
+    scales: {
+      x: {
+        ...compactLineOptions.scales.x,
+        ticks: { ...compactLineOptions.scales.x.ticks, color: tickColor, font: { size: 10, weight: '700' } },
+        grid: { ...compactLineOptions.scales.x.grid, color: gridColor }
+      },
+      y: {
+        ...compactLineOptions.scales.y,
+        ticks: { ...compactLineOptions.scales.y.ticks, color: tickColor, font: { size: 10, weight: '700' } },
+        grid: { ...compactLineOptions.scales.y.grid, color: gridColor }
+      }
+    }
+  }
+})
 </script>
 
 <template>
@@ -193,7 +213,7 @@ const liveEvents = computed(() => masterApiState?.adminIngressEvents?.value ?? [
               <article class="ingress-panel ingress-chart-panel">
                 <div class="ingress-panel-title"><h3>Ingress 지표 추이 <small>(최근 1시간)</small></h3><button type="button">최근 1시간</button></div>
                 <div class="ingress-chart-grid">
-                  <section v-for="chart in ingressCharts" :key="chart.title"><h4>{{ chart.title }}</h4><ChartJsPanel type="line" :data="chart.data" :options="compactLineOptions" :height="128" /></section>
+                  <section v-for="chart in ingressCharts" :key="chart.title"><h4>{{ chart.title }}</h4><ChartJsPanel type="line" :data="chart.data" :options="ingressCompactLineOptions" :height="128" /></section>
                 </div>
               </article>
 

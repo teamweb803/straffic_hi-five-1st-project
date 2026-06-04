@@ -55,6 +55,6 @@ export const dashboardApi = {
   },
 
   operatorVideoStreamUrl() {
-    return '/api/operator/video/hls/master.m3u8'
+    return '/video/hls/master.m3u8'
   }
 }

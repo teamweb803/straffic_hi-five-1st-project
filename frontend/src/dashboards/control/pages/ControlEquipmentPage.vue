@@ -97,8 +97,8 @@ const {
                   <p><span>영향 범위</span>{{ alert.scope }}</p>
                   <p><span>발생 시각</span>{{ alert.time }}</p>
                   <button type="button">확인</button>
-                  <button type="button">유지보수 요청</button>
-                  <button type="button" class="done">조치 완료</button>
+                  <button type="button">정비 요청</button>
+                  <button type="button" class="done">완료</button>
                 </article>
               </div>
             </article>
