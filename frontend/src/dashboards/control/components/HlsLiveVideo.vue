@@ -7,13 +7,73 @@ const props = defineProps({
   live: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['error'])
+const emit = defineEmits(['error', 'fps'])
 const videoRef = shallowRef(null)
+
+const LIVE_EDGE_DRIFT_SEC = 12
+const STALL_RECOVERY_INTERVAL_MS = 5000
 
 let hls = null
 let stalledAt = 0
+let frameCallbackId = 0
+let frameCount = 0
+let frameWindowStartedAt = 0
+let fpsTimer = null
+let previousFrameTotal = 0
+
+function getRenderedFrameTotal(video) {
+  const quality = video.getVideoPlaybackQuality?.()
+  return quality?.totalVideoFrames ?? video.webkitDecodedFrameCount ?? 0
+}
+
+function stopFpsCounter() {
+  const video = videoRef.value
+  if (frameCallbackId && video?.cancelVideoFrameCallback) {
+    video.cancelVideoFrameCallback(frameCallbackId)
+  }
+  if (fpsTimer) window.clearInterval(fpsTimer)
+  frameCallbackId = 0
+  fpsTimer = null
+  frameCount = 0
+  frameWindowStartedAt = 0
+  previousFrameTotal = 0
+}
+
+function onVideoFrame(now) {
+  frameCount += 1
+  if (!frameWindowStartedAt) frameWindowStartedAt = now
+
+  const elapsed = now - frameWindowStartedAt
+  if (elapsed >= 1000) {
+    emit('fps', Number(((frameCount * 1000) / elapsed).toFixed(1)))
+    frameCount = 0
+    frameWindowStartedAt = now
+  }
+
+  const video = videoRef.value
+  if (video?.requestVideoFrameCallback) {
+    frameCallbackId = video.requestVideoFrameCallback(onVideoFrame)
+  }
+}
+
+function startFpsCounter(video) {
+  stopFpsCounter()
+  if (video.requestVideoFrameCallback) {
+    frameCallbackId = video.requestVideoFrameCallback(onVideoFrame)
+    return
+  }
+
+  previousFrameTotal = getRenderedFrameTotal(video)
+  fpsTimer = window.setInterval(() => {
+    const total = getRenderedFrameTotal(video)
+    const fps = Math.max(0, total - previousFrameTotal)
+    previousFrameTotal = total
+    if (fps > 0) emit('fps', fps)
+  }, 1000)
+}
 
 function destroyPlayer() {
+  stopFpsCounter()
   if (hls) {
     hls.destroy()
     hls = null
@@ -31,9 +91,18 @@ function play(video) {
 function syncToLiveIfNeeded(video) {
   const livePosition = hls?.liveSyncPosition
   if (!Number.isFinite(livePosition)) return
-  if (livePosition - video.currentTime > 4) {
+  if (livePosition - video.currentTime > LIVE_EDGE_DRIFT_SEC) {
     video.currentTime = livePosition
   }
+}
+
+function hasBufferedAhead(video) {
+  for (let index = 0; index < video.buffered.length; index += 1) {
+    if (video.currentTime >= video.buffered.start(index) - 0.05 && video.currentTime < video.buffered.end(index) - 0.25) {
+      return true
+    }
+  }
+  return false
 }
 
 function recoverHlsError(data) {
@@ -57,23 +126,25 @@ function recoverHlsError(data) {
 
 function handleStalled() {
   const now = Date.now()
-  if (now - stalledAt < 1500) return
+  if (now - stalledAt < STALL_RECOVERY_INTERVAL_MS) return
   stalledAt = now
 
   const video = videoRef.value
   if (!video) return
   hls?.startLoad(-1)
-  syncToLiveIfNeeded(video)
+  if (!hasBufferedAhead(video)) syncToLiveIfNeeded(video)
   play(video)
 }
 
 function attachPlayer() {
   const video = videoRef.value
   destroyPlayer()
-  if (!video || !props.src || !props.live) return
+  if (!video || !props.src) return
 
   video.muted = true
   video.playsInline = true
+  video.preload = 'auto'
+  startFpsCounter(video)
 
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = props.src
@@ -88,16 +159,19 @@ function attachPlayer() {
 
   hls = new Hls({
     lowLatencyMode: false,
-    backBufferLength: 10,
-    maxBufferLength: 20,
-    maxMaxBufferLength: 30,
-    liveSyncDurationCount: 4,
-    liveMaxLatencyDurationCount: 8,
-    maxLiveSyncPlaybackRate: 1.2,
+    backBufferLength: 20,
+    maxBufferLength: 30,
+    maxMaxBufferLength: 45,
+    liveSyncDurationCount: 6,
+    liveMaxLatencyDurationCount: 12,
+    maxLiveSyncPlaybackRate: 1.05,
+    maxFragLookUpTolerance: 0.25,
+    nudgeOffset: 0.1,
+    nudgeMaxRetry: 5,
     startFragPrefetch: true,
     manifestLoadingTimeOut: 10000,
     levelLoadingTimeOut: 10000,
-    fragLoadingTimeOut: 20000
+    fragLoadingTimeOut: 15000
   })
   hls.on(Hls.Events.ERROR, (_, data) => {
     if (data?.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
@@ -108,15 +182,12 @@ function attachPlayer() {
   })
   hls.on(Hls.Events.MANIFEST_PARSED, () => play(video))
   hls.on(Hls.Events.LEVEL_UPDATED, () => syncToLiveIfNeeded(video))
-  hls.on(Hls.Events.FRAG_BUFFERED, () => {
-    syncToLiveIfNeeded(video)
-    play(video)
-  })
+  hls.on(Hls.Events.FRAG_BUFFERED, () => play(video))
   hls.loadSource(props.src)
   hls.attachMedia(video)
 }
 
-watch(() => [props.src, props.live], attachPlayer)
+watch(() => props.src, attachPlayer)
 onMounted(attachPlayer)
 onBeforeUnmount(destroyPlayer)
 </script>
@@ -130,6 +201,5 @@ onBeforeUnmount(destroyPlayer)
     playsinline
     @error="emit('error')"
     @stalled="handleStalled"
-    @waiting="handleStalled"
   />
 </template>

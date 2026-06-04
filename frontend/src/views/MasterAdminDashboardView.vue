@@ -5,7 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import { adminApi } from '@/api/admin'
 import { useDashboardApi } from '@/composables/useDashboardApi'
 import ChartJsPanel from '@/components/charts/ChartJsPanel.vue'
-import '@/dashboards/master/styles/master-dashboard.css'
+// Dashboard CSS는 동적으로 head에 추가하고 페이지 떠날 때 제거 — 다른 페이지에 누출되지 않도록 격리
+import masterDashboardCss from '@/dashboards/master/styles/master-dashboard.css?inline'
 import MasterDashboardHomePage from '@/dashboards/master/pages/MasterDashboardHomePage.vue'
 import MasterFallbackPage from '@/dashboards/master/pages/MasterFallbackPage.vue'
 import MemberCompanyListPage from '@/dashboards/master/pages/MemberCompanyListPage.vue'
@@ -893,6 +894,9 @@ function logout() {
   auth.logout().finally(() => router.push('/'))
 }
 
+// Dashboard CSS를 head에 동적으로 추가/제거 — 페이지를 떠나는 순간 완전히 사라져 다른 페이지에 누출 없음
+let dashboardStyleEl = null
+
 onMounted(() => {
   void loadMapMarkerPositions()
   updateTime()
@@ -903,10 +907,20 @@ onMounted(() => {
   fetchCompanies().catch(() => {
     memberMessage.value = '센터 목록을 불러오지 못했습니다. 백엔드 실행 상태를 확인해 주세요.'
   })
+
+  dashboardStyleEl = document.createElement('style')
+  dashboardStyleEl.setAttribute('data-dashboard-css', 'master')
+  dashboardStyleEl.textContent = masterDashboardCss
+  document.head.appendChild(dashboardStyleEl)
 })
 
 onBeforeUnmount(() => {
   clearInterval(timer)
+
+  if (dashboardStyleEl) {
+    dashboardStyleEl.remove()
+    dashboardStyleEl = null
+  }
 })
 const masterDashboardContext = {
   MAP_MARKER_STORAGE_KEY,

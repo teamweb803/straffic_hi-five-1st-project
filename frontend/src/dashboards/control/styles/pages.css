@@ -50,9 +50,9 @@ button{font:inherit;cursor:pointer}
 .panel-head{min-height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid rgba(125,164,210,.14)}
 .panel-head h2{margin:0;color:#f1f7ff;font-size:17px}.panel-head small{color:#9fb4ce}
 .panel-head button{height:28px;border:0;background:transparent;color:#b9d3ef}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
-.kpi-card{min-height:116px;display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;padding:17px;border:1px solid rgba(58,126,204,.44);border-radius:7px;background:linear-gradient(145deg,rgba(12,33,59,.96),rgba(5,17,33,.88));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
-.kpi-card i{display:grid;place-items:center;width:62px;height:62px;border-radius:50%;font-style:normal;font-size:0;background:rgba(28,60,110,.72)}
+.ops-shell .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.ops-shell .kpi-card{min-height:116px;display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;padding:17px;border:1px solid rgba(58,126,204,.44);border-radius:7px;background:linear-gradient(145deg,rgba(12,33,59,.96),rgba(5,17,33,.88));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.ops-shell .kpi-card i{display:grid;place-items:center;width:62px;height:62px;border-radius:50%;font-style:normal;font-size:0;background:rgba(28,60,110,.72)}
 .nav button i img{display:block;width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)}
 .light-mode .nav button i img{filter:brightness(0)}
 .kpi-card i img{display:block;width:28px;height:28px;object-fit:contain;filter:brightness(0) invert(1)}
@@ -131,7 +131,7 @@ th{color:#a8bbd2;background:rgba(26,46,73,.62);font-weight:600}.gps-panel table,
 .light-mode .status-grid article,.light-mode .field-list article,.light-mode .comm-card{background:rgba(246,250,255,.86);border-color:rgba(58,126,204,.26)}
 .light-mode th{background:#e5eef9}.light-mode .pill{background:#dcecff;color:#0f4f9b}
 .light-mode .yolo-frame,.light-mode .equipment-frame{background:#dce8f5}
-.light-mode .dash-lane{background:#1a2535}
+.light-mode .dash-lane{background:rgba(7,14,24,.08)}
 .light-mode .road-scene{background:linear-gradient(115deg,transparent 0 28%,rgba(255,255,255,.55) 28% 29%,transparent 29% 68%,rgba(255,255,255,.5) 68% 69%,transparent 69%),repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 7px,transparent 7px 44px),linear-gradient(180deg,#a9b5c2,#7d8894)}
 .light-mode .recent-panel table,.light-mode .gps-panel table,.light-mode .history-panel table{background:rgba(255,255,255,.32)}
 
@@ -146,9 +146,9 @@ th{color:#a8bbd2;background:rgba(26,46,73,.62);font-weight:600}.gps-panel table,
 .theme-toggle{width:34px;height:34px;border-radius:50%;color:#f8fbff;background:linear-gradient(135deg,rgba(22,131,255,.36),rgba(52,211,153,.18));box-shadow:0 0 14px rgba(22,131,255,.18)}
 .operator b,.topbar time{color:#e5efff}.operator small{color:#b8c7da}
 .panel{padding:13px;border-radius:6px}.panel-head{min-height:28px;margin-bottom:11px;padding:0 0 0 10px;border-bottom:0;border-left:2px solid #1683ff}.panel-head h2{font-size:16px;font-weight:800}.panel-head button{color:#b9d3ef}
-.kpi-card{min-height:96px;border-radius:6px;background:rgba(5,16,33,.72);box-shadow:0 0 0 1px rgba(14,111,219,.08),0 18px 42px rgba(0,0,0,.32);backdrop-filter:blur(16px);overflow:hidden}
-.kpi-card > div{min-width:0;overflow:hidden}
-.kpi-card i{width:58px;height:58px;background:rgba(28,60,110,.72);box-shadow:none}
+.ops-shell .kpi-card{min-height:96px;border-radius:6px;background:rgba(5,16,33,.72);box-shadow:0 0 0 1px rgba(14,111,219,.08),0 18px 42px rgba(0,0,0,.32);backdrop-filter:blur(16px);overflow:hidden}
+.ops-shell .kpi-card > div{min-width:0;overflow:hidden}
+.ops-shell .kpi-card i{width:58px;height:58px;background:rgba(28,60,110,.72);box-shadow:none}
 .kpi-card span{color:#e6f1ff;font-size:13px}.kpi-card strong{font-size:28px}.kpi-card em{font-size:12px;color:#5fe080}.kpi-card em.down{color:#ff704f}
 .yolo-frame,.equipment-frame{border-color:rgba(42,133,227,.34);border-radius:6px}.dash-lane-title b,.dash-lane-title span,.fps-chip,.pill{border-radius:5px;background:rgba(5,18,37,.72)}
 .status-grid article,.field-list article,.comm-card,.alert-row{border-color:rgba(42,133,227,.24);border-radius:5px;background:rgba(5,18,37,.52)}
@@ -286,6 +286,9 @@ th{color:#9fb2cb;background:rgba(26,46,73,.54)}td{color:#dce9f8}.state,.pay,.sta
 .event-evidence-img{display:block;width:100%;height:144px;border:1px solid rgba(117,151,194,.22);border-radius:5px;object-fit:cover;background:#050b14}
 .event-evidence-img.crop{height:86px;object-fit:contain}
 .event-evidence-img.modal{height:260px}
+.event-evidence-empty{height:144px;display:grid;place-items:center;border:1px dashed rgba(117,151,194,.32);border-radius:5px;background:rgba(7,14,24,.18);color:#8fa7c3;font-size:13px;font-weight:700}
+.event-evidence-empty.crop{height:86px}
+.event-evidence-empty.modal{height:260px}
 .event-road-shot{height:144px;position:relative;overflow:hidden;border:1px solid rgba(117,151,194,.22);border-radius:5px;background:linear-gradient(90deg,#69757d 0 12%,#a4acb1 12% 14%,#717b83 14% 100%)}
 .event-road-shot::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 64px,rgba(255,255,255,.22) 65px 67px),linear-gradient(180deg,rgba(255,255,255,.16),transparent 35%)}
 .event-car{position:relative;width:132px;height:84px;margin:42px auto 0;border-radius:38px 38px 14px 14px;background:linear-gradient(#0c1118,#202833);box-shadow:0 8px 20px rgba(0,0,0,.45)}
@@ -1180,14 +1183,9 @@ th{color:#9fb2cb;background:rgba(26,46,73,.54)}td{color:#dce9f8}.state,.pay,.sta
   color: var(--ops-muted);
 }
 
-/* Remove exposed page gutters around full-screen dashboards. */
-html,
-body,
-#app {
-  width: 100%;
-  min-height: 100dvh;
-  margin: 0;
-}
+/* Remove exposed page gutters around full-screen dashboards.
+   App.vue의 .dashboard-app-shell wrapper만 풀스크린을 책임지므로
+   html/body/#app 전역 룰은 두지 않는다. */
 
 .ops-shell {
   width: 100%;

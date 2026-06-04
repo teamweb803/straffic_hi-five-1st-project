@@ -9,11 +9,10 @@ const {
   selectedLane,
   dashboardKpis,
   operatorVideoStreamUrl,
-  operatorVideoStreamKey,
   operatorVideoIsLive,
   operatorVideoStatusText,
   operatorVideoFpsText,
-  scheduleOperatorVideoReconnect,
+  updateRenderedVideoFps,
   dashboardDetections,
   statusCards,
   filteredGpsJudgements,
@@ -49,12 +48,11 @@ const {
             <div class="realtime-frame">
               <HlsLiveVideo
                 v-if="operatorVideoStreamUrl"
-                :key="operatorVideoStreamKey"
                 class="dashboard-live-frame"
                 :src="operatorVideoStreamUrl"
                 :live="operatorVideoIsLive"
                 alt="YOLO 실시간 화면"
-                @error="scheduleOperatorVideoReconnect"
+                @fps="updateRenderedVideoFps"
               />
               <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section class="realtime-lane green">

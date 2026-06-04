@@ -1052,14 +1052,9 @@
   color: #000000 !important;
 }
 
-/* Remove exposed page gutters around full-screen dashboards. */
-html,
-body,
-#app {
-  width: 100%;
-  min-height: 100dvh;
-  margin: 0;
-}
+/* Remove exposed page gutters around full-screen dashboards.
+   App.vue의 .dashboard-app-shell wrapper만 풀스크린을 책임지므로
+   html/body/#app 전역 룰은 두지 않는다. */
 
 .master-shell {
   width: 100%;

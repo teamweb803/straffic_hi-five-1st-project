@@ -339,7 +339,7 @@ main {
   padding: 20px 16px 22px 18px;
 }
 
-.kpi-grid {
+.master-shell .kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
@@ -840,7 +840,7 @@ main {
   gap: 24px;
 }
 
-.donut {
+.master-shell .donut {
   width: 134px;
   height: 134px;
   display: grid;
@@ -850,7 +850,7 @@ main {
   box-shadow: 0 0 28px rgba(72, 216, 106, 0.12);
 }
 
-.donut::before {
+.master-shell .donut::before {
   content: '';
   position: absolute;
   width: 82px;
@@ -859,7 +859,7 @@ main {
   background: #071322;
 }
 
-.donut span {
+.master-shell .donut span {
   position: relative;
   z-index: 1;
   color: #fff;

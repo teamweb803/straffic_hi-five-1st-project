@@ -11,14 +11,13 @@ const {
   getKpiIcon,
   getAdminIcon,
   operatorVideoStreamUrl,
-  operatorVideoStreamKey,
   operatorVideoIsLive,
   operatorVideoStatusText,
-  scheduleOperatorVideoReconnect,
+  updateRenderedVideoFps,
   operatorVideoFpsValue,
   dashboardDetections,
   statusCards,
-  filteredGpsJudgements,
+  recentGpsJudgements,
   fieldAlerts,
   equipmentCards,
   equipmentLaneRows,
@@ -49,12 +48,11 @@ const {
             <div class="yolo-frame">
               <HlsLiveVideo
                 v-if="operatorVideoStreamUrl"
-                :key="operatorVideoStreamKey"
                 class="dashboard-live-frame"
                 :src="operatorVideoStreamUrl"
                 :live="operatorVideoIsLive"
                 alt="YOLO 실시간 화면"
-                @error="scheduleOperatorVideoReconnect"
+                @fps="updateRenderedVideoFps"
               />
               <div v-else class="dashboard-live-placeholder">WAIT</div>
               <section
@@ -101,7 +99,7 @@ const {
                   <tr><th>차량번호</th><th>인식 방향</th><th>운행 방향</th><th>통과 시각</th><th>GPS 판정</th><th>결제 판정</th></tr>
                 </thead>
                 <tbody>
-                  <tr v-for="row in filteredGpsJudgements" :key="`${row.plate}-${row.time}`">
+                  <tr v-for="row in recentGpsJudgements" :key="`${row.plate}-${row.time}`">
                     <td><i class="row-dot" :class="row.tone"></i>{{ row.plate }}</td>
                     <td><span class="pill">{{ row.direction }}</span></td>
                     <td><span class="pill">{{ row.laneText }}</span></td>
