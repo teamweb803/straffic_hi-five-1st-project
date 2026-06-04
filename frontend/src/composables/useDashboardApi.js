@@ -140,7 +140,6 @@ export function useDashboardApi(options = {}) {
 
   const operatorVideoIsLive = computed(() => isFreshVideoStatus(operatorVideoStatus.value))
   const operatorVideoStreamUrl = computed(() => {
-    if (!operatorVideoIsLive.value) return ''
     const url = dashboardApi.operatorVideoStreamUrl()
     const separator = url.includes('?') ? '&' : '?'
     return `${url}${separator}t=${operatorVideoStreamToken.value}`

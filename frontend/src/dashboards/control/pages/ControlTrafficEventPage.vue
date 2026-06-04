@@ -13,6 +13,7 @@ const {
   filteredGpsJudgements,
   fieldAlerts,
   filteredTrafficRows,
+  currentDateText,
   equipmentCards,
   equipmentLaneRows,
   equipmentAlerts,
@@ -29,29 +30,37 @@ const filterGps = ref('전체')
 const showEventOnly = ref(false)
 const openDropdown = ref(null)
 const selectedNo = ref(1)
+const selectedEventId = ref('')
 const searchInput = ref('')
 const searchQuery = ref('')
 
 const fallbackEvents = [
-  { no:1,  plate:'12가 3456', lane:'2차선', dir:'OUT', time:'17:35:42.289', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
-  { no:2,  plate:'45나 6721', lane:'2차선', dir:'IN',  time:'17:33:18.102', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
-  { no:3,  plate:'67다 9012', lane:'1차선', dir:'OUT', time:'17:31:41.552', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'차선 경계',  evtS:'warn'   },
-  { no:4,  plate:'98머 3344', lane:'2차선', dir:'IN',  time:'17:28:55.873', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'정차 의심',  evtS:'danger' },
-  { no:5,  plate:'34다 1122', lane:'2차선', dir:'OUT', time:'17:26:17.430', gps:'영역 이탈',gpsS:'danger', pay:'결제 불가', payS:'danger', evt:'',         evtS:''       },
-  { no:6,  plate:'56라 7788', lane:'1차선', dir:'IN',  time:'17:23:50.219', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
-  { no:7,  plate:'12바 1234', lane:'2차선', dir:'OUT', time:'17:21:38.901', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'기준 구역 외',evtS:'danger' },
-  { no:8,  plate:'90허 5678', lane:'1차선', dir:'IN',  time:'17:19:12.654', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
-  { no:9,  plate:'22거 4567', lane:'2차선', dir:'IN',  time:'17:17:05.338', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
-  { no:10, plate:'11서 2233', lane:'1차선', dir:'OUT', time:'17:14:46.072', gps:'영역 이탈',gpsS:'danger', pay:'결제 불가', payS:'danger', evt:'',         evtS:''       },
+  { no:1,  eventId:'mock-1',  plate:'12가 3456', lane:'2차선', dir:'OUT', time:'17:35:42.289', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
+  { no:2,  eventId:'mock-2',  plate:'45나 6721', lane:'2차선', dir:'IN',  time:'17:33:18.102', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
+  { no:3,  eventId:'mock-3',  plate:'67다 9012', lane:'1차선', dir:'OUT', time:'17:31:41.552', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'차선 경계',  evtS:'warn'   },
+  { no:4,  eventId:'mock-4',  plate:'98머 3344', lane:'2차선', dir:'IN',  time:'17:28:55.873', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'정차 의심',  evtS:'danger' },
+  { no:5,  eventId:'mock-5',  plate:'34다 1122', lane:'2차선', dir:'OUT', time:'17:26:17.430', gps:'영역 이탈',gpsS:'danger', pay:'결제 불가', payS:'danger', evt:'',         evtS:''       },
+  { no:6,  eventId:'mock-6',  plate:'56라 7788', lane:'1차선', dir:'IN',  time:'17:23:50.219', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
+  { no:7,  eventId:'mock-7',  plate:'12바 1234', lane:'2차선', dir:'OUT', time:'17:21:38.901', gps:'정상',    gpsS:'ok',     pay:'검수 필요', payS:'warn',   evt:'기준 구역 외',evtS:'danger' },
+  { no:8,  eventId:'mock-8',  plate:'90허 5678', lane:'1차선', dir:'IN',  time:'17:19:12.654', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
+  { no:9,  eventId:'mock-9',  plate:'22거 4567', lane:'2차선', dir:'IN',  time:'17:17:05.338', gps:'정상',    gpsS:'ok',     pay:'결제 가능', payS:'ok',     evt:'',         evtS:''       },
+  { no:10, eventId:'mock-10', plate:'11서 2233', lane:'1차선', dir:'OUT', time:'17:14:46.072', gps:'영역 이탈',gpsS:'danger', pay:'결제 불가', payS:'danger', evt:'',         evtS:''       },
 ]
 
 const events = computed(() => {
-  if (!operatorPassageEvents?.value?.length) return fallbackEvents
+  if (!operatorPassageEvents?.value?.length) {
+    return fallbackEvents.map((event) => ({
+      ...event,
+      date: currentDateText.value
+    }))
+  }
   return operatorPassageEvents.value.map((event, index) => ({
     no: index + 1,
+    eventId: event.eventId || `event-${index}`,
     plate: event.plate,
     lane: `${event.lane}차선`,
     dir: event.direction,
+    date: event.date || currentDateText.value,
     time: event.time,
     gps: event.gps,
     gpsS: event.tone === 'danger' ? 'danger' : 'ok',
@@ -64,7 +73,14 @@ const events = computed(() => {
   }))
 })
 
-const selectedEvent = computed(() => events.value.find(r => r.no === selectedNo.value) ?? events.value[0] ?? fallbackEvents[0])
+const selectedEvent = computed(() => {
+  const rows = events.value
+  if (selectedEventId.value) {
+    const byId = rows.find(r => r.eventId === selectedEventId.value)
+    if (byId) return byId
+  }
+  return rows.find(r => r.no === selectedNo.value) ?? rows[0] ?? { ...fallbackEvents[0], date: currentDateText.value }
+})
 
 const detailBadge = computed(() => {
   const r = selectedEvent.value
@@ -111,6 +127,11 @@ function resetFilters() {
   searchQuery.value = ''
 }
 
+function selectEvent(row) {
+  selectedNo.value = row.no
+  selectedEventId.value = row.eventId
+}
+
 function onDocClick(e) {
   if (!e.target.closest('.filter-dropdown-wrap')) openDropdown.value = null
 }
@@ -127,7 +148,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         </section>
 
         <section class="event-filter-row">
-          <label class="date-range"><span>기간</span><b>2025-05-11 00:00 ~ 2025-05-11 23:59</b><i>▣</i></label>
+          <label class="date-range"><span>기간</span><b>{{ currentDateText }} 00:00 ~ {{ currentDateText }} 23:59</b><i>▣</i></label>
 
           <div class="filter-dropdown-wrap">
             <button class="filter-toggle" :class="{active: filterLane !== '전체'}" type="button" @click.stop="toggleDropdown('lane')">차선 <b>{{ filterLane }}</b></button>
@@ -169,7 +190,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
                 <tr><th>No.</th><th>차량번호</th><th>차선</th><th>방향</th><th>통과시각</th><th>GPS 판정</th><th>결제 판정</th><th>현장 이벤트</th></tr>
               </thead>
               <tbody>
-                <tr v-for="row in filteredEvents" :key="row.no" :class="{selected: selectedNo === row.no}" @click="selectedNo = row.no">
+                <tr v-for="row in filteredEvents" :key="row.eventId" :class="{selected: selectedEvent.eventId === row.eventId}" @click="selectEvent(row)">
                   <td>{{ row.no }}</td>
                   <td>{{ row.plate }}</td>
                   <td>{{ row.lane }}</td>
@@ -198,17 +219,17 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
                 <dt>차량번호</dt><dd>{{ selectedEvent.plate }}</dd>
                 <dt>차선</dt><dd>{{ selectedEvent.lane }}</dd>
                 <dt>방향</dt><dd>{{ dirLabel }}</dd>
-                <dt>통과시각</dt><dd>2025-05-11 {{ selectedEvent.time }}</dd>
+                <dt>통과시각</dt><dd>{{ selectedEvent.date }} {{ selectedEvent.time }}</dd>
               </dl>
               <div class="plate-crop">
                 <span>번호판 crop</span>
                 <img v-if="selectedEvent.cropImageUrl" class="event-evidence-img crop" :src="selectedEvent.cropImageUrl" :alt="`${selectedEvent.plate} crop`" />
-                <strong v-else>{{ selectedEvent.plate }}</strong>
+                <div v-else class="event-evidence-empty crop">{{ selectedEvent.plate || '-' }}</div>
               </div>
               <div class="event-image">
                 <span>이벤트 이미지</span>
                 <img v-if="selectedEvent.eventImageUrl" class="event-evidence-img" :src="selectedEvent.eventImageUrl" :alt="`${selectedEvent.plate} event`" />
-                <div v-else class="event-road-shot"><div class="event-car"><b>{{ selectedEvent.plate }}</b></div></div>
+                <div v-else class="event-evidence-empty">이미지 없음</div>
               </div>
             </section>
 
@@ -260,7 +281,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         <header class="modal-header">
           <div style="display:flex;align-items:center;gap:12px">
             <h2>증빙 이미지</h2>
-            <span style="color:#9fb4ce;font-size:13px">{{ selectedEvent.plate }} · 2025-05-11 {{ selectedEvent.time }}</span>
+            <span style="color:#9fb4ce;font-size:13px">{{ selectedEvent.plate }} · {{ selectedEvent.date }} {{ selectedEvent.time }}</span>
           </div>
           <button type="button" class="modal-close" @click="showEvidenceModal=false">✕</button>
         </header>
@@ -268,15 +289,13 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
           <section class="evidence-img-section">
             <span class="evidence-label">이벤트 이미지</span>
             <img v-if="selectedEvent.eventImageUrl" class="event-evidence-img modal" :src="selectedEvent.eventImageUrl" :alt="`${selectedEvent.plate} event`" />
-            <div v-else class="event-road-shot evidence-road-shot">
-              <div class="event-car"><b>{{ selectedEvent.plate }}</b></div>
-            </div>
+            <div v-else class="event-evidence-empty modal">이미지 없음</div>
           </section>
           <section class="evidence-img-section">
             <span class="evidence-label">번호판 crop</span>
             <div class="plate-crop" style="width:100%">
               <img v-if="selectedEvent.cropImageUrl" class="event-evidence-img crop modal" :src="selectedEvent.cropImageUrl" :alt="`${selectedEvent.plate} crop`" />
-              <strong v-else style="height:120px;font-size:36px">{{ selectedEvent.plate }}</strong>
+              <div v-else class="event-evidence-empty crop modal">{{ selectedEvent.plate || '-' }}</div>
             </div>
           </section>
         </div>
@@ -302,7 +321,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         <div class="modal-body">
           <div class="modal-gps-meta">
             <span><b>차량번호</b>{{ selectedEvent.plate }}</span>
-            <span><b>통과시각</b>2025-05-11 {{ selectedEvent.time }}</span>
+            <span><b>통과시각</b>{{ selectedEvent.date }} {{ selectedEvent.time }}</span>
             <span><b>차선</b>{{ selectedEvent.lane }}</span>
             <span><b>방향</b>{{ dirLabel }}</span>
           </div>
@@ -339,13 +358,13 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         </header>
         <div class="modal-body">
           <section class="modal-evidence-row">
-            <div class="event-image" style="flex:1"><span>이벤트 이미지</span><div class="event-road-shot"><div class="event-car"><b>{{ selectedEvent.plate }}</b></div></div></div>
-            <div class="plate-crop" style="width:140px"><span>번호판 crop</span><strong>{{ selectedEvent.plate }}</strong></div>
+            <div class="event-image" style="flex:1"><span>이벤트 이미지</span><img v-if="selectedEvent.eventImageUrl" class="event-evidence-img" :src="selectedEvent.eventImageUrl" :alt="`${selectedEvent.plate} event`" /><div v-else class="event-evidence-empty">이미지 없음</div></div>
+            <div class="plate-crop" style="width:140px"><span>번호판 crop</span><img v-if="selectedEvent.cropImageUrl" class="event-evidence-img crop" :src="selectedEvent.cropImageUrl" :alt="`${selectedEvent.plate} crop`" /><div v-else class="event-evidence-empty crop">{{ selectedEvent.plate || '-' }}</div></div>
             <dl class="modal-event-dl">
               <dt>차량번호</dt><dd>{{ selectedEvent.plate }}</dd>
               <dt>차선</dt><dd>{{ selectedEvent.lane }}</dd>
               <dt>방향</dt><dd>{{ dirLabel }}</dd>
-              <dt>통과시각</dt><dd>2025-05-11 {{ selectedEvent.time }}</dd>
+              <dt>통과시각</dt><dd>{{ selectedEvent.date }} {{ selectedEvent.time }}</dd>
             </dl>
           </section>
           <section class="modal-gps-section">

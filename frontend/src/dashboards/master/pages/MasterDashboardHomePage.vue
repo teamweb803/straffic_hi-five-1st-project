@@ -157,9 +157,9 @@ const {
 <template>
 <section ref="kpiSection" class="kpi-grid master-kpi-grid">
           <article class="kpi glass">
-            <span class="kpi-icon"><img src="../../icons/admin/people2.png" alt="전체 회원사" style="width:28px;height:28px;object-fit:contain;" /></span>
+            <span class="kpi-icon"><img src="../../icons/admin/people2.png" alt="전체 센터" style="width:28px;height:28px;object-fit:contain;" /></span>
             <div>
-              <p>전체 회원사</p>
+              <p>전체 센터</p>
               <strong>24</strong>
               <em>전일 대비 ▲ 2</em>
             </div>

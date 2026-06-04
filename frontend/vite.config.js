@@ -12,10 +12,19 @@ export default defineConfig({
     }
   },
   server: {
+    host: '0.0.0.0',
     port: 5173,
+    // 시연 / 개발 중 F5에 즉시 새 CSS·HTML이 반영되도록 dev 응답을 캐시하지 않음
+    headers: {
+      'Cache-Control': 'no-store'
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:8585',
+        target: process.env.VITE_API_TARGET || 'http://localhost:8585',
+        changeOrigin: true
+      },
+      '/video': {
+        target: process.env.VITE_VIDEO_TARGET || 'http://localhost:8000',
         changeOrigin: true
       }
     }

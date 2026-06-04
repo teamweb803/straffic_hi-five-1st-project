@@ -157,7 +157,7 @@ const {
 <template>
           <article class="branch-page">
             <section class="branch-filter-row">
-              <label><span>회원사</span><button class="filter-toggle" type="button">전체 회원사</button></label>
+              <label><span>센터</span><button class="filter-toggle" type="button">전체 센터</button></label>
               <label><span>지역</span><button class="filter-toggle" type="button">전체 지역</button></label>
               <label><span>상태</span><button class="filter-toggle" type="button">전체 상태</button></label>
               <label class="branch-search"><input type="search" placeholder="지점명 또는 주소 검색" /><span>⌕</span></label>
@@ -194,7 +194,7 @@ const {
                   <div class="branch-panel-head"><h3>선택 지점 상세 정보</h3><span class="branch-badge ok">정상</span></div>
                   <dl>
                     <dt>지점명</dt><dd>서울 톨링 A · 제어센터</dd>
-                    <dt>담당 회원사</dt><dd>서울고속도로(주)</dd>
+                    <dt>담당 센터</dt><dd>서울고속도로(주)</dd>
                     <dt>주소</dt><dd>경기도 성남시 분당구 판교로 255번길 9</dd>
                     <dt>지점 유형</dt><dd>제어센터 / 톨링 게이트</dd>
                     <dt>Edge 장비</dt><dd>3대 <code>wss://seoul-a-ingress.hi-five.kr</code></dd>

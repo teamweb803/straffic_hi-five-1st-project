@@ -77,6 +77,8 @@ class SpringForwarder:
             return ForwardResult(True, False, status_code, detail)
         if status_code == 409:
             return ForwardResult(True, False, status_code, "duplicate")
+        if status_code == 400 and "passage event not found" in detail.lower():
+            return ForwardResult(False, True, status_code, detail)
         if 400 <= status_code < 500:
             return ForwardResult(False, False, status_code, detail)
         return ForwardResult(False, True, status_code, detail)
@@ -237,6 +239,8 @@ class SpringEvidenceForwarder:
             return ForwardResult(True, False, status_code, detail)
         if status_code == 409:
             return ForwardResult(True, False, status_code, "duplicate")
+        if status_code == 400 and "passage event not found" in detail.lower():
+            return ForwardResult(False, True, status_code, detail)
         if 400 <= status_code < 500:
             return ForwardResult(False, False, status_code, detail)
         return ForwardResult(False, True, status_code, detail)
