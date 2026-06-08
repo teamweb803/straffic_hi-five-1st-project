@@ -270,22 +270,19 @@ PYTHONPATH=. python run_edge_service.py \
 
 ## Docker 이미지
 
-서비스 기준으로는 `frontend`, `backend`, `fastapi-ingress`, `jetson-edge`, `db` 5개로 분리합니다.
+서비스 기준으로는 `frontend`, `backend`, `fastapi-edge`, `jetson-edge`, `db` 5개로 분리합니다.
 
 DockerHub 업로드 대상은 다음과 같습니다.
 
-- `teamweb803/hifive-frontend`
-- `teamweb803/hifive-backend`
-- `teamweb803/hifive-ingress`
-- `teamweb803/hifive-jetson-edge`
-- `teamweb803/hifive-db`
+- Frontend: [shshj323/hifive-frontend](https://hub.docker.com/r/shshj323/hifive-frontend)
+- Backend: [shshj323/hifive-backend](https://hub.docker.com/r/shshj323/hifive-backend)
+- FastAPI Edge: [shshj323/hifive-fastapi-edge](https://hub.docker.com/r/shshj323/hifive-fastapi-edge)
+- Jetson Edge: [shshj323/hifive-jetson-edge](https://hub.docker.com/r/shshj323/hifive-jetson-edge)
+- DB: [shshj323/hifive-postgres](https://hub.docker.com/r/shshj323/hifive-postgres)
 
 ## 산출물
 
-- 발표자료: `HI-FIVE_발표자료_260601.pptx`
-- 프로젝트 종합본: `프로젝트 종합본.html`
-- 주간보고서: 1주차 ~ 5주차
-- 기획 아이디어: 초기 프로젝트 개요 참고용
+- 웹 애플리케이션 산출물: [Notion 문서](https://coconut-truck-1db.notion.site/371cdef944a180a8bf3be44fcfcd9701)
 
 ## 구현 범위
 
