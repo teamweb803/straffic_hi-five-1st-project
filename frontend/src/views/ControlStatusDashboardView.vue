@@ -13,6 +13,7 @@ import ControlEquipmentPage from '@/dashboards/control/pages/ControlEquipmentPag
 import ControlRealtimePage from '@/dashboards/control/pages/ControlRealtimePage.vue'
 import ControlSettingsPage from '@/dashboards/control/pages/ControlSettingsPage.vue'
 import ControlFallbackPage from '@/dashboards/control/pages/ControlFallbackPage.vue'
+import PdmDashboardPage from '@/dashboards/pdm/pages/PdmDashboardPage.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -55,6 +56,7 @@ const centerLabel = computed(() => {
 
 const navItems = [
   { label: '대시보드', icon: 'dashboard2.png' },
+  { label: '예지보전', icon: 'cctv.png' },
   { label: '실시간 관제', icon: 'real-time.png' },
   { label: '통행 이벤트', icon: 'list.png' },
   { label: 'GPS 판정', icon: 'gps.png' },
@@ -467,6 +469,7 @@ function updateRenderedVideoFps(fps) {
 
 const controlPageMap = {
   '대시보드': ControlDashboardPage,
+  '예지보전': PdmDashboardPage,
   '통행 이벤트': ControlTrafficEventPage,
   'GPS 판정': ControlGpsDecisionPage,
   '정산': ControlSettlementPage,
@@ -564,7 +567,19 @@ onBeforeUnmount(() => {
         </button>
       </nav>
 
-      <div v-if="activeMenu === '정산'" class="event-side-stack settlement-side-stack">
+      <div v-if="activeMenu === '예지보전'" class="event-side-stack pdm-side-stack">
+        <section class="zone-card event-stats-card">
+          <h3>카메라 상태 <small>ⓘ</small></h3>
+          <p><span class="zone-icon gps">✓</span><b>정상</b><strong>1대</strong></p>
+          <p><span class="zone-icon warn">◔</span><b>주의</b><strong>1대</strong></p>
+          <p><span class="zone-icon danger">!</span><b>위험</b><strong>0대</strong></p>
+        </section>
+        <section class="zone-card gps-guide-card" style="margin-top:10px">
+          <p><span class="zone-icon cctv">▧</span><b>평균 Score</b><strong>82점</strong></p>
+        </section>
+      </div>
+
+      <div v-else-if="activeMenu === '정산'" class="event-side-stack settlement-side-stack">
         <section class="zone-card event-stats-card">
           <h3>정산 상태 <small>ⓘ</small></h3>
           <p><span class="zone-icon gps">✓</span><b>완료</b><strong>2,356건</strong></p>
