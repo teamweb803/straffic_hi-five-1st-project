@@ -1,82 +1,81 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import EChartsPanel from '@/components/charts/EChartsPanel.vue'
+import { pdmApi } from '@/api/pdm'
 
-// ── 정적 목업 데이터 ────────────────────────────────────────────
-const summary = {
-  totalCameraCount: 2,
-  normalCameraCount: 1,
-  warningCameraCount: 1,
+// ── 반응형 상태 ─────────────────────────────────────────────────
+const summary = ref({
+  totalCameraCount: 0,
+  normalCameraCount: 0,
+  warningCameraCount: 0,
   criticalCameraCount: 0,
-  averageHealthScore: 82.0
+  averageHealthScore: 0
+})
+const cameras = ref([])
+const alerts = ref([])
+const compareResults = ref([])
+const qualityMetrics = ref({})
+const selectedCam = ref(null)
+const loading = ref(true)
+
+// ── 시각 포맷 ──────────────────────────────────────────────────
+function formatTime(dt) {
+  if (!dt) return '—'
+  return new Date(dt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+function formatDateTime(dt) {
+  if (!dt) return '—'
+  return new Date(dt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
 }
 
-const cameras = [
-  {
-    cameraId: 1,
-    cameraCode: 'CAM-F-01',
-    cameraName: '전방 카메라',
-    direction: 'FRONT',
-    laneNames: ['1차로', '2차로'],
-    healthScore: 91.0,
-    riskLevel: 'NORMAL',
-    avgOcrConfidence: 94.2,
-    successRate: 96.8,
-    missingRate: 1.2,
-    matchRate: 94.1,
-    mismatchRate: 2.4,
-    reasonText: '정상 운영 중',
-    recommendedAction: '정기 점검 유지'
-  },
-  {
-    cameraId: 2,
-    cameraCode: 'CAM-R-01',
-    cameraName: '후방 카메라',
-    direction: 'REAR',
-    laneNames: ['1차로', '2차로'],
-    healthScore: 68.0,
-    riskLevel: 'WARNING',
-    avgOcrConfidence: 72.0,
-    successRate: 81.0,
-    missingRate: 6.5,
-    matchRate: 76.0,
-    mismatchRate: 8.3,
-    reasonText: '후방 카메라 OCR 신뢰도 저하',
-    recommendedAction: '렌즈 청소 및 초점 상태 확인'
-  }
-]
+// ── 알림 차로 이름 헬퍼 ────────────────────────────────────────
+function alertLaneLabel(alert) {
+  if (alert.laneId == null) return ''
+  const cam = cameras.value.find(c => c.cameraId === alert.cameraId)
+  if (!cam) return `${alert.laneId}차로`
+  const idx = cam.laneIds?.indexOf(alert.laneId) ?? -1
+  return idx >= 0 && cam.laneNames?.[idx] ? cam.laneNames[idx] : `${alert.laneId}차로`
+}
 
-const trendLabels = ['14:00', '14:05', '14:10', '14:15', '14:20', '14:25', '14:30']
+// ── 데이터 로딩 ────────────────────────────────────────────────
+async function loadData() {
+  loading.value = true
+  try {
+    const [summaryRes, camerasRes, alertsRes, compareRes] = await Promise.all([
+      pdmApi.getDashboardSummary(),
+      pdmApi.getCameras(),
+      pdmApi.getAlerts(),
+      pdmApi.getCompareResults(),
+    ])
+    summary.value = summaryRes.data
+    alerts.value = alertsRes.data
+    compareResults.value = compareRes.data
 
-const trends = {
-  1: {
-    healthScore: [92, 93, 91, 92, 91, 90, 91],
-    ocrConf:     [94.5, 94.8, 94.2, 95.0, 94.3, 94.1, 94.2],
-    matchRate:   [94.0, 95.1, 93.8, 94.6, 94.2, 93.9, 94.1]
-  },
-  2: {
-    healthScore: [78, 74, 71, 68, 68, 67, 68],
-    ocrConf:     [80.1, 77.4, 74.8, 72.5, 72.3, 71.8, 72.0],
-    matchRate:   [83.2, 80.1, 78.4, 76.8, 76.3, 75.9, 76.0]
+    // 카메라 상세 (avgOcrConfidence, successRate 등 포함)
+    const camList = camerasRes.data
+    const detailRes = await Promise.all(camList.map(c => pdmApi.getCameraDetail(c.cameraId)))
+    cameras.value = detailRes.map(r => r.data)
+
+    if (cameras.value.length > 0 && selectedCam.value === null) {
+      selectedCam.value = cameras.value[0].cameraId
+    }
+
+    // 품질 추세 (카메라별)
+    const metricsRes = await Promise.all(
+      cameras.value.map(c => pdmApi.getQualityMetrics(c.cameraId).catch(() => ({ data: [] })))
+    )
+    const map = {}
+    cameras.value.forEach((c, i) => { map[c.cameraId] = metricsRes[i].data })
+    qualityMetrics.value = map
+
+  } catch (e) {
+    console.error('[PDM] 데이터 로딩 실패', e)
+  } finally {
+    loading.value = false
   }
 }
 
-const alerts = [
-  { alertId: 1, cameraCode: 'CAM-R-01', laneNames: ['1차로', '2차로'], riskLevel: 'WARNING',  title: 'OCR 신뢰도 연속 하락',     reasonText: '렌즈 오염 의심',    recommendedAction: '렌즈 청소',    status: 'OPEN',     occurredAt: '14:28' },
-  { alertId: 2, cameraCode: 'CAM-R-01', laneNames: ['1차로', '2차로'], riskLevel: 'WARNING',  title: '전후방 일치율 임계값 미달', reasonText: '카메라 정렬 이상',  recommendedAction: '각도 재조정', status: 'CHECKING', occurredAt: '14:15' },
-  { alertId: 3, cameraCode: 'CAM-F-01', laneNames: ['1차로', '2차로'], riskLevel: 'NORMAL',   title: '인식 성공률 소폭 저하',    reasonText: '조명 환경 변화',    recommendedAction: '모니터링 유지', status: 'RESOLVED', occurredAt: '13:42' }
-]
-
-const compareResults = [
-  { groupKey: 'GRP-0001', laneId: 1, laneName: '1차로', frontPlate: '123가4567', rearPlate: '123가4567', isMatched: true,  mismatchType: null,           confGap: 0.02, comparedAt: '14:28:20' },
-  { groupKey: 'GRP-0002', laneId: 2, laneName: '2차로', frontPlate: '456나8901', rearPlate: '456나8901', isMatched: true,  mismatchType: null,           confGap: 0.01, comparedAt: '14:28:15' },
-  { groupKey: 'GRP-0003', laneId: 1, laneName: '1차로', frontPlate: '789다2345', rearPlate: '789가2345', isMatched: false, mismatchType: 'CHAR_DIFF',    confGap: 0.18, comparedAt: '14:27:58' },
-  { groupKey: 'GRP-0004', laneId: 2, laneName: '2차로', frontPlate: '012라6789', rearPlate: null,        isMatched: false, mismatchType: 'REAR_MISSING', confGap: null, comparedAt: '14:27:44' },
-  { groupKey: 'GRP-0005', laneId: 1, laneName: '1차로', frontPlate: '345마0123', rearPlate: '345마0123', isMatched: true,  mismatchType: null,           confGap: 0.03, comparedAt: '14:27:30' }
-]
-
-// ── 차트 탭 상태 ────────────────────────────────────────────────
-const selectedCam = ref(1)
+onMounted(loadData)
 
 // ── ECharts 공통 색상 토큰 ──────────────────────────────────────
 const EC = {
@@ -89,9 +88,14 @@ const EC = {
   red:       '#ef5a54'
 }
 
-// 품질 추세 라인 차트
+// ── 품질 추세 라인 차트 ─────────────────────────────────────────
 const trendOption = computed(() => {
-  const d = trends[selectedCam.value]
+  const metrics = qualityMetrics.value[selectedCam.value] ?? []
+  const labels     = metrics.map(m => formatTime(m.bucketStart))
+  const ocrData    = metrics.map(m => parseFloat((m.avgOcrConfidence ?? 0).toFixed(1)))
+  const successData= metrics.map(m => parseFloat((m.successRate     ?? 0).toFixed(1)))
+  const matchData  = metrics.map(m => parseFloat((m.matchRate       ?? 0).toFixed(1)))
+
   return {
     backgroundColor: 'transparent',
     tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
@@ -103,39 +107,39 @@ const trendOption = computed(() => {
     grid: { top: 40, right: 16, bottom: 28, left: 48, containLabel: false },
     xAxis: {
       type: 'category',
-      data: trendLabels,
+      data: labels.length ? labels : ['—'],
       axisLine: { lineStyle: { color: EC.gridLine } },
       axisTick: { show: false },
       axisLabel: { color: EC.textMuted, fontSize: 11 }
     },
     yAxis: {
       type: 'value',
-      min: 60, max: 100,
+      min: 50, max: 100,
       splitLine: { lineStyle: { color: EC.gridLine } },
       axisLabel: { color: EC.textMuted, fontSize: 11 }
     },
     series: [
       {
-        name: 'Health Score',
+        name: 'OCR 신뢰도(%)',
         type: 'line', smooth: true,
-        data: d.healthScore,
-        lineStyle: { color: EC.green, width: 2 },
-        itemStyle: { color: EC.green },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(76,223,102,.22)' }, { offset: 1, color: 'rgba(76,223,102,.02)' }] } },
+        data: ocrData,
+        lineStyle: { color: EC.blue, width: 2 },
+        itemStyle: { color: EC.blue },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(47,140,255,.22)' }, { offset: 1, color: 'rgba(47,140,255,.02)' }] } },
         symbol: 'circle', symbolSize: 5
       },
       {
-        name: 'OCR 신뢰도(%)',
+        name: '인식 성공률(%)',
         type: 'line', smooth: true,
-        data: d.ocrConf,
-        lineStyle: { color: EC.blue, width: 2 },
-        itemStyle: { color: EC.blue },
+        data: successData,
+        lineStyle: { color: EC.green, width: 2 },
+        itemStyle: { color: EC.green },
         symbol: 'circle', symbolSize: 5
       },
       {
         name: '전후방 일치율(%)',
         type: 'line', smooth: true,
-        data: d.matchRate,
+        data: matchData,
         lineStyle: { color: EC.amber, width: 2 },
         itemStyle: { color: EC.amber },
         symbol: 'circle', symbolSize: 5
@@ -144,7 +148,7 @@ const trendOption = computed(() => {
   }
 })
 
-// 게이지 차트 (카메라별 Health Score)
+// ── 게이지 차트 ─────────────────────────────────────────────────
 function gaugeOption(score, level) {
   const color = level === 'NORMAL' ? EC.green : level === 'WARNING' ? EC.amber : EC.red
   return {
@@ -171,10 +175,8 @@ function gaugeOption(score, level) {
       detail: {
         valueAnimation: true,
         offsetCenter: [0, '10%'],
-        fontSize: 26,
-        fontWeight: 800,
-        color,
-        formatter: '{value}'
+        fontSize: 26, fontWeight: 800,
+        color, formatter: '{value}'
       },
       title: { offsetCenter: [0, '38%'], fontSize: 11, color: EC.textMuted },
       data: [{ value: score, name: 'Health Score' }]
@@ -240,47 +242,42 @@ function alertStatusClass(s) {
       :key="cam.cameraId"
       class="panel pdm-cam-card"
     >
-      <!-- 카드 헤더 -->
       <div class="pdm-cam-head">
         <div class="pdm-cam-title">
           <b>{{ cam.cameraCode }}</b>
-          <span>{{ cam.cameraName }} · 담당 차로 {{ cam.laneNames.join(', ') }}</span>
+          <span>{{ cam.cameraName }} · 담당 차로 {{ cam.laneNames?.join(', ') }}</span>
         </div>
         <span class="pdm-risk-badge" :class="riskClass(cam.riskLevel)">{{ riskLabel(cam.riskLevel) }}</span>
       </div>
 
       <div class="pdm-cam-body">
-        <!-- 게이지 -->
         <div class="pdm-gauge-wrap">
           <EChartsPanel :option="gaugeOption(cam.healthScore, cam.riskLevel)" :height="130" />
         </div>
-
-        <!-- 지표 목록 -->
         <div class="pdm-cam-metrics">
           <div class="pdm-metric-row">
             <span>OCR 신뢰도</span>
             <div class="pdm-mini-bar-wrap"><div class="pdm-mini-bar pdm-blue" :style="`width:${cam.avgOcrConfidence}%`"></div></div>
-            <b>{{ cam.avgOcrConfidence }}%</b>
+            <b>{{ cam.avgOcrConfidence?.toFixed(1) }}%</b>
           </div>
           <div class="pdm-metric-row">
             <span>인식 성공률</span>
             <div class="pdm-mini-bar-wrap"><div class="pdm-mini-bar pdm-blue" :style="`width:${cam.successRate}%`"></div></div>
-            <b>{{ cam.successRate }}%</b>
+            <b>{{ cam.successRate?.toFixed(1) }}%</b>
           </div>
           <div class="pdm-metric-row">
             <span>전후방 일치율</span>
             <div class="pdm-mini-bar-wrap"><div class="pdm-mini-bar" :class="riskClass(cam.riskLevel)" :style="`width:${cam.matchRate}%`"></div></div>
-            <b>{{ cam.matchRate }}%</b>
+            <b>{{ cam.matchRate?.toFixed(1) }}%</b>
           </div>
           <div class="pdm-metric-row">
             <span>미검출률</span>
-            <div class="pdm-mini-bar-wrap"><div class="pdm-mini-bar pdm-warn" :style="`width:${cam.missingRate * 8}%`"></div></div>
-            <b>{{ cam.missingRate }}%</b>
+            <div class="pdm-mini-bar-wrap"><div class="pdm-mini-bar pdm-warn" :style="`width:${(cam.missingRate ?? 0) * 8}%`"></div></div>
+            <b>{{ cam.missingRate?.toFixed(1) }}%</b>
           </div>
         </div>
       </div>
 
-      <!-- 권장 조치 -->
       <div class="pdm-cam-reason">
         <p><span>예상 원인</span>{{ cam.reasonText }}</p>
         <p><span>권장 점검</span>{{ cam.recommendedAction }}</p>
@@ -291,7 +288,6 @@ function alertStatusClass(s) {
   <!-- 품질 추세 + 최근 알림 -->
   <section class="pdm-mid-grid">
 
-    <!-- 품질 추세 차트 -->
     <article class="panel pdm-trend-panel">
       <div class="panel-head">
         <h2>품질 지표 추세</h2>
@@ -308,7 +304,6 @@ function alertStatusClass(s) {
       <EChartsPanel :option="trendOption" :height="220" />
     </article>
 
-    <!-- 최근 이상 알림 -->
     <article class="panel pdm-alert-panel">
       <div class="panel-head">
         <h2>최근 이상 알림</h2>
@@ -322,13 +317,13 @@ function alertStatusClass(s) {
         >
           <div class="pdm-alert-dot" :class="riskClass(alert.riskLevel)"></div>
           <div class="pdm-alert-body">
-            <b>{{ alert.title }}</b>
-            <span>{{ alert.cameraCode }} · {{ alert.laneNames.join(', ') }}</span>
+            <b>{{ alert.alertTitle }}</b>
+            <span>{{ alert.cameraCode }}{{ alertLaneLabel(alert) ? ' · ' + alertLaneLabel(alert) : '' }}</span>
             <em>{{ alert.reasonText }}</em>
           </div>
           <div class="pdm-alert-meta">
             <span class="pdm-badge" :class="alertStatusClass(alert.status)">{{ alertStatusLabel(alert.status) }}</span>
-            <time>{{ alert.occurredAt }}</time>
+            <time>{{ formatTime(alert.createdAt) }}</time>
           </div>
         </div>
       </div>
@@ -355,15 +350,15 @@ function alertStatusClass(s) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in compareResults" :key="row.groupKey" :class="{ 'pdm-mismatch-row': !row.isMatched }">
-          <td class="pdm-mono">{{ row.groupKey }}</td>
+        <tr v-for="row in compareResults" :key="row.compareId" :class="{ 'pdm-mismatch-row': !row.isMatched }">
+          <td class="pdm-mono">{{ row.eventGroupKey }}</td>
           <td><span class="pdm-lane-chip">{{ row.laneName }}</span></td>
-          <td class="pdm-mono">{{ row.frontPlate ?? '—' }}</td>
-          <td class="pdm-mono" :class="{ 'pdm-text-warn': !row.isMatched }">{{ row.rearPlate ?? '미검출' }}</td>
+          <td class="pdm-mono">{{ row.frontPlateText ?? '—' }}</td>
+          <td class="pdm-mono" :class="{ 'pdm-text-warn': !row.isMatched }">{{ row.rearPlateText ?? '미검출' }}</td>
           <td><span class="pdm-badge" :class="row.isMatched ? 'pdm-badge-ok' : 'pdm-badge-warn'">{{ row.isMatched ? '일치' : '불일치' }}</span></td>
           <td>{{ row.mismatchType ?? '—' }}</td>
-          <td>{{ row.confGap != null ? row.confGap.toFixed(2) : '—' }}</td>
-          <td>{{ row.comparedAt }}</td>
+          <td>{{ row.confidenceGap != null ? row.confidenceGap.toFixed(2) : '—' }}</td>
+          <td>{{ formatDateTime(row.comparedAt) }}</td>
         </tr>
       </tbody>
     </table>
