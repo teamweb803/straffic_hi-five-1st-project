@@ -113,7 +113,7 @@ const barOption = computed(() => {
       textStyle: { color: EC.textMuted, fontSize: 12 },
       itemWidth: 12, itemHeight: 8
     },
-    grid: { top: 36, right: 20, bottom: 28, left: 14, containLabel: true },
+    grid: { top: 36, right: 52, bottom: 28, left: 14, containLabel: true },
     xAxis: {
       type: 'value', min: 0, max: 100,
       splitLine: { lineStyle: { color: EC.gridLine } },
@@ -124,12 +124,12 @@ const barOption = computed(() => {
       data: names,
       axisLine: { lineStyle: { color: EC.gridLine } },
       axisTick: { show: false },
-      axisLabel: { color: EC.textMuted, fontSize: 11 }
+      axisLabel: { color: EC.textMuted, fontSize: 12 }
     },
     series: [
       {
         name: '전방 Health Score',
-        type: 'bar', barMaxWidth: 14,
+        type: 'bar', barWidth: 18, barCategoryGap: '48%', barGap: '14%',
         data: frontScores,
         itemStyle: {
           color: (params) => levelColor(centers[params.dataIndex].front.level),
@@ -139,7 +139,7 @@ const barOption = computed(() => {
       },
       {
         name: '후방 Health Score',
-        type: 'bar', barMaxWidth: 14,
+        type: 'bar', barWidth: 16,
         data: rearScores,
         itemStyle: {
           color: (params) => {
@@ -157,6 +157,10 @@ const barOption = computed(() => {
 // ── 헬퍼 ──────────────────────────────────────────────────────
 function riskClass(level) {
   return { NORMAL: 'pdm-ok', WARNING: 'pdm-warn', CRITICAL: 'pdm-danger' }[level] ?? ''
+}
+// company-state 뱃지용 클래스 (센터 관리 테이블 스타일)
+function csClass(level) {
+  return { NORMAL: 'ok', WARNING: 'warn', CRITICAL: 'danger' }[level] ?? ''
 }
 function riskLabel(level) {
   return { NORMAL: '정상', WARNING: '주의', CRITICAL: '위험' }[level] ?? level
@@ -218,12 +222,14 @@ const filteredCenters = computed(() => {
   <section class="pdm-mid-grid">
 
     <!-- 지점별 Health Score 막대 차트 -->
-    <article class="panel pdm-trend-panel">
+    <article class="panel pdm-trend-panel pdm-trend-panel--fill">
       <div class="panel-head">
         <h2>지점별 Health Score</h2>
         <small>전방(진) / 후방(연)</small>
       </div>
-      <EChartsPanel :option="barOption" :height="280" />
+      <div class="pdm-chart-fill">
+        <EChartsPanel :option="barOption" height="100%" />
+      </div>
     </article>
 
     <!-- 전체 알림 -->
@@ -254,10 +260,10 @@ const filteredCenters = computed(() => {
   </section>
 
   <!-- 지점별 카메라 현황 테이블 -->
-  <article class="panel pdm-compare-panel">
-    <div class="panel-head">
-      <h2>지점별 카메라 현황</h2>
-      <div class="pdm-filter-tabs">
+  <article class="company-admin-panel">
+    <div class="company-panel-head">
+      <h3>지점별 카메라 현황 <small>전방 · 후방 카메라 Health Score 및 주요 지표</small></h3>
+      <div>
         <button
           v-for="opt in ['ALL','NORMAL','WARNING','CRITICAL']"
           :key="opt"
@@ -267,46 +273,34 @@ const filteredCenters = computed(() => {
         >{{ opt === 'ALL' ? '전체' : riskLabel(opt) }}</button>
       </div>
     </div>
-    <table class="pdm-compare-table pdm-center-table">
+    <table class="company-admin-table">
       <thead>
         <tr>
           <th>지점</th>
-          <th>전방 카메라</th>
-          <th>Health</th>
-          <th>OCR</th>
-          <th>일치율</th>
-          <th>후방 카메라</th>
-          <th>Health</th>
-          <th>OCR</th>
-          <th>일치율</th>
+          <th>전방 상태</th>
+          <th>전방 Health</th>
+          <th>전방 OCR</th>
+          <th>전방 일치율</th>
+          <th>후방 상태</th>
+          <th>후방 Health</th>
+          <th>후방 OCR</th>
+          <th>후방 일치율</th>
           <th>알림</th>
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="c in filteredCenters"
-          :key="c.id"
-          :class="{ 'pdm-mismatch-row': c.front.level !== 'NORMAL' || c.rear.level !== 'NORMAL' }"
-        >
-          <td><b style="color:inherit">{{ c.name }}</b></td>
-          <!-- 전방 -->
-          <td>
-            <span class="pdm-risk-badge" :class="riskClass(c.front.level)">{{ riskLabel(c.front.level) }}</span>
-          </td>
+        <tr v-for="c in filteredCenters" :key="c.id">
+          <td><b>{{ c.name }}</b></td>
+          <td><span class="company-state" :class="csClass(c.front.level)">{{ riskLabel(c.front.level) }}</span></td>
           <td><b :class="riskClass(c.front.level)">{{ c.front.score }}</b></td>
           <td>{{ c.front.ocr }}%</td>
           <td>{{ c.front.match }}%</td>
-          <!-- 후방 -->
-          <td>
-            <span class="pdm-risk-badge" :class="riskClass(c.rear.level)">{{ riskLabel(c.rear.level) }}</span>
-          </td>
+          <td><span class="company-state" :class="csClass(c.rear.level)">{{ riskLabel(c.rear.level) }}</span></td>
           <td><b :class="riskClass(c.rear.level)">{{ c.rear.score }}</b></td>
           <td>{{ c.rear.ocr }}%</td>
           <td>{{ c.rear.match }}%</td>
-          <!-- 알림 -->
           <td>
-            <span v-if="c.alerts > 0" class="pdm-badge pdm-badge-warn">{{ c.alerts }}</span>
-            <span v-else class="pdm-badge pdm-badge-ok">0</span>
+            <span class="company-state" :class="c.alerts > 0 ? 'warn' : 'ok'">{{ c.alerts }}건</span>
           </td>
         </tr>
       </tbody>

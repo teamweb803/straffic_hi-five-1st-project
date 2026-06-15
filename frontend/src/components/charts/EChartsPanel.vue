@@ -1,11 +1,15 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import * as echarts from 'echarts'
 
 const props = defineProps({
   option: { type: Object, required: true },
-  height: { type: Number, default: 220 }
+  height: { type: [Number, String], default: 220 }
 })
+
+const heightStyle = computed(() =>
+  typeof props.height === 'number' ? `${props.height}px` : props.height
+)
 
 const el = ref(null)
 let chart = null
@@ -40,5 +44,5 @@ watch(
 </script>
 
 <template>
-  <div ref="el" :style="{ width: '100%', height: `${height}px` }"></div>
+  <div ref="el" :style="{ width: '100%', height: heightStyle }"></div>
 </template>

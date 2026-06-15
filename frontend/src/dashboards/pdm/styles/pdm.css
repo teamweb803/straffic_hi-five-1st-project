@@ -133,6 +133,14 @@
 
 /* 추세 차트 */
 .pdm-trend-panel { padding-bottom: 12px; }
+.pdm-trend-panel--fill {
+  display: flex;
+  flex-direction: column;
+}
+.pdm-chart-fill {
+  flex: 1;
+  min-height: 0;
+}
 .pdm-cam-tabs { display: flex; gap: 6px; }
 .pdm-cam-tabs button {
   height: 26px;
@@ -222,6 +230,13 @@
   cursor: pointer;
 }
 .pdm-filter-tabs button.active {
+  background: rgba(22,103,219,.45);
+  border-color: rgba(33,130,255,.7);
+  color: #fff;
+}
+
+/* company-panel-head 안 필터 버튼 active 상태 */
+.company-panel-head div button.active {
   background: rgba(22,103,219,.45);
   border-color: rgba(33,130,255,.7);
   color: #fff;
