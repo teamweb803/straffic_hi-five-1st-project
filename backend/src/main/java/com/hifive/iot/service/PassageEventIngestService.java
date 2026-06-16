@@ -25,17 +25,20 @@ public class PassageEventIngestService {
 	private final ProtobufPassageEventDecoder decoder;
 	private final InspectionTaskRepository inspectionTaskRepository;
 	private final SettlementCandidateRepository settlementCandidateRepository;
+	private final PdmCompareService pdmCompareService;
 
 	public PassageEventIngestService(
 		PassageEventRepository passageEventRepository,
 		ProtobufPassageEventDecoder decoder,
 		InspectionTaskRepository inspectionTaskRepository,
-		SettlementCandidateRepository settlementCandidateRepository
+		SettlementCandidateRepository settlementCandidateRepository,
+		PdmCompareService pdmCompareService
 	) {
 		this.passageEventRepository = passageEventRepository;
 		this.decoder = decoder;
 		this.inspectionTaskRepository = inspectionTaskRepository;
 		this.settlementCandidateRepository = settlementCandidateRepository;
+		this.pdmCompareService = pdmCompareService;
 	}
 
 	@Transactional
@@ -109,6 +112,7 @@ public class PassageEventIngestService {
 			0,
 			needsReview ? "REVIEW_REQUIRED" : "READY"
 		));
+		pdmCompareService.match(saved);
 		return new IngestResultResponse(
 			saved.getEventId(),
 			"accepted",

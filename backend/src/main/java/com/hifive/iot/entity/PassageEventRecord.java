@@ -118,6 +118,9 @@ public class PassageEventRecord {
 	@Column(name = "inspection_status", length = 40)
 	private String inspectionStatus;
 
+	@Column(name = "event_status", length = 20)
+	private String eventStatus;
+
 	@Column(name = "received_at", nullable = false)
 	private LocalDateTime receivedAt;
 
@@ -125,11 +128,53 @@ public class PassageEventRecord {
 	}
 
 	public PassageEventRecord(String eventId, byte[] payloadBytes, LocalDateTime receivedAt) {
+		this(eventId, "protobuf", payloadBytes, receivedAt);
+	}
+
+	private PassageEventRecord(
+		String eventId,
+		String payloadFormat,
+		byte[] payloadBytes,
+		LocalDateTime receivedAt
+	) {
 		this.eventId = eventId;
-		this.payloadFormat = "protobuf";
+		this.payloadFormat = payloadFormat;
 		this.payloadBytes = payloadBytes;
 		this.payloadSizeBytes = payloadBytes.length;
 		this.receivedAt = receivedAt;
+	}
+
+	public static PassageEventRecord demo(
+		String eventId,
+		byte[] payloadBytes,
+		String deviceId,
+		String cameraId,
+		String cameraRole,
+		Integer laneNo,
+		String plateText,
+		Double plateConfidence,
+		Integer candidateCount,
+		Double agreementRatio,
+		Boolean needsReview,
+		String eventStatus,
+		LocalDateTime eventTime,
+		LocalDateTime receivedAt
+	) {
+		PassageEventRecord event = new PassageEventRecord(eventId, "json", payloadBytes, receivedAt);
+		event.deviceId = deviceId;
+		event.cameraId = cameraId;
+		event.cameraRole = cameraRole;
+		event.direction = cameraRole;
+		event.laneNo = laneNo;
+		event.plateText = plateText;
+		event.plateConfidence = plateConfidence;
+		event.candidateCount = candidateCount;
+		event.agreementRatio = agreementRatio;
+		event.needsReview = needsReview;
+		event.eventStatus = eventStatus;
+		event.eventTime = eventTime;
+		event.schemaVersion = "hifive.pdm.demo.v1";
+		return event;
 	}
 
 	public PassageEventRecord(
@@ -202,6 +247,10 @@ public class PassageEventRecord {
 
 	public Integer getPayloadSizeBytes() {
 		return payloadSizeBytes;
+	}
+
+	public String getPayloadFormat() {
+		return payloadFormat;
 	}
 
 	public String getDeviceId() {
@@ -306,6 +355,10 @@ public class PassageEventRecord {
 
 	public String getInspectionStatus() {
 		return inspectionStatus;
+	}
+
+	public String getEventStatus() {
+		return eventStatus;
 	}
 
 	public LocalDateTime getReceivedAt() {
