@@ -79,6 +79,57 @@
   align-items: center;
 }
 .pdm-gauge-wrap { flex-shrink: 0; }
+.pdm-css-gauge {
+  position: relative;
+  width: 132px;
+  height: 106px;
+}
+.pdm-css-gauge svg {
+  width: 132px;
+  height: 82px;
+  display: block;
+}
+.pdm-css-gauge-track,
+.pdm-css-gauge-value {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 11;
+}
+.pdm-css-gauge-track {
+  stroke: rgba(255,255,255,0.08);
+}
+.pdm-css-gauge-value {
+  stroke: #2f8cff;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 900ms cubic-bezier(.22,.61,.36,1);
+}
+.pdm-css-gauge.pdm-ok .pdm-css-gauge-value { stroke: #4cdf66; }
+.pdm-css-gauge.pdm-warn .pdm-css-gauge-value { stroke: #f5b84b; }
+.pdm-css-gauge.pdm-danger .pdm-css-gauge-value { stroke: #ef5a54; }
+.pdm-css-gauge strong {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 48px;
+  color: #e6f1ff;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+.pdm-css-gauge span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 74px;
+  color: #9fb2cb;
+  font-size: 11px;
+  text-align: center;
+}
+.pdm-css-gauge.pdm-ok strong { color: #4cdf66; }
+.pdm-css-gauge.pdm-warn strong { color: #f5b84b; }
+.pdm-css-gauge.pdm-danger strong { color: #ef5a54; }
 
 /* 지표 바 */
 .pdm-cam-metrics { display: flex; flex-direction: column; gap: 10px; }
@@ -141,6 +192,46 @@
   flex: 1;
   min-height: 0;
 }
+.pdm-score-bars {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px 22px;
+}
+.pdm-score-bar-row {
+  display: grid;
+  grid-template-columns: 92px 1fr 42px;
+  align-items: center;
+  gap: 12px;
+}
+.pdm-score-bar-row b {
+  color: #dce9f8;
+  font-size: 12px;
+}
+.pdm-score-bar-row strong {
+  font-size: 13px;
+  text-align: right;
+}
+.pdm-score-bar-track {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.pdm-score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #2f8cff;
+  transition: width 900ms cubic-bezier(.22,.61,.36,1);
+}
+.pdm-score-bar-fill.pdm-ok { background: #4cdf66; }
+.pdm-score-bar-fill.pdm-warn { background: #f5b84b; }
+.pdm-score-bar-fill.pdm-danger { background: #ef5a54; }
+.pdm-score-empty {
+  color: #9fb2cb;
+  font-size: 13px;
+  text-align: center;
+  padding: 42px 0;
+}
 .pdm-cam-tabs { display: flex; gap: 6px; }
 .pdm-cam-tabs button {
   height: 26px;
@@ -158,6 +249,77 @@
   color: #fff;
 }
 
+/* 카메라 카드 모델 탭 바 */
+.pdm-model-tab-bar {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(125,164,210,.14);
+}
+.pdm-model-tab-bar button {
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid rgba(42,133,227,.32);
+  border-radius: 4px;
+  background: transparent;
+  color: #9fb2cb;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pdm-model-tab-bar button.active {
+  background: rgba(22,103,219,.42);
+  border-color: rgba(33,130,255,.65);
+  color: #e6f1ff;
+}
+
+/* 모델 탭 — 종합 탭: 미니 모델 점수 행 */
+.pdm-model-mini-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(125,164,210,.12);
+}
+.pdm-model-mini-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.pdm-model-mini-row span { color: #9fb2cb; }
+.pdm-model-mini-row b   { color: #e6f1ff; font-weight: 700; }
+
+/* 모델 탭 — 개별 모델 결과 */
+.pdm-model-result-body {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.pdm-model-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 모델 탭 — 대기 중 */
+.pdm-model-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 130px;
+  color: #9fb2cb;
+}
+.pdm-model-pending span { font-size: 13px; font-weight: 700; }
+.pdm-model-pending small { font-size: 11px; color: #7a94b0; }
+
 /* 알림 패널 */
 .pdm-count-chip {
   display: inline-grid;
@@ -172,7 +334,26 @@
   font-weight: 800;
 }
 
-.pdm-alert-list { display: flex; flex-direction: column; gap: 1px; padding: 8px 12px 12px; }
+/* pdm-alert-panel 내 panel-head flex 보장 (마스터 대시보드 포함) */
+.pdm-alert-panel .panel-head {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pdm-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 12px 12px;
+  overflow-y: auto;
+}
+
+/* 알림 목록 스크롤 높이 (관제 대시보드 트렌드 차트 220px 기준) */
+.pdm-alert-list--scroll {
+  max-height: 220px;
+}
 .pdm-alert-row {
   display: grid;
   grid-template-columns: 10px 1fr auto;
@@ -283,6 +464,14 @@
 .light-mode .pdm-alert-body em  { color: #53677f; }
 .light-mode .pdm-mini-bar-wrap,
 .light-mode .pdm-score-track    { background: rgba(58,126,204,.12); }
+.light-mode .pdm-css-gauge-track { stroke: rgba(58,126,204,.12); }
+.light-mode .pdm-css-gauge strong { color: #21364d; }
+.light-mode .pdm-css-gauge span { color: #53677f; }
+.light-mode .pdm-css-gauge.pdm-ok strong { color: #4cdf66; }
+.light-mode .pdm-css-gauge.pdm-warn strong { color: #f5b84b; }
+.light-mode .pdm-css-gauge.pdm-danger strong { color: #ef5a54; }
+.light-mode .pdm-score-bar-row b { color: #21364d; }
+.light-mode .pdm-score-bar-track { background: rgba(58,126,204,.12); }
 .light-mode .pdm-compare-table th { background: #e5eef9; color: #53677f; }
 .light-mode .pdm-compare-table td { color: #21364d; }
 .light-mode .pdm-mismatch-row td  { background: rgba(245,184,75,.08); }
@@ -308,6 +497,14 @@
 .master-shell.light .pdm-alert-body em  { color: #53677f; }
 .master-shell.light .pdm-mini-bar-wrap,
 .master-shell.light .pdm-score-track    { background: rgba(58,126,204,.12); }
+.master-shell.light .pdm-css-gauge-track { stroke: rgba(58,126,204,.12); }
+.master-shell.light .pdm-css-gauge strong { color: #21364d; }
+.master-shell.light .pdm-css-gauge span { color: #53677f; }
+.master-shell.light .pdm-css-gauge.pdm-ok strong { color: #4cdf66; }
+.master-shell.light .pdm-css-gauge.pdm-warn strong { color: #f5b84b; }
+.master-shell.light .pdm-css-gauge.pdm-danger strong { color: #ef5a54; }
+.master-shell.light .pdm-score-bar-row b { color: #21364d; }
+.master-shell.light .pdm-score-bar-track { background: rgba(58,126,204,.12); }
 .master-shell.light .pdm-compare-table th { background: #e5eef9; color: #53677f; }
 .master-shell.light .pdm-compare-table td { color: #21364d; }
 .master-shell.light .pdm-mismatch-row td  { background: rgba(245,184,75,.08); }
