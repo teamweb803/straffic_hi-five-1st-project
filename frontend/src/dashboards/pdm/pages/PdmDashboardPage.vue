@@ -1,7 +1,10 @@
 <script setup>
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import EChartsPanel from '@/components/charts/EChartsPanel.vue'
 import { pdmApi } from '@/api/pdm'
+
+const PDM_REFRESH_MS = 10 * 1000
+let refreshTimer = null
 
 // ── 모델 탭 상태 (카메라별 선택 탭) ──────────────────────────────
 const modelTabs = ref({}) // { [cameraId]: 'ALL' | 'RULE_BASED' | 'ISOLATION_FOREST' | 'LSTM_AE' }
@@ -11,6 +14,39 @@ function getModelTab(cameraId) {
 }
 function setModelTab(cameraId, tab) {
   modelTabs.value = { ...modelTabs.value, [cameraId]: tab }
+}
+
+function getModelResult(cam, modelType) {
+  return cam.modelResults?.find(result => result.modelType === modelType) ?? null
+}
+
+function modelScore(cam, modelType) {
+  return getModelResult(cam, modelType)?.healthScore ?? '—'
+}
+
+function modelRiskClass(cam, modelType) {
+  const result = getModelResult(cam, modelType)
+  return result ? riskClass(result.riskLevel) : ''
+}
+
+function selectedModelResult(cam) {
+  return getModelResult(cam, getModelTab(cam.cameraId))
+}
+
+function selectedModelScore(cam) {
+  return selectedModelResult(cam)?.healthScore ?? '—'
+}
+
+function selectedModelRisk(cam) {
+  return selectedModelResult(cam)?.riskLevel
+}
+
+function selectedModelReason(cam) {
+  return selectedModelResult(cam)?.reasonText
+}
+
+function selectedModelAction(cam) {
+  return selectedModelResult(cam)?.recommendedAction
 }
 
 // ── 반응형 상태 ─────────────────────────────────────────────────
@@ -28,6 +64,12 @@ const qualityMetrics = ref({})
 const selectedCam = ref(null)
 const loading = ref(true)
 const chartReady = ref(false)
+const demoMode = ref(false)
+const demoModeBusy = ref(false)
+const demoMailBusy = ref(false)
+const demoMsg = ref('')
+const errorMsg = ref('')
+const COMPARE_RESULT_LIMIT = 16
 
 // ── 시각 포맷 ──────────────────────────────────────────────────
 function formatTime(dt) {
@@ -84,6 +126,7 @@ function messageLabel(text) {
     'Recognition quality is stable': '인식 품질 안정',
     'No immediate maintenance required': '즉시 점검 불필요',
     'Temporary mismatch spike detected': '일시적 전후방 불일치 증가',
+    'Rear camera OCR sudden drop detected': '후방 카메라 OCR 급락 감지',
     'Check recent camera frame delay and lens contamination': '최근 프레임 지연 및 렌즈 오염 확인',
     'Event count is too low for reliable sequence analysis': '이벤트 수 부족으로 시계열 분석 신뢰도 낮음',
     'Check camera capture pipeline and event forwarding': '카메라 캡처/이벤트 전달 경로 확인',
@@ -98,10 +141,15 @@ function messageLabel(text) {
 function alertTitleLabel(title) {
   return {
     'Front Camera Low Count WARNING alert': '전방 카메라 이벤트 부족 주의',
+    'Front Camera Low Count CRITICAL alert': '전방 카메라 이벤트 부족 위험',
+    'Rear Camera Spike WARNING alert': '후방 카메라 일시 품질 저하 주의',
+    'Rear Camera Spike CRITICAL alert': '후방 카메라 OCR 급락 위험',
+    'Rear Camera Degrade WARNING alert': '후방 카메라 장기 품질 저하 주의',
     'Rear Camera Degrade CRITICAL alert': '후방 카메라 장기 품질 저하 위험',
     'Front Camera Pattern WARNING alert': '전방 카메라 반복 품질 저하 주의',
-    'Rear Camera Spike WARNING alert': '후방 카메라 일시 불일치 증가 주의',
+    'Front Camera Pattern CRITICAL alert': '전방 카메라 반복 품질 저하 위험',
     'Front Camera Legacy CRITICAL alert': '전방 카메라 기존 검증 알림',
+    'PDM Demo Mail Test WARNING alert': '메일 테스트 이상 알림',
   }[title] ?? title
 }
 
@@ -124,48 +172,105 @@ function alertLaneLabel(alert) {
 }
 
 // ── 데이터 로딩 ────────────────────────────────────────────────
-async function loadData() {
-  loading.value = true
-  chartReady.value = false
+async function loadData({ silent = false } = {}) {
+  if (!silent) {
+    loading.value = true
+    chartReady.value = false
+  }
   try {
     const [summaryRes, camerasRes, alertsRes, compareRes] = await Promise.all([
       pdmApi.getDashboardSummary(),
       pdmApi.getCameras(),
-      pdmApi.getAlerts(),
-      pdmApi.getCompareResults(),
+      pdmApi.getAlerts({ status: 'CREATED' }),
+      pdmApi.getCompareResults({ limit: COMPARE_RESULT_LIMIT }).catch(() => ({ data: [] })),
     ])
     summary.value = summaryRes.data
     alerts.value = alertsRes.data.filter(alert => normalizeAlertStatus(alert.status) !== 'RESOLVED')
     compareResults.value = compareRes.data
 
-    // 카메라 상세 (avgOcrConfidence, successRate 등 포함)
+    // 카메라 상세(지표 포함)와 품질 추세를 한 번에 병렬 조회 (라운드트립 단축)
     const camList = camerasRes.data
-    const detailRes = await Promise.all(camList.map(c => pdmApi.getCameraDetail(c.cameraId)))
+    const [detailRes, metricsRes] = await Promise.all([
+      Promise.all(camList.map(c => pdmApi.getCameraDetail(c.cameraId))),
+      Promise.all(camList.map(c => pdmApi.getQualityMetrics(c.cameraId).catch(() => ({ data: [] })))),
+    ])
     cameras.value = detailRes.map(r => r.data)
 
     if (cameras.value.length > 0 && selectedCam.value === null) {
       selectedCam.value = cameras.value[0].cameraId
     }
 
-    // 품질 추세 (카메라별)
-    const metricsRes = await Promise.all(
-      cameras.value.map(c => pdmApi.getQualityMetrics(c.cameraId).catch(() => ({ data: [] })))
-    )
     const map = {}
-    cameras.value.forEach((c, i) => { map[c.cameraId] = metricsRes[i].data })
+    camList.forEach((c, i) => { map[c.cameraId] = metricsRes[i].data })
     qualityMetrics.value = map
-    nextTick(() => {
-      requestAnimationFrame(() => { chartReady.value = true })
-    })
+    errorMsg.value = ''
+    if (!silent || !chartReady.value) {
+      nextTick(() => {
+        requestAnimationFrame(() => { chartReady.value = true })
+      })
+    }
 
   } catch (e) {
     console.error('[PDM] 데이터 로딩 실패', e)
+    errorMsg.value = '예지보전 데이터를 불러오지 못했습니다. 백엔드 연결을 확인하세요.'
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
 
-onMounted(loadData)
+async function loadDemoMode() {
+  try {
+    const res = await pdmApi.getDemoMode()
+    demoMode.value = Boolean(res.data?.enabled)
+  } catch (e) {
+    console.warn('[PDM] 데모 모드 상태 조회 실패', e)
+  }
+}
+
+async function toggleDemoMode() {
+  if (demoModeBusy.value) return
+  demoModeBusy.value = true
+  demoMsg.value = ''
+  try {
+    const res = await pdmApi.setDemoMode(!demoMode.value)
+    demoMode.value = Boolean(res.data?.enabled)
+    demoMsg.value = demoMode.value ? '데모 고정값 ON' : '데모 고정값 OFF'
+    await loadData({ silent: true })
+    setTimeout(() => { demoMsg.value = '' }, 3000)
+  } catch (e) {
+    demoMsg.value = '시연 모드 변경 실패'
+  } finally {
+    demoModeBusy.value = false
+  }
+}
+
+async function sendDemoMailAlert() {
+  if (demoMailBusy.value) return
+  demoMailBusy.value = true
+  demoMsg.value = ''
+  try {
+    const res = await pdmApi.sendDemoMailAlert()
+    demoMsg.value = res.data?.message ?? '메일 테스트 알림 요청 완료'
+    await loadData({ silent: true })
+    setTimeout(() => { demoMsg.value = '' }, 4000)
+  } catch (e) {
+    demoMsg.value = '메일 테스트 알림 실패'
+  } finally {
+    demoMailBusy.value = false
+  }
+}
+
+onMounted(() => {
+  loadDemoMode()
+  loadData()
+  refreshTimer = window.setInterval(() => {
+    loadData({ silent: true })
+  }, PDM_REFRESH_MS)
+})
+
+onBeforeUnmount(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer)
+})
 
 // ── ECharts 공통 색상 토큰 ──────────────────────────────────────
 const EC = {
@@ -200,7 +305,12 @@ const trendOption = computed(() => {
       data: labels.length ? labels : ['—'],
       axisLine: { lineStyle: { color: EC.gridLine } },
       axisTick: { show: false },
-      axisLabel: { color: EC.textMuted, fontSize: 11 }
+      axisLabel: {
+        color: EC.textMuted,
+        fontSize: 11,
+        // 10분 버킷이라도 정시·30분 라벨만 표기해 일정 간격으로 보이게
+        interval: (index, value) => /:(00|30)$/.test(value)
+      }
     },
     yAxis: {
       type: 'value',
@@ -269,6 +379,35 @@ function alertStatusClass(s) {
     <p>전·후방 카메라 인식 품질 기반 장비 상태 진단</p>
   </section>
 
+  <article class="panel pdm-demo-toolbar">
+    <div>
+      <b>데모 고정값</b>
+      <span>{{ demoMode ? 'ON · 고정 시나리오 응답' : 'OFF · 실시간 분석 응답' }}</span>
+    </div>
+    <div class="pdm-demo-actions">
+      <button
+        type="button"
+        class="pdm-action-button"
+        :class="{ active: demoMode }"
+        :disabled="demoModeBusy"
+        @click="toggleDemoMode"
+      >
+        {{ demoModeBusy ? '전환 중...' : (demoMode ? '실시간으로 전환' : '데모 고정값 켜기') }}
+      </button>
+      <button
+        type="button"
+        class="pdm-action-button"
+        :disabled="demoMailBusy"
+        @click="sendDemoMailAlert"
+      >
+        {{ demoMailBusy ? '발송 확인 중...' : '메일 테스트 알림' }}
+      </button>
+      <small v-if="demoMsg">{{ demoMsg }}</small>
+    </div>
+  </article>
+
+  <div v-if="errorMsg" class="pdm-state-banner">{{ errorMsg }}</div>
+
   <!-- KPI 요약 카드 5개 -->
   <section class="pdm-kpi-grid">
     <article class="pdm-kpi-card">
@@ -296,8 +435,16 @@ function alertStatusClass(s) {
     </article>
   </section>
 
+  <!-- 3모델 역할 범례 -->
+  <div v-if="cameras.length" class="pdm-model-legend">
+    <span><b>Rule-Based</b> 임계값 급락 감지</span>
+    <span><b>Isolation Forest</b> 다변량 이상치 탐지</span>
+    <span><b>LSTM-AE</b> 시계열 추세 열화 학습</span>
+    <span class="pdm-legend-scale">점수 0~100 · 높을수록 양호</span>
+  </div>
+
   <!-- 카메라 상태 카드 -->
-  <section class="pdm-cam-grid">
+  <section v-if="cameras.length" class="pdm-cam-grid">
     <article
       v-for="cam in cameras"
       :key="cam.cameraId"
@@ -357,44 +504,44 @@ function alertStatusClass(s) {
             <div class="pdm-model-mini-scores">
               <div class="pdm-model-mini-row">
                 <span>Rule-Based</span>
-                <b :class="cam.modelType === 'RULE_BASED' ? riskClass(cam.riskLevel) : ''">{{ cam.modelType === 'RULE_BASED' ? cam.healthScore : '—' }}</b>
+                <b :class="modelRiskClass(cam, 'RULE_BASED')">{{ modelScore(cam, 'RULE_BASED') }}</b>
               </div>
               <div class="pdm-model-mini-row">
                 <span>Isolation Forest</span>
-                <b :class="cam.modelType === 'ISOLATION_FOREST' ? riskClass(cam.riskLevel) : ''">{{ cam.modelType === 'ISOLATION_FOREST' ? cam.healthScore : '—' }}</b>
+                <b :class="modelRiskClass(cam, 'ISOLATION_FOREST')">{{ modelScore(cam, 'ISOLATION_FOREST') }}</b>
               </div>
               <div class="pdm-model-mini-row">
                 <span>LSTM-AE</span>
-                <b :class="cam.modelType === 'LSTM_AE' ? riskClass(cam.riskLevel) : ''">{{ cam.modelType === 'LSTM_AE' ? cam.healthScore : '—' }}</b>
+                <b :class="modelRiskClass(cam, 'LSTM_AE')">{{ modelScore(cam, 'LSTM_AE') }}</b>
               </div>
             </div>
           </div>
         </div>
         <div class="pdm-cam-reason">
-          <p><span>예상 원인</span>{{ messageLabel(cam.reasonText) }}</p>
-          <p><span>권장 점검</span>{{ messageLabel(cam.recommendedAction) }}</p>
+          <p><span>{{ normalizeRisk(cam.riskLevel) === 'NORMAL' ? '상태 요약' : '예상 원인' }}</span>{{ messageLabel(cam.reasonText) }}</p>
+          <p><span>권장 조치</span>{{ messageLabel(cam.recommendedAction) }}</p>
         </div>
       </template>
 
       <!-- 개별 모델 탭 -->
       <template v-else>
-        <template v-if="cam.modelType === getModelTab(cam.cameraId)">
+        <template v-if="selectedModelResult(cam)">
           <div class="pdm-model-result-body">
             <div class="pdm-gauge-wrap">
-              <div class="pdm-css-gauge" :class="riskClass(cam.riskLevel)">
+              <div class="pdm-css-gauge" :class="riskClass(selectedModelRisk(cam))">
                 <svg viewBox="0 0 120 72" aria-hidden="true">
                   <path class="pdm-css-gauge-track" pathLength="100" d="M 12 60 A 48 48 0 0 1 108 60" />
-                  <path class="pdm-css-gauge-value" pathLength="100" d="M 12 60 A 48 48 0 0 1 108 60" :style="{ strokeDashoffset: gaugeDashOffset(cam.healthScore) }" />
+                  <path class="pdm-css-gauge-value" pathLength="100" d="M 12 60 A 48 48 0 0 1 108 60" :style="{ strokeDashoffset: gaugeDashOffset(selectedModelScore(cam)) }" />
                 </svg>
-                <strong>{{ cam.healthScore }}</strong>
+                <strong>{{ selectedModelScore(cam) }}</strong>
                 <span>인식 품질 점수</span>
               </div>
             </div>
             <div class="pdm-model-result-info">
-              <span class="pdm-risk-badge" :class="riskClass(cam.riskLevel)">{{ riskLabel(cam.riskLevel) }}</span>
-              <div style="margin-top:10px;display:grid;gap:6px">
-                <p style="margin:0;font-size:12px;color:#dce9f8"><span style="display:block;margin-bottom:3px;color:#9fb2cb;font-size:11px">분석 이유</span>{{ messageLabel(cam.reasonText) }}</p>
-                <p style="margin:0;font-size:12px;color:#dce9f8"><span style="display:block;margin-bottom:3px;color:#9fb2cb;font-size:11px">권장 조치</span>{{ messageLabel(cam.recommendedAction) }}</p>
+              <span class="pdm-risk-badge" :class="riskClass(selectedModelRisk(cam))">{{ riskLabel(selectedModelRisk(cam)) }}</span>
+              <div class="pdm-model-detail-list">
+                <p class="pdm-model-detail-text"><span>분석 이유</span>{{ selectedModelReason(cam) }}</p>
+                <p class="pdm-model-detail-text"><span>권장 조치</span>{{ selectedModelAction(cam) }}</p>
               </div>
             </div>
           </div>
@@ -406,6 +553,9 @@ function alertStatusClass(s) {
       </template>
     </article>
   </section>
+  <div v-else class="pdm-state-empty">
+    {{ loading ? '예지보전 데이터를 불러오는 중…' : '표시할 카메라가 없습니다.' }}
+  </div>
 
   <!-- 품질 추세 + 최근 알림 -->
   <section class="pdm-mid-grid">
@@ -456,34 +606,39 @@ function alertStatusClass(s) {
   <article class="panel pdm-compare-panel">
     <div class="panel-head">
       <h2>전후방 비교 결과</h2>
-      <small>최근 30분 · {{ compareResults.length }}건</small>
+      <small>최근 비교 결과 · {{ compareResults.length }}건</small>
     </div>
-    <table class="pdm-compare-table">
-      <thead>
-        <tr>
-          <th>이벤트 그룹</th>
-          <th>차로</th>
-          <th>전방 OCR</th>
-          <th>후방 OCR</th>
-          <th>일치</th>
-          <th>불일치 유형</th>
-          <th>신뢰도 차이</th>
-          <th>비교 시각</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="row in compareResults" :key="row.compareId" :class="{ 'pdm-mismatch-row': !row.isMatched }">
-          <td class="pdm-mono">{{ row.eventGroupKey }}</td>
-          <td><span class="pdm-lane-chip">{{ row.laneName }}</span></td>
-          <td class="pdm-mono">{{ row.frontPlateText ?? '—' }}</td>
-          <td class="pdm-mono" :class="{ 'pdm-text-warn': !row.isMatched }">{{ row.rearPlateText ?? '미검출' }}</td>
-          <td><span class="pdm-badge" :class="row.isMatched ? 'pdm-badge-ok' : 'pdm-badge-warn'">{{ row.isMatched ? '일치' : '불일치' }}</span></td>
-          <td>{{ mismatchTypeLabel(row.mismatchType) }}</td>
-          <td>{{ row.confidenceGap != null ? row.confidenceGap.toFixed(2) : '—' }}</td>
-          <td>{{ formatDateTime(row.comparedAt) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="pdm-compare-table-wrap">
+      <table class="pdm-compare-table">
+        <thead>
+          <tr>
+            <th>이벤트 그룹</th>
+            <th>차로</th>
+            <th>전방 OCR</th>
+            <th>후방 OCR</th>
+            <th>일치</th>
+            <th>불일치 유형</th>
+            <th>신뢰도 차(0~1)</th>
+            <th>비교 시각</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in compareResults" :key="row.compareId" :class="{ 'pdm-mismatch-row': !row.isMatched }">
+            <td class="pdm-mono">{{ row.eventGroupKey }}</td>
+            <td><span class="pdm-lane-chip">{{ row.laneId }}차로</span></td>
+            <td class="pdm-mono">{{ row.frontPlateText ?? '—' }}</td>
+            <td class="pdm-mono" :class="{ 'pdm-text-warn': !row.isMatched }">{{ row.rearPlateText ?? '미검출' }}</td>
+            <td><span class="pdm-badge" :class="row.isMatched ? 'pdm-badge-ok' : 'pdm-badge-warn'">{{ row.isMatched ? '일치' : '불일치' }}</span></td>
+            <td>{{ mismatchTypeLabel(row.mismatchType) }}</td>
+            <td>{{ row.confidenceGap != null ? row.confidenceGap.toFixed(2) : '—' }}</td>
+            <td>{{ formatDateTime(row.comparedAt) }}</td>
+          </tr>
+          <tr v-if="!compareResults.length">
+            <td colspan="8" class="pdm-compare-empty">비교 결과 없음</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </article>
 
 </section>

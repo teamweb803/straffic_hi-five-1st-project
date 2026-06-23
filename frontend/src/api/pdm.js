@@ -22,6 +22,15 @@ export const pdmApi = {
   getCompareResults(params = {}) {
     return apiClient.get('/api/v1/pdm/compare-results', { params })
   },
+  getDemoMode() {
+    return apiClient.get('/api/v1/pdm/demo-mode')
+  },
+  setDemoMode(enabled) {
+    return apiClient.patch('/api/v1/pdm/demo-mode', { enabled })
+  },
+  sendDemoMailAlert() {
+    return apiClient.post('/api/v1/pdm/demo-mail-alert')
+  },
 }
 
 // PDM FastAPI 분석 서버 — 내부 관리자용
@@ -31,9 +40,8 @@ export const pdmFastApi = {
   getStatus() {
     return apiClient.get('/pdm-internal/status')
   },
-  // 수동 분석 1회 트리거 (백그라운드 실행, 짧은 ack 반환)
-  runOnce() {
-    return apiClient.post('/pdm-internal/run-once')
+  runDemoRefresh() {
+    return apiClient.post('/pdm-internal/demo-refresh')
   },
   // 서버 헬스 체크
   health() {

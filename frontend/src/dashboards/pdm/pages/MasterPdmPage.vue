@@ -1,6 +1,9 @@
 <script setup>
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import { pdmApi, pdmFastApi } from '@/api/pdm'
+
+const PDM_REFRESH_MS = 10 * 1000
+let refreshTimer = null
 
 // ── 반응형 상태 ─────────────────────────────────────────────────
 const summary = ref({
@@ -14,36 +17,78 @@ const cameras = ref([])
 const alerts = ref([])
 const loading = ref(true)
 const chartReady = ref(false)
+const barChartHeight = 320
+const demoMode = ref(false)
+const demoModeBusy = ref(false)
+const demoMailBusy = ref(false)
+const demoMsg = ref('')
+const errorMsg = ref('')
 
 // ── 데이터 로딩 ────────────────────────────────────────────────
-async function loadData() {
-  loading.value = true
-  chartReady.value = false
+async function loadData({ silent = false } = {}) {
+  if (!silent) {
+    loading.value = true
+    chartReady.value = false
+  }
   try {
     const [summaryRes, camerasRes, alertsRes] = await Promise.all([
       pdmApi.getDashboardSummary(),
       pdmApi.getCameras(),
-      pdmApi.getAlerts(),
+      pdmApi.getAlerts({ status: 'CREATED' }),
     ])
     summary.value = summaryRes.data
     cameras.value = camerasRes.data
     alerts.value = alertsRes.data.filter(alert => normalizeStatus(alert.status) !== 'RESOLVED')
-    nextTick(() => {
-      requestAnimationFrame(() => { chartReady.value = true })
-    })
+    errorMsg.value = ''
+    if (!silent || !chartReady.value) {
+      nextTick(() => {
+        requestAnimationFrame(() => { chartReady.value = true })
+      })
+    }
   } catch (e) {
     console.error('[PDM Master] 데이터 로딩 실패', e)
+    errorMsg.value = '예지보전 데이터를 불러오지 못했습니다. 백엔드 연결을 확인하세요.'
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
 
-onMounted(loadData)
+function refreshPdmPage() {
+  loadData({ silent: true })
+  loadFastApiStatus()
+}
+
+onMounted(() => {
+  loadDemoMode()
+  loadData()
+  loadFastApiStatus()
+  refreshTimer = window.setInterval(refreshPdmPage, PDM_REFRESH_MS)
+})
 
 // ── 시각 포맷 ──────────────────────────────────────────────────
 function formatTime(dt) {
   if (!dt) return '—'
   return new Date(dt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function schedulerLabel(status) {
+  if (!status) return '연결 안 됨'
+  if (status.job?.running) return '분석 실행 중'
+  return status.schedulerRunning ? '자동 실행 중' : '수동 대기'
+}
+
+function formatInterval(seconds) {
+  const s = Number(seconds)
+  if (!Number.isFinite(s)) return '—'
+  return s % 60 === 0 ? `${s / 60}분` : `${s}초`
+}
+
+function formatTargets(targets) {
+  if (!targets) return '—'
+  const pairs = String(targets).split(',').map(p => p.trim()).filter(Boolean)
+  if (!pairs.length) return '—'
+  const cameras = new Set(pairs.map(p => p.split(':')[0]))
+  return `카메라 ${cameras.size}대 · 분석 대상 ${pairs.length}개`
 }
 
 function normalizeRisk(level) {
@@ -62,6 +107,7 @@ function messageLabel(text) {
     'Recognition quality is stable': '인식 품질 안정',
     'No immediate maintenance required': '즉시 점검 불필요',
     'Temporary mismatch spike detected': '일시적 전후방 불일치 증가',
+    'Rear camera OCR sudden drop detected': '후방 카메라 OCR 급락 감지',
     'Check recent camera frame delay and lens contamination': '최근 프레임 지연 및 렌즈 오염 확인',
     'Event count is too low for reliable sequence analysis': '이벤트 수 부족으로 시계열 분석 신뢰도 낮음',
     'Check camera capture pipeline and event forwarding': '카메라 캡처/이벤트 전달 경로 확인',
@@ -76,11 +122,24 @@ function messageLabel(text) {
 function alertTitleLabel(title) {
   return {
     'Front Camera Low Count WARNING alert': '전방 카메라 이벤트 부족 주의',
+    'Front Camera Low Count CRITICAL alert': '전방 카메라 이벤트 부족 위험',
+    'Rear Camera Spike WARNING alert': '후방 카메라 일시 품질 저하 주의',
+    'Rear Camera Spike CRITICAL alert': '후방 카메라 OCR 급락 위험',
+    'Rear Camera Degrade WARNING alert': '후방 카메라 장기 품질 저하 주의',
     'Rear Camera Degrade CRITICAL alert': '후방 카메라 장기 품질 저하 위험',
     'Front Camera Pattern WARNING alert': '전방 카메라 반복 품질 저하 주의',
-    'Rear Camera Spike WARNING alert': '후방 카메라 일시 불일치 증가 주의',
+    'Front Camera Pattern CRITICAL alert': '전방 카메라 반복 품질 저하 위험',
     'Front Camera Legacy CRITICAL alert': '전방 카메라 기존 검증 알림',
+    'PDM Demo Mail Test WARNING alert': '메일 테스트 이상 알림',
   }[title] ?? title
+}
+
+function alertLaneLabel(alert) {
+  if (alert.laneId == null) return ''
+  const cam = cameras.value.find(c => c.cameraId === alert.cameraId)
+  if (!cam) return `${alert.laneId}차로`
+  const idx = cam.laneIds?.indexOf(alert.laneId) ?? -1
+  return idx >= 0 && cam.laneNames?.[idx] ? cam.laneNames[idx] : `${alert.laneId}차로`
 }
 
 // ── 카메라별 미처리 알림 수 ────────────────────────────────────
@@ -139,13 +198,67 @@ async function loadFastApiStatus() {
   }
 }
 
+async function loadDemoMode() {
+  try {
+    const res = await pdmApi.getDemoMode()
+    demoMode.value = Boolean(res.data?.enabled)
+  } catch (e) {
+    console.warn('[PDM Master] 데모 모드 상태 조회 실패', e)
+  }
+}
+
+async function toggleDemoMode() {
+  if (demoModeBusy.value) return
+  demoModeBusy.value = true
+  demoMsg.value = ''
+  try {
+    const res = await pdmApi.setDemoMode(!demoMode.value)
+    demoMode.value = Boolean(res.data?.enabled)
+    demoMsg.value = demoMode.value ? '데모 고정값 ON' : '데모 고정값 OFF'
+    await loadData({ silent: true })
+    setTimeout(() => { demoMsg.value = '' }, 3000)
+  } catch {
+    demoMsg.value = '시연 모드 변경 실패'
+  } finally {
+    demoModeBusy.value = false
+  }
+}
+
+async function sendDemoMailAlert() {
+  if (demoMailBusy.value) return
+  demoMailBusy.value = true
+  demoMsg.value = ''
+  try {
+    const res = await pdmApi.sendDemoMailAlert()
+    demoMsg.value = res.data?.message ?? '메일 테스트 알림 요청 완료'
+    await loadData({ silent: true })
+    setTimeout(() => { demoMsg.value = '' }, 4000)
+  } catch {
+    demoMsg.value = '메일 테스트 알림 실패'
+  } finally {
+    demoMailBusy.value = false
+  }
+}
+
+function refreshAfterAnalysisStart() {
+  ;[1000, 15000, 55000].forEach(delay => {
+    setTimeout(() => {
+      loadFastApiStatus()
+      loadData()
+    }, delay)
+  })
+}
+
 async function triggerAnalysis() {
   if (fastApiRunning.value) return
   fastApiRunning.value = true
   fastApiMsg.value = ''
   try {
-    const res = await pdmFastApi.runOnce()
+    const res = await pdmFastApi.runDemoRefresh()
     fastApiMsg.value = res.data?.message ?? '분석이 백그라운드에서 시작되었습니다.'
+    loadFastApiStatus()
+    loadData()
+    refreshAfterAnalysisStart()
     setTimeout(() => { fastApiMsg.value = '' }, 4000)
   } catch {
     fastApiMsg.value = '분석 서버에 연결할 수 없습니다. (FastAPI 실행 여부 확인)'
@@ -155,7 +268,9 @@ async function triggerAnalysis() {
   }
 }
 
-onMounted(() => { loadFastApiStatus() })
+onBeforeUnmount(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer)
+})
 </script>
 
 <template>
@@ -166,6 +281,35 @@ onMounted(() => { loadFastApiStatus() })
     <h1>예지보전 현황</h1>
     <p>전체 카메라 인식 품질 기반 장비 이상 조기 탐지 집계</p>
   </section>
+
+  <article class="panel pdm-demo-toolbar">
+    <div>
+      <b>데모 고정값</b>
+      <span>{{ demoMode ? 'ON · 고정 시나리오 응답' : 'OFF · 실시간 분석 응답' }}</span>
+    </div>
+    <div class="pdm-demo-actions">
+      <button
+        type="button"
+        class="pdm-action-button"
+        :class="{ active: demoMode }"
+        :disabled="demoModeBusy"
+        @click="toggleDemoMode"
+      >
+        {{ demoModeBusy ? '전환 중...' : (demoMode ? '실시간으로 전환' : '데모 고정값 켜기') }}
+      </button>
+      <button
+        type="button"
+        class="pdm-action-button"
+        :disabled="demoMailBusy"
+        @click="sendDemoMailAlert"
+      >
+        {{ demoMailBusy ? '발송 확인 중...' : '메일 테스트 알림' }}
+      </button>
+      <small v-if="demoMsg">{{ demoMsg }}</small>
+    </div>
+  </article>
+
+  <div v-if="errorMsg" class="pdm-state-banner">{{ errorMsg }}</div>
 
   <!-- KPI 카드 -->
   <section class="pdm-kpi-grid">
@@ -219,7 +363,7 @@ onMounted(() => { loadFastApiStatus() })
           </div>
           <strong :class="riskClass(cam.riskLevel)">{{ cam.healthScore }}</strong>
         </div>
-        <div v-if="cameras.length === 0 && !loading" class="pdm-score-empty">데이터 없음</div>
+        <div v-if="cameras.length === 0 && !loading && !errorMsg" class="pdm-score-empty">데이터 없음</div>
       </div>
     </article>
 
@@ -238,7 +382,7 @@ onMounted(() => { loadFastApiStatus() })
           <div class="pdm-alert-dot" :class="riskClass(alert.riskLevel)"></div>
           <div class="pdm-alert-body">
             <b>{{ alertTitleLabel(alert.alertTitle) }}</b>
-            <span>{{ alert.cameraCode }}</span>
+            <span>{{ alert.cameraCode }}{{ alertLaneLabel(alert) ? ' · ' + alertLaneLabel(alert) : '' }}</span>
             <em>{{ messageLabel(alert.reasonText) }}</em>
           </div>
           <div class="pdm-alert-meta">
@@ -246,7 +390,7 @@ onMounted(() => { loadFastApiStatus() })
             <time>{{ formatTime(alert.createdAt) }}</time>
           </div>
         </div>
-        <div v-if="alerts.length === 0 && !loading" class="pdm-alert-row">
+        <div v-if="alerts.length === 0 && !loading && !errorMsg" class="pdm-alert-row">
           <div class="pdm-alert-dot pdm-ok"></div>
           <div class="pdm-alert-body"><b>이상 알림 없음</b><span>모든 카메라 정상 운영 중</span></div>
         </div>
@@ -295,7 +439,7 @@ onMounted(() => { loadFastApiStatus() })
           </td>
         </tr>
         <tr v-if="filteredCameras.length === 0 && !loading">
-          <td colspan="7" style="text-align:center;color:#9fb2cb;padding:20px">데이터 없음</td>
+          <td colspan="7" class="pdm-empty-cell">데이터 없음</td>
         </tr>
       </tbody>
     </table>
@@ -307,33 +451,38 @@ onMounted(() => { loadFastApiStatus() })
       <h3>PDM 분석 서버 <small>FastAPI — 모델별 이상 탐지 스케줄러</small></h3>
       <button
         type="button"
+        class="pdm-action-button"
         :disabled="fastApiRunning"
         @click="triggerAnalysis"
-        style="height:30px;border:1px solid rgba(42,133,227,.35);border-radius:5px;color:#dcecff;background:rgba(5,18,37,.72);padding:0 12px;cursor:pointer"
       >
         {{ fastApiRunning ? '실행 중...' : '수동 분석 실행' }}
       </button>
     </div>
-    <div v-if="fastApiMsg" style="padding:8px 14px;font-size:12px;color:#9fb2cb">{{ fastApiMsg }}</div>
-    <div v-if="fastApiStatus" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 14px 14px">
-      <div style="padding:10px;border:1px solid rgba(117,151,194,.13);border-radius:5px;background:rgba(6,24,50,.38)">
-        <div style="color:#9fb2cb;font-size:11px;margin-bottom:4px">분석 주기</div>
-        <div style="color:#e6f1ff;font-size:14px;font-weight:700">{{ fastApiStatus.intervalSeconds }}초</div>
+    <div v-if="fastApiMsg" class="pdm-server-message">{{ fastApiMsg }}</div>
+    <div v-if="fastApiStatus" class="pdm-server-status">
+      스케줄러: <b>{{ schedulerLabel(fastApiStatus) }}</b>
+      <span v-if="fastApiStatus.nextRunAt"> · 다음 실행 {{ formatTime(fastApiStatus.nextRunAt) }}</span>
+      <span v-if="fastApiStatus.job?.lastSummary"> · 최근 저장 {{ fastApiStatus.job.lastSummary.savedCount }}건</span>
+    </div>
+    <div v-if="fastApiStatus" class="pdm-server-grid">
+      <div class="pdm-server-card">
+        <div class="pdm-server-card-label">분석 주기</div>
+        <div class="pdm-server-card-value">{{ formatInterval(fastApiStatus.intervalSeconds) }}</div>
       </div>
-      <div style="padding:10px;border:1px solid rgba(117,151,194,.13);border-radius:5px;background:rgba(6,24,50,.38)">
-        <div style="color:#9fb2cb;font-size:11px;margin-bottom:4px">분석 창</div>
-        <div style="color:#e6f1ff;font-size:14px;font-weight:700">{{ fastApiStatus.analysisWindowMinutes }}분</div>
+      <div class="pdm-server-card">
+        <div class="pdm-server-card-label">분석 창</div>
+        <div class="pdm-server-card-value">{{ fastApiStatus.analysisWindowMinutes }}분</div>
       </div>
-      <div style="padding:10px;border:1px solid rgba(117,151,194,.13);border-radius:5px;background:rgba(6,24,50,.38)">
-        <div style="color:#9fb2cb;font-size:11px;margin-bottom:4px">버킷 크기</div>
-        <div style="color:#e6f1ff;font-size:14px;font-weight:700">{{ fastApiStatus.bucketMinutes }}분</div>
+      <div class="pdm-server-card">
+        <div class="pdm-server-card-label">버킷 크기</div>
+        <div class="pdm-server-card-value">{{ fastApiStatus.bucketMinutes }}분</div>
       </div>
-      <div style="padding:10px;border:1px solid rgba(117,151,194,.13);border-radius:5px;background:rgba(6,24,50,.38)">
-        <div style="color:#9fb2cb;font-size:11px;margin-bottom:4px">분석 대상</div>
-        <div style="color:#e6f1ff;font-size:13px;font-weight:700;word-break:break-all">{{ fastApiStatus.targets }}</div>
+      <div class="pdm-server-card">
+        <div class="pdm-server-card-label">분석 대상</div>
+        <div class="pdm-server-card-value pdm-server-targets">{{ formatTargets(fastApiStatus.targets) }}</div>
       </div>
     </div>
-    <div v-else-if="!fastApiStatus" style="padding:12px 14px;font-size:12px;color:#7a94b0">
+    <div v-else class="pdm-server-empty">
       분석 서버에 연결되지 않았습니다. FastAPI 서버가 실행 중인지 확인하세요.
     </div>
   </article>

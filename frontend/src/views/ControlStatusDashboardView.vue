@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardApi } from '@/composables/useDashboardApi'
+import { pdmApi } from '@/api/pdm'
 // Dashboard CSS는 동적으로 head에 추가하고 페이지 떠날 때 제거 — 다른 페이지에 누출되지 않도록 격리
 import controlDashboardCss from '@/dashboards/control/styles/control-dashboard.css?inline'
 import ControlDashboardPage from '@/dashboards/control/pages/ControlDashboardPage.vue'
@@ -39,8 +40,23 @@ const isLightMode = ref(true)
 const showNotifications = ref(false)
 const showOperatorMenu = ref(false)
 const networkPathOverride = ref(localStorage.getItem(NETWORK_OVERRIDE_STORAGE_KEY) || '')
+const pdmSummary = ref({
+  normalCameraCount: 0,
+  warningCameraCount: 0,
+  criticalCameraCount: 0,
+  averageHealthScore: 0
+})
 
 let timer = null
+
+async function loadPdmSummary() {
+  try {
+    const res = await pdmApi.getDashboardSummary()
+    pdmSummary.value = res.data
+  } catch (error) {
+    console.warn('[PDM] 요약 조회 실패', error)
+  }
+}
 
 const centerLabel = computed(() => {
   const center = route.query.center ?? 'SEOUL-TOLL'
@@ -523,10 +539,14 @@ provide('controlDashboardContext', {
 
 // Dashboard CSS를 head에 동적으로 추가/제거 — 페이지를 떠나는 순간 완전히 사라져 다른 페이지에 누출 없음
 let dashboardStyleEl = null
+let pdmSummaryTimer = null
 
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  pdmSummaryTimer = setInterval(() => {
+    if (activeMenu.value === '예지보전') loadPdmSummary()
+  }, 10000)
   window.hifiveNetwork = setNetworkPathOverride
 
   dashboardStyleEl = document.createElement('style')
@@ -535,8 +555,13 @@ onMounted(() => {
   document.head.appendChild(dashboardStyleEl)
 })
 
+watch(activeMenu, (menu) => {
+  if (menu === '예지보전') loadPdmSummary()
+})
+
 onBeforeUnmount(() => {
   clearInterval(timer)
+  clearInterval(pdmSummaryTimer)
   if (window.hifiveNetwork === setNetworkPathOverride) delete window.hifiveNetwork
 
   if (dashboardStyleEl) {
@@ -570,12 +595,12 @@ onBeforeUnmount(() => {
       <div v-if="activeMenu === '예지보전'" class="event-side-stack pdm-side-stack">
         <section class="zone-card event-stats-card">
           <h3>카메라 상태 <small>ⓘ</small></h3>
-          <p><span class="zone-icon gps">✓</span><b>정상</b><strong>1대</strong></p>
-          <p><span class="zone-icon warn">◔</span><b>주의</b><strong>1대</strong></p>
-          <p><span class="zone-icon danger">!</span><b>위험</b><strong>0대</strong></p>
+          <p><span class="zone-icon gps">✓</span><b>정상</b><strong>{{ pdmSummary.normalCameraCount }}대</strong></p>
+          <p><span class="zone-icon warn">◔</span><b>주의</b><strong>{{ pdmSummary.warningCameraCount }}대</strong></p>
+          <p><span class="zone-icon danger">!</span><b>위험</b><strong>{{ pdmSummary.criticalCameraCount }}대</strong></p>
         </section>
         <section class="zone-card gps-guide-card" style="margin-top:10px">
-          <p><span class="zone-icon cctv">▧</span><b>평균 Score</b><strong>82점</strong></p>
+          <p><span class="zone-icon cctv">▧</span><b>평균 인식 품질</b><strong>{{ pdmSummary.averageHealthScore }}점</strong></p>
         </section>
       </div>
 
