@@ -1,0 +1,150 @@
+{
+  "eventCountMin": 10,
+  "windowSize": 6,
+  "metrics": [
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:00:00",
+      "bucketEnd": "2026-06-16T10:05:00",
+      "avgOcrConfidence": 92.1,
+      "successRate": 95.2,
+      "missingRate": 2.3,
+      "matchRate": 96.1,
+      "mismatchRate": 3.9,
+      "eventCount": 28
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:05:00",
+      "bucketEnd": "2026-06-16T10:10:00",
+      "avgOcrConfidence": 89.4,
+      "successRate": 92.5,
+      "missingRate": 4.1,
+      "matchRate": 94.0,
+      "mismatchRate": 6.0,
+      "eventCount": 31
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:10:00",
+      "bucketEnd": "2026-06-16T10:15:00",
+      "avgOcrConfidence": 85.7,
+      "successRate": 89.1,
+      "missingRate": 6.8,
+      "matchRate": 90.2,
+      "mismatchRate": 9.8,
+      "eventCount": 26
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:15:00",
+      "bucketEnd": "2026-06-16T10:20:00",
+      "avgOcrConfidence": 80.2,
+      "successRate": 84.6,
+      "missingRate": 9.9,
+      "matchRate": 86.0,
+      "mismatchRate": 14.0,
+      "eventCount": 24
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:20:00",
+      "bucketEnd": "2026-06-16T10:25:00",
+      "avgOcrConfidence": 73.5,
+      "successRate": 78.3,
+      "missingRate": 13.4,
+      "matchRate": 79.7,
+      "mismatchRate": 20.3,
+      "eventCount": 22
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:25:00",
+      "bucketEnd": "2026-06-16T10:30:00",
+      "avgOcrConfidence": 68.2,
+      "successRate": 72.8,
+      "missingRate": 17.6,
+      "matchRate": 73.8,
+      "mismatchRate": 26.2,
+      "eventCount": 20
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:30:00",
+      "bucketEnd": "2026-06-16T10:35:00",
+      "avgOcrConfidence": 66.4,
+      "successRate": 70.9,
+      "missingRate": 18.9,
+      "matchRate": 72.1,
+      "mismatchRate": 27.9,
+      "eventCount": 18
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:35:00",
+      "bucketEnd": "2026-06-16T10:40:00",
+      "avgOcrConfidence": 64.8,
+      "successRate": 69.2,
+      "missingRate": 20.2,
+      "matchRate": 70.4,
+      "mismatchRate": 29.6,
+      "eventCount": 19
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:40:00",
+      "bucketEnd": "2026-06-16T10:45:00",
+      "avgOcrConfidence": 62.1,
+      "successRate": 67.4,
+      "missingRate": 21.8,
+      "matchRate": 68.2,
+      "mismatchRate": 31.8,
+      "eventCount": 21
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:45:00",
+      "bucketEnd": "2026-06-16T10:50:00",
+      "avgOcrConfidence": 59.7,
+      "successRate": 64.6,
+      "missingRate": 23.7,
+      "matchRate": 65.1,
+      "mismatchRate": 34.9,
+      "eventCount": 17
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:50:00",
+      "bucketEnd": "2026-06-16T10:55:00",
+      "avgOcrConfidence": 56.5,
+      "successRate": 61.8,
+      "missingRate": 26.1,
+      "matchRate": 61.5,
+      "mismatchRate": 38.5,
+      "eventCount": 16
+    },
+    {
+      "cameraId": 2,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T10:55:00",
+      "bucketEnd": "2026-06-16T11:00:00",
+      "avgOcrConfidence": 53.8,
+      "successRate": 58.9,
+      "missingRate": 28.4,
+      "matchRate": 58.0,
+      "mismatchRate": 42.0,
+      "eventCount": 18
+    }
+  ]
+}

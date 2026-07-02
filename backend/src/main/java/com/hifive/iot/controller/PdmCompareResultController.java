@@ -29,8 +29,9 @@ public class PdmCompareResultController {
 		@RequestParam(required = false)
 		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
 		@RequestParam(required = false)
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to
+		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+		@RequestParam(required = false) Integer limit
 	) {
-		return ResponseEntity.ok(pdmCompareService.getCompareResults(laneId, result, from, to));
+		return ResponseEntity.ok(pdmCompareService.getCompareResults(laneId, result, from, to, limit));
 	}
 }

@@ -19,6 +19,8 @@ public record PdmCameraDetailResponse(
 	Double matchRate,
 	Double mismatchRate,
 	String reasonText,
-	String recommendedAction
+	String recommendedAction,
+	PdmIntegratedResultResponse integratedResult,
+	List<PdmModelResultResponse> modelResults
 ) {
 }

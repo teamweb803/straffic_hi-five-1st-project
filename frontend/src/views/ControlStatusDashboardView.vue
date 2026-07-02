@@ -13,6 +13,7 @@ import ControlEquipmentPage from '@/dashboards/control/pages/ControlEquipmentPag
 import ControlRealtimePage from '@/dashboards/control/pages/ControlRealtimePage.vue'
 import ControlSettingsPage from '@/dashboards/control/pages/ControlSettingsPage.vue'
 import ControlFallbackPage from '@/dashboards/control/pages/ControlFallbackPage.vue'
+import PdmDashboardPage from '@/dashboards/pdm/pages/PdmDashboardPage.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -55,6 +56,7 @@ const centerLabel = computed(() => {
 
 const navItems = [
   { label: '대시보드', icon: 'dashboard2.png' },
+  { label: '예지보전', icon: 'cctv.png' },
   { label: '실시간 관제', icon: 'real-time.png' },
   { label: '통행 이벤트', icon: 'list.png' },
   { label: 'GPS 판정', icon: 'gps.png' },
@@ -467,6 +469,7 @@ function updateRenderedVideoFps(fps) {
 
 const controlPageMap = {
   '대시보드': ControlDashboardPage,
+  '예지보전': PdmDashboardPage,
   '통행 이벤트': ControlTrafficEventPage,
   'GPS 판정': ControlGpsDecisionPage,
   '정산': ControlSettlementPage,
@@ -564,62 +567,6 @@ onBeforeUnmount(() => {
         </button>
       </nav>
 
-      <div v-if="activeMenu === '정산'" class="event-side-stack settlement-side-stack">
-        <section class="zone-card event-stats-card">
-          <h3>정산 상태 <small>ⓘ</small></h3>
-          <p><span class="zone-icon gps">✓</span><b>완료</b><strong>2,356건</strong></p>
-          <p><span class="zone-icon warn">◔</span><b>대기</b><strong>142건</strong></p>
-          <p><span class="zone-icon danger">!</span><b>보류</b><strong>36건</strong></p>
-        </section>
-      </div>
-
-      <div v-else-if="activeMenu === '검수'" class="event-side-stack review-side-stack">
-        <section class="zone-card event-stats-card">
-          <h3>검수 요약 <small>ⓘ</small></h3>
-          <p><span class="zone-icon warn">⌛</span><b>대기</b><strong>12</strong></p>
-          <p><span class="zone-icon cctv">↻</span><b>처리중</b><strong>3</strong></p>
-          <p><span class="zone-icon gps">✓</span><b>완료</b><strong>48</strong></p>
-        </section>
-        <section class="zone-card gps-guide-card">
-          <p><span class="zone-icon cctv">▧</span><b>검수 가이드</b><strong></strong></p>
-        </section>
-      </div>
-
-      <div v-else-if="activeMenu === 'GPS 판정'" class="event-side-stack gps-side-stack">
-        <section class="zone-card event-stats-card">
-          <h3>GPS 요약 <small>ⓘ</small></h3>
-          <p><span class="zone-icon gps">✓</span><b>정상</b><strong>4,512건</strong></p>
-          <p><span class="zone-icon danger">!</span><b>영역 이탈</b><strong>214건</strong></p>
-          <p><span class="zone-icon lan">◉</span><b>최근 반영</b><strong>2초 전</strong></p>
-        </section>
-        <section class="zone-card gps-guide-card">
-          <p><span class="zone-icon cctv">▧</span><b>GPS 판정 가이드</b><strong></strong></p>
-        </section>
-      </div>
-
-      <div v-else-if="activeMenu === '통행 이벤트'" class="event-side-stack">
-        <section class="zone-card event-filter-card">
-          <h3>빠른 필터 <small>⌘</small></h3>
-          <p><span class="zone-icon cctv">▣</span><b>오늘</b><strong></strong></p>
-          <p><span class="zone-icon gps">✓</span><b>GPS 정상</b><strong></strong></p>
-          <p><span class="zone-icon danger">△</span><b>영역 이탈</b><strong></strong></p>
-          <p><span class="zone-icon warn">◎</span><b>검수 필요</b><strong></strong></p>
-        </section>
-        <section class="zone-card event-stats-card">
-          <h3>이벤트 통계 <small>(금일)</small></h3>
-          <p><b>전체 이벤트</b><strong>1,248건</strong></p>
-          <p><b>GPS 정상</b><strong>1,074건</strong></p>
-          <p><b>영역 이탈</b><strong>36건</strong></p>
-          <p><b>검수 필요</b><strong>138건</strong></p>
-        </section>
-      </div>
-
-      <section v-else class="zone-card">
-        <h3>구역 상태</h3>
-        <p><span class="zone-icon cctv">▰</span><b>CCTV</b><strong>정상</strong></p>
-        <p><span class="zone-icon gps">⌖</span><b>GPS 수신</b><strong>정상</strong></p>
-        <p><span class="zone-icon lan">⌁</span><b>{{ activeNetworkPathLabel }}</b><strong>사용 중</strong></p>
-      </section>
     </aside>
 
     <main class="main">

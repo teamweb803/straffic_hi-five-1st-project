@@ -15,6 +15,8 @@ public interface CameraCompareResultRepository extends JpaRepository<CameraCompa
 
 	List<CameraCompareResult> findTop50ByOrderByComparedAtDesc();
 
+	List<CameraCompareResult> findTop200ByOrderByComparedAtDesc();
+
 	List<CameraCompareResult> findTop50ByLaneIdOrderByComparedAtDesc(Integer laneId);
 
 	List<CameraCompareResult> findTop50ByIsMatchedOrderByComparedAtDesc(Boolean isMatched);

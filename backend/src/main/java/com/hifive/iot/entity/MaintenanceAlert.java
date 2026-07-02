@@ -73,4 +73,20 @@ public class MaintenanceAlert {
 	public void changeStatus(String status) {
 		this.status = status;
 	}
+
+	public void refresh(
+		PdmAnalysisResult analysis,
+		String riskLevel,
+		String alertTitle,
+		String alertMessage,
+		String reasonText,
+		String recommendedAction
+	) {
+		this.analysis = analysis;
+		this.riskLevel = riskLevel;
+		this.alertTitle = alertTitle;
+		this.alertMessage = alertMessage;
+		this.reasonText = reasonText;
+		this.recommendedAction = recommendedAction;
+	}
 }

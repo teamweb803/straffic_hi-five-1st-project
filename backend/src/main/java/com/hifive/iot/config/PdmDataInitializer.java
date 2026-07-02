@@ -24,11 +24,20 @@ public class PdmDataInitializer implements ApplicationRunner {
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
-		CameraDevice frontCamera = findOrCreateCamera("CAM-F-01", "전방 카메라", "FRONT");
-		CameraDevice rearCamera = findOrCreateCamera("CAM-R-01", "후방 카메라", "REAR");
+		for (CameraSeed seed : cameraSeeds()) {
+			CameraDevice camera = findOrCreateCamera(seed.code(), seed.name(), seed.direction());
+			createLaneMapping(camera, seed.laneId());
+		}
+	}
 
-		createLaneMappings(frontCamera);
-		createLaneMappings(rearCamera);
+	private List<CameraSeed> cameraSeeds() {
+		return List.of(
+			new CameraSeed("CAM-F-01", "Front Camera Normal", "FRONT", 1),
+			new CameraSeed("CAM-R-01", "Rear Camera Spike", "REAR", 1),
+			new CameraSeed("CAM-F-02", "Front Camera Pattern", "FRONT", 3),
+			new CameraSeed("CAM-R-02", "Rear Camera Degrade", "REAR", 3),
+			new CameraSeed("CAM-F-03", "Front Camera Low Count", "FRONT", 5)
+		);
 	}
 
 	private CameraDevice findOrCreateCamera(String cameraCode, String cameraName, String direction) {
@@ -44,16 +53,17 @@ public class PdmDataInitializer implements ApplicationRunner {
 			));
 	}
 
-	private void createLaneMappings(CameraDevice camera) {
-		for (Integer laneId : List.of(1, 2)) {
-			if (!cameraLaneMappingRepository.existsByCameraAndLaneId(camera, laneId)) {
-				cameraLaneMappingRepository.save(
-					CameraLaneMapping.builder()
-						.camera(camera)
-						.laneId(laneId)
-						.build()
-				);
-			}
+	private void createLaneMapping(CameraDevice camera, Integer laneId) {
+		if (!cameraLaneMappingRepository.existsByCameraAndLaneId(camera, laneId)) {
+			cameraLaneMappingRepository.save(
+				CameraLaneMapping.builder()
+					.camera(camera)
+					.laneId(laneId)
+					.build()
+			);
 		}
+	}
+
+	private record CameraSeed(String code, String name, String direction, Integer laneId) {
 	}
 }

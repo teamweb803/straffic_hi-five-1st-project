@@ -20,7 +20,6 @@ import com.hifive.iot.repository.PassageEventRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -36,6 +35,7 @@ public class PdmCompareService {
 	private final PassageEventRepository passageEventRepository;
 	private final CameraDeviceRepository cameraDeviceRepository;
 	private final CameraCompareResultRepository cameraCompareResultRepository;
+	private final PdmDemoModeService pdmDemoModeService;
 
 	@Transactional
 	public void match(PassageEventRecord event) {
@@ -84,7 +84,7 @@ public class PdmCompareService {
 			.isMatched(matched)
 			.mismatchType(matched ? null : mismatchType(frontEvent, rearEvent))
 			.confidenceGap(confidenceGap(frontEvent, rearEvent))
-			.comparedAt(LocalDateTime.now())
+			.comparedAt(comparedAt(frontEvent, rearEvent))
 			.build());
 	}
 
@@ -92,7 +92,8 @@ public class PdmCompareService {
 		Integer laneId,
 		String result,
 		LocalDateTime from,
-		LocalDateTime to
+		LocalDateTime to,
+		Integer limit
 	) {
 		if (from != null && to != null && from.isAfter(to)) {
 			throw new IllegalArgumentException("from must be before to");
@@ -106,12 +107,33 @@ public class PdmCompareService {
 			}
 			isMatched = "MATCHED".equals(normalized);
 		}
+		final Boolean matchedFilter = isMatched;
+		if (pdmDemoModeService.isEnabled()) {
+			return pdmDemoModeService.getCompareResults(
+				laneId,
+				matchedFilter,
+				from,
+				to,
+				normalizeLimit(limit)
+			);
+		}
 
-		return cameraCompareResultRepository
-			.findCompareResults(laneId, isMatched, from, to, PageRequest.of(0, 50))
+		return cameraCompareResultRepository.findTop200ByOrderByComparedAtDesc()
 			.stream()
+			.filter(compareResult -> laneId == null || Objects.equals(compareResult.getLaneId(), laneId))
+			.filter(compareResult -> matchedFilter == null || Objects.equals(compareResult.getIsMatched(), matchedFilter))
+			.filter(compareResult -> from == null || !compareResult.getComparedAt().isBefore(from))
+			.filter(compareResult -> to == null || !compareResult.getComparedAt().isAfter(to))
+			.limit(normalizeLimit(limit))
 			.map(PdmCompareResultResponse::from)
 			.toList();
+	}
+
+	private int normalizeLimit(Integer limit) {
+		if (limit == null) {
+			return 20;
+		}
+		return Math.max(1, Math.min(limit, 100));
 	}
 
 	private boolean canMatch(PassageEventRecord event, CameraDevice camera) {
@@ -186,6 +208,18 @@ public class PdmCompareService {
 		}
 		double gap = Math.abs(frontEvent.getPlateConfidence() - rearEvent.getPlateConfidence());
 		return Math.round(gap * 10000.0) / 10000.0;
+	}
+
+	private LocalDateTime comparedAt(PassageEventRecord frontEvent, PassageEventRecord rearEvent) {
+		LocalDateTime frontTime = frontEvent.getEventTime();
+		LocalDateTime rearTime = rearEvent.getEventTime();
+		if (frontTime == null) {
+			return rearTime != null ? rearTime : LocalDateTime.now();
+		}
+		if (rearTime == null) {
+			return frontTime;
+		}
+		return frontTime.isAfter(rearTime) ? frontTime : rearTime;
 	}
 
 	private String createGroupKey(PassageEventRecord frontEvent, PassageEventRecord rearEvent) {

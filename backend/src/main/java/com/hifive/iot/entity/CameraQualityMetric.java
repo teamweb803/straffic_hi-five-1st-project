@@ -66,4 +66,22 @@ public class CameraQualityMetric {
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
+
+	public void updateValues(
+		LocalDateTime bucketEnd,
+		Double avgOcrConfidence,
+		Double successRate,
+		Double missingRate,
+		Double matchRate,
+		Double mismatchRate,
+		Integer eventCount
+	) {
+		this.bucketEnd = bucketEnd;
+		this.avgOcrConfidence = avgOcrConfidence;
+		this.successRate = successRate;
+		this.missingRate = missingRate;
+		this.matchRate = matchRate;
+		this.mismatchRate = mismatchRate;
+		this.eventCount = eventCount;
+	}
 }
