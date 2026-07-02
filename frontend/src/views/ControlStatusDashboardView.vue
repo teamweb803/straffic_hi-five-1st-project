@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardApi } from '@/composables/useDashboardApi'
+import { pdmApi } from '@/api/pdm'
 // Dashboard CSS는 동적으로 head에 추가하고 페이지 떠날 때 제거 — 다른 페이지에 누출되지 않도록 격리
 import controlDashboardCss from '@/dashboards/control/styles/control-dashboard.css?inline'
 import ControlDashboardPage from '@/dashboards/control/pages/ControlDashboardPage.vue'
@@ -13,6 +14,7 @@ import ControlEquipmentPage from '@/dashboards/control/pages/ControlEquipmentPag
 import ControlRealtimePage from '@/dashboards/control/pages/ControlRealtimePage.vue'
 import ControlSettingsPage from '@/dashboards/control/pages/ControlSettingsPage.vue'
 import ControlFallbackPage from '@/dashboards/control/pages/ControlFallbackPage.vue'
+import PdmDashboardPage from '@/dashboards/pdm/pages/PdmDashboardPage.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,8 +40,23 @@ const isLightMode = ref(true)
 const showNotifications = ref(false)
 const showOperatorMenu = ref(false)
 const networkPathOverride = ref(localStorage.getItem(NETWORK_OVERRIDE_STORAGE_KEY) || '')
+const pdmSummary = ref({
+  normalCameraCount: 0,
+  warningCameraCount: 0,
+  criticalCameraCount: 0,
+  averageHealthScore: 0
+})
 
 let timer = null
+
+async function loadPdmSummary() {
+  try {
+    const res = await pdmApi.getDashboardSummary()
+    pdmSummary.value = res.data
+  } catch (error) {
+    console.warn('[PDM] 요약 조회 실패', error)
+  }
+}
 
 const centerLabel = computed(() => {
   const center = route.query.center ?? 'SEOUL-TOLL'
@@ -55,6 +72,7 @@ const centerLabel = computed(() => {
 
 const navItems = [
   { label: '대시보드', icon: 'dashboard2.png' },
+  { label: '예지보전', icon: 'cctv.png' },
   { label: '실시간 관제', icon: 'real-time.png' },
   { label: '통행 이벤트', icon: 'list.png' },
   { label: 'GPS 판정', icon: 'gps.png' },
@@ -467,6 +485,7 @@ function updateRenderedVideoFps(fps) {
 
 const controlPageMap = {
   '대시보드': ControlDashboardPage,
+  '예지보전': PdmDashboardPage,
   '통행 이벤트': ControlTrafficEventPage,
   'GPS 판정': ControlGpsDecisionPage,
   '정산': ControlSettlementPage,
@@ -520,10 +539,14 @@ provide('controlDashboardContext', {
 
 // Dashboard CSS를 head에 동적으로 추가/제거 — 페이지를 떠나는 순간 완전히 사라져 다른 페이지에 누출 없음
 let dashboardStyleEl = null
+let pdmSummaryTimer = null
 
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  pdmSummaryTimer = setInterval(() => {
+    if (activeMenu.value === '예지보전') loadPdmSummary()
+  }, 10000)
   window.hifiveNetwork = setNetworkPathOverride
 
   dashboardStyleEl = document.createElement('style')
@@ -532,8 +555,13 @@ onMounted(() => {
   document.head.appendChild(dashboardStyleEl)
 })
 
+watch(activeMenu, (menu) => {
+  if (menu === '예지보전') loadPdmSummary()
+})
+
 onBeforeUnmount(() => {
   clearInterval(timer)
+  clearInterval(pdmSummaryTimer)
   if (window.hifiveNetwork === setNetworkPathOverride) delete window.hifiveNetwork
 
   if (dashboardStyleEl) {
@@ -564,62 +592,6 @@ onBeforeUnmount(() => {
         </button>
       </nav>
 
-      <div v-if="activeMenu === '정산'" class="event-side-stack settlement-side-stack">
-        <section class="zone-card event-stats-card">
-          <h3>정산 상태 <small>ⓘ</small></h3>
-          <p><span class="zone-icon gps">✓</span><b>완료</b><strong>2,356건</strong></p>
-          <p><span class="zone-icon warn">◔</span><b>대기</b><strong>142건</strong></p>
-          <p><span class="zone-icon danger">!</span><b>보류</b><strong>36건</strong></p>
-        </section>
-      </div>
-
-      <div v-else-if="activeMenu === '검수'" class="event-side-stack review-side-stack">
-        <section class="zone-card event-stats-card">
-          <h3>검수 요약 <small>ⓘ</small></h3>
-          <p><span class="zone-icon warn">⌛</span><b>대기</b><strong>12</strong></p>
-          <p><span class="zone-icon cctv">↻</span><b>처리중</b><strong>3</strong></p>
-          <p><span class="zone-icon gps">✓</span><b>완료</b><strong>48</strong></p>
-        </section>
-        <section class="zone-card gps-guide-card">
-          <p><span class="zone-icon cctv">▧</span><b>검수 가이드</b><strong></strong></p>
-        </section>
-      </div>
-
-      <div v-else-if="activeMenu === 'GPS 판정'" class="event-side-stack gps-side-stack">
-        <section class="zone-card event-stats-card">
-          <h3>GPS 요약 <small>ⓘ</small></h3>
-          <p><span class="zone-icon gps">✓</span><b>정상</b><strong>4,512건</strong></p>
-          <p><span class="zone-icon danger">!</span><b>영역 이탈</b><strong>214건</strong></p>
-          <p><span class="zone-icon lan">◉</span><b>최근 반영</b><strong>2초 전</strong></p>
-        </section>
-        <section class="zone-card gps-guide-card">
-          <p><span class="zone-icon cctv">▧</span><b>GPS 판정 가이드</b><strong></strong></p>
-        </section>
-      </div>
-
-      <div v-else-if="activeMenu === '통행 이벤트'" class="event-side-stack">
-        <section class="zone-card event-filter-card">
-          <h3>빠른 필터 <small>⌘</small></h3>
-          <p><span class="zone-icon cctv">▣</span><b>오늘</b><strong></strong></p>
-          <p><span class="zone-icon gps">✓</span><b>GPS 정상</b><strong></strong></p>
-          <p><span class="zone-icon danger">△</span><b>영역 이탈</b><strong></strong></p>
-          <p><span class="zone-icon warn">◎</span><b>검수 필요</b><strong></strong></p>
-        </section>
-        <section class="zone-card event-stats-card">
-          <h3>이벤트 통계 <small>(금일)</small></h3>
-          <p><b>전체 이벤트</b><strong>1,248건</strong></p>
-          <p><b>GPS 정상</b><strong>1,074건</strong></p>
-          <p><b>영역 이탈</b><strong>36건</strong></p>
-          <p><b>검수 필요</b><strong>138건</strong></p>
-        </section>
-      </div>
-
-      <section v-else class="zone-card">
-        <h3>구역 상태</h3>
-        <p><span class="zone-icon cctv">▰</span><b>CCTV</b><strong>정상</strong></p>
-        <p><span class="zone-icon gps">⌖</span><b>GPS 수신</b><strong>정상</strong></p>
-        <p><span class="zone-icon lan">⌁</span><b>{{ activeNetworkPathLabel }}</b><strong>사용 중</strong></p>
-      </section>
     </aside>
 
     <main class="main">

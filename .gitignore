@@ -19,7 +19,7 @@ __pycache__/
 .venv/
 .venv_*/
 venv/
-hifive/
+/hifive/
 
 # Local runtime output
 logs/

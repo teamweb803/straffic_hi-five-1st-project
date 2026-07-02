@@ -26,6 +26,14 @@ export default defineConfig({
       '/video': {
         target: process.env.VITE_VIDEO_TARGET || 'http://localhost:8000',
         changeOrigin: true
+      },
+      // PDM FastAPI 분석 서버 (내부 관리자용)
+      // 실행: cd pdm-fastapi && uvicorn app.main:app --port 8001
+      // Docker 환경: VITE_PDM_FASTAPI_TARGET=http://pdm-fastapi:8001
+      '/pdm-internal': {
+        target: process.env.VITE_PDM_FASTAPI_TARGET || 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/pdm-internal/, '/internal/pdm')
       }
     }
   }
