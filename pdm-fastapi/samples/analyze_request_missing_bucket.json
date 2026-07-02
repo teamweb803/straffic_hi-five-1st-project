@@ -1,0 +1,90 @@
+{
+  "eventCountMin": 10,
+  "windowSize": 6,
+  "metrics": [
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:00:00",
+      "bucketEnd": "2026-06-16T13:05:00",
+      "avgOcrConfidence": 92.4,
+      "successRate": 95.1,
+      "missingRate": 2.2,
+      "matchRate": 96.2,
+      "mismatchRate": 3.8,
+      "eventCount": 24
+    },
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:05:00",
+      "bucketEnd": "2026-06-16T13:10:00",
+      "avgOcrConfidence": 91.9,
+      "successRate": 94.7,
+      "missingRate": 2.5,
+      "matchRate": 95.8,
+      "mismatchRate": 4.2,
+      "eventCount": 23
+    },
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:10:00",
+      "bucketEnd": "2026-06-16T13:15:00",
+      "avgOcrConfidence": 91.2,
+      "successRate": 94.0,
+      "missingRate": 2.9,
+      "matchRate": 95.0,
+      "mismatchRate": 5.0,
+      "eventCount": 21
+    },
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:20:00",
+      "bucketEnd": "2026-06-16T13:25:00",
+      "avgOcrConfidence": 89.6,
+      "successRate": 92.5,
+      "missingRate": 4.0,
+      "matchRate": 93.7,
+      "mismatchRate": 6.3,
+      "eventCount": 19
+    },
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:25:00",
+      "bucketEnd": "2026-06-16T13:30:00",
+      "avgOcrConfidence": 87.8,
+      "successRate": 90.9,
+      "missingRate": 5.2,
+      "matchRate": 92.1,
+      "mismatchRate": 7.9,
+      "eventCount": 18
+    },
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:30:00",
+      "bucketEnd": "2026-06-16T13:35:00",
+      "avgOcrConfidence": 86.4,
+      "successRate": 89.7,
+      "missingRate": 6.1,
+      "matchRate": 90.8,
+      "mismatchRate": 9.2,
+      "eventCount": 20
+    },
+    {
+      "cameraId": 2,
+      "laneId": 2,
+      "bucketStart": "2026-06-16T13:35:00",
+      "bucketEnd": "2026-06-16T13:40:00",
+      "avgOcrConfidence": 84.9,
+      "successRate": 88.2,
+      "missingRate": 7.4,
+      "matchRate": 89.2,
+      "mismatchRate": 10.8,
+      "eventCount": 17
+    }
+  ]
+}

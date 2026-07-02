@@ -1,0 +1,102 @@
+{
+  "eventCountMin": 10,
+  "windowSize": 6,
+  "metrics": [
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:00:00",
+      "bucketEnd": "2026-06-16T09:05:00",
+      "avgOcrConfidence": 94.2,
+      "successRate": 96.1,
+      "missingRate": 1.8,
+      "matchRate": 96.8,
+      "mismatchRate": 3.2,
+      "eventCount": 32
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:05:00",
+      "bucketEnd": "2026-06-16T09:10:00",
+      "avgOcrConfidence": 93.8,
+      "successRate": 95.7,
+      "missingRate": 2.0,
+      "matchRate": 96.4,
+      "mismatchRate": 3.6,
+      "eventCount": 35
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:10:00",
+      "bucketEnd": "2026-06-16T09:15:00",
+      "avgOcrConfidence": 94.5,
+      "successRate": 96.4,
+      "missingRate": 1.6,
+      "matchRate": 97.1,
+      "mismatchRate": 2.9,
+      "eventCount": 29
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:15:00",
+      "bucketEnd": "2026-06-16T09:20:00",
+      "avgOcrConfidence": 93.9,
+      "successRate": 95.9,
+      "missingRate": 2.1,
+      "matchRate": 96.2,
+      "mismatchRate": 3.8,
+      "eventCount": 31
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:20:00",
+      "bucketEnd": "2026-06-16T09:25:00",
+      "avgOcrConfidence": 94.1,
+      "successRate": 96.0,
+      "missingRate": 1.9,
+      "matchRate": 96.9,
+      "mismatchRate": 3.1,
+      "eventCount": 34
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:25:00",
+      "bucketEnd": "2026-06-16T09:30:00",
+      "avgOcrConfidence": 93.6,
+      "successRate": 95.5,
+      "missingRate": 2.3,
+      "matchRate": 96.0,
+      "mismatchRate": 4.0,
+      "eventCount": 30
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:30:00",
+      "bucketEnd": "2026-06-16T09:35:00",
+      "avgOcrConfidence": 94.4,
+      "successRate": 96.3,
+      "missingRate": 1.7,
+      "matchRate": 96.7,
+      "mismatchRate": 3.3,
+      "eventCount": 33
+    },
+    {
+      "cameraId": 1,
+      "laneId": 1,
+      "bucketStart": "2026-06-16T09:35:00",
+      "bucketEnd": "2026-06-16T09:40:00",
+      "avgOcrConfidence": 94.0,
+      "successRate": 95.8,
+      "missingRate": 2.2,
+      "matchRate": 96.5,
+      "mismatchRate": 3.5,
+      "eventCount": 36
+    }
+  ]
+}

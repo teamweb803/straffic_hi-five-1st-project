@@ -1,0 +1,44 @@
+[
+  {
+    "cameraId": 2,
+    "laneId": 1,
+    "analysisStart": "2026-06-16T10:55:00",
+    "analysisEnd": "2026-06-16T11:00:00",
+    "healthScore": 21.3,
+    "riskLevel": "CRITICAL",
+    "modelType": "RULE_BASED",
+    "modelVersion": "rule-v1",
+    "reasonCode": "HIGH_MISMATCH_RATE",
+    "reasonText": "현재 구간에서 전후방 번호판 불일치 증가가 감지되었습니다.",
+    "recommendedAction": "전방·후방 카메라 시간 동기화와 설치 각도를 확인하세요.",
+    "trendSummary": "현재 구간의 OCR 품질 지표를 기준으로 즉시 이상 여부를 판단했습니다."
+  },
+  {
+    "cameraId": 2,
+    "laneId": 1,
+    "analysisStart": "2026-06-16T10:00:00",
+    "analysisEnd": "2026-06-16T11:00:00",
+    "healthScore": 95.95,
+    "riskLevel": "WARNING",
+    "modelType": "ISOLATION_FOREST",
+    "modelVersion": "iforest-v1",
+    "reasonCode": "PATTERN_ANOMALY",
+    "reasonText": "최근 품질 지표 조합이 평소 정상 패턴에서 벗어났습니다.",
+    "recommendedAction": "OCR 신뢰도, 누락률, 불일치율을 함께 확인하고 같은 시간대 영상 품질을 점검하세요.",
+    "trendSummary": "Isolation Forest는 confidence, successRate, missingRate, mismatchRate, eventCountValid 조합이 평소 패턴과 다른지 판단했습니다."
+  },
+  {
+    "cameraId": 2,
+    "laneId": 1,
+    "analysisStart": "2026-06-16T10:30:00",
+    "analysisEnd": "2026-06-16T11:00:00",
+    "healthScore": 99.89,
+    "riskLevel": "WARNING",
+    "modelType": "LSTM_AE",
+    "modelVersion": "lstm-ae-v1",
+    "reasonCode": "LONG_TERM_DEGRADATION",
+    "reasonText": "연속된 OCR 품질 시계열의 reconstruction error가 커져 장기 성능 저하 흐름이 의심됩니다.",
+    "recommendedAction": "렌즈 오염, 초점 상태, 설치 각도, 야간 조명 변화를 순서대로 점검하세요.",
+    "trendSummary": "최근 6개 구간을 하나의 time window로 보고 reconstruction error를 계산했습니다."
+  }
+]
