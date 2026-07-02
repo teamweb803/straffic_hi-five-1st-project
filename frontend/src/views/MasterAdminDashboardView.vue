@@ -24,6 +24,7 @@ import IncidentAlertPage from '@/dashboards/master/pages/IncidentAlertPage.vue'
 import NoticeManagementPage from '@/dashboards/master/pages/NoticeManagementPage.vue'
 import AuditLogPage from '@/dashboards/master/pages/AuditLogPage.vue'
 import MasterSettingsPage from '@/dashboards/master/pages/MasterSettingsPage.vue'
+import MasterPdmPage from '@/dashboards/pdm/pages/MasterPdmPage.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -67,6 +68,12 @@ const mapEditSnapshot = ref([])
 const draggingCenterName = ref('')
 const draggingLabelName = ref('')
 const isLightMode = computed(() => themeMode.value === 'light')
+const topbarSystemState = computed(() => {
+  if (activeMenu.value === '예지보전') {
+    return { label: '예지보전 확인 필요', className: 'global-warn' }
+  }
+  return { label: '전체 정상', className: 'global-ok' }
+})
 
 function toggleThemeMode() {
   themeMode.value = isLightMode.value ? 'dark' : 'light'
@@ -78,6 +85,7 @@ const MAP_MARKER_STORAGE_KEY = 'hifive.masterAdmin.mapMarkers.v1'
 
 const menuGroups = [
   { label: '대시보드', icon: 'dashboard2.png' },
+  { label: '예지보전', icon: 'cctv.png' },
   {
     label: '센터 관리',
     icon: 'member_set.png',
@@ -1082,14 +1090,6 @@ provide('masterDashboard', masterDashboardContext)
         </div>
       </nav>
 
-      <div class="quick-menu">
-        <p>빠른 메뉴</p>
-        <button type="button" @click="openQuickCompanyAdd">센터 추가</button>
-        <button type="button" @click="openCenterAdd">지점 추가</button>
-        <button type="button" @click="openNoticeCreate">점검 공지</button>
-        <button type="button" @click="activateMenu('장애 알림')">장애 등록</button>
-      </div>
-
       <p class="copyright">© 2025 HI-FIVE All rights reserved.</p>
     </aside>
 
@@ -1103,7 +1103,7 @@ provide('masterDashboard', masterDashboardContext)
 
         <div class="header-tools">
           <span class="clock">{{ nowText }}</span>
-          <span class="system-state global-ok"><i></i>전체 정상</span>
+          <span class="system-state" :class="topbarSystemState.className"><i></i>{{ topbarSystemState.label }}</span>
           <span class="admin-chip"><b>{{ auth.member?.memberName ?? 'master' }}</b><small>최종 관리자</small></span>
           <button class="theme-btn" type="button" :title="isLightMode ? '다크 모드' : '라이트 모드'" :aria-label="isLightMode ? '다크 모드' : '라이트 모드'" @click="toggleThemeMode">
             <span>{{ isLightMode ? '☾' : '☀' }}</span>
@@ -1115,7 +1115,8 @@ provide('masterDashboard', masterDashboardContext)
 
       <main>
         <MasterDashboardHomePage v-if="activeMenu === '대시보드'" />
-        <MasterFallbackPage v-else-if="!['Ingress', '시스템 관제', 'Edge 장비', '백엔드/DB', '장애 알림', '지점 관리', '감사 로그', '설정', '센터 관리', '센터 목록'].includes(activeMenu)" />
+        <MasterPdmPage v-else-if="activeMenu === '예지보전'" />
+        <MasterFallbackPage v-else-if="!['Ingress', '시스템 관제', 'Edge 장비', '백엔드/DB', '장애 알림', '지점 관리', '감사 로그', '설정', '센터 관리', '센터 목록', '예지보전'].includes(activeMenu)" />
         <MemberCompanyListPage v-else-if="['센터 관리', '센터 목록'].includes(activeMenu)" />
         <MemberAccountManagementPage v-else-if="activeMenu === '계정 관리'" />
         <MemberPermissionManagementPage v-else-if="activeMenu === '권한 관리'" />

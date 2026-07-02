@@ -1799,6 +1799,16 @@ select {
   color: #62f18d;
 }
 
+.global-warn {
+  min-width: 154px;
+  justify-content: center;
+  padding: 8px 18px;
+  border: 1px solid rgba(245, 184, 75, 0.42);
+  border-radius: 5px;
+  background: rgba(245, 184, 75, 0.14);
+  color: #ffd166;
+}
+
 .admin-chip b {
   font-size: 16px;
 }
@@ -2191,6 +2201,11 @@ select {
   color: #059669;
   background: rgba(5, 150, 105, 0.08);
   border-color: rgba(5, 150, 105, 0.3);
+}
+.master-shell.light .topbar .system-state.global-warn {
+  color: #b7791f;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.34);
 }
 
 .master-shell.light .marker-detail,
